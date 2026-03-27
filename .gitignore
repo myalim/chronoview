@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.turbo/
+*.tsbuildinfo
+storybook-static/
+
+# Test
+coverage/
+
+# Environment
+.env*
+.DS_Store
+
+# Claude Code
+CLAUDE.md
+.claude/
+.mcp.json
+.local
+.claudeignore
+
+# Internal docs
+docs/
