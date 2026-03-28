@@ -1,0 +1,33 @@
+{
+  "name": "@chronoview/core",
+  "version": "0.0.0",
+  "description": "Framework-agnostic core engine for ChronoView",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "date-fns": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "date-fns": {
+      "optional": false
+    }
+  }
+}

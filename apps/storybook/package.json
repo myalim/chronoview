@@ -1,0 +1,24 @@
+{
+  "name": "@chronoview/storybook",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build"
+  },
+  "dependencies": {
+    "@chronoview/core": "workspace:*",
+    "@chronoview/react": "workspace:*",
+    "@chronoview/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.0.0",
+    "@storybook/react": "^8.0.0",
+    "@storybook/react-vite": "^8.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "storybook": "^8.0.0",
+    "tailwindcss": "^4.0.0"
+  }
+}
