@@ -7,6 +7,10 @@ const preview: Preview = {
     options: {
       storySort: {
         order: [
+          "Schedule",
+          ["Day", "Week", "Month"],
+          "Common",
+          ["Button", "Toolbar", "DateNavigator", "ViewToggle", "FilterChips", "CategoryTabs"],
           "Wireframes",
           [
             "Schedule Day",

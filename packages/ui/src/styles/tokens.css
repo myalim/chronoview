@@ -1,0 +1,123 @@
+/*
+ * ChronoView Design Tokens
+ * CSS custom properties for the design system.
+ * Reference: docs/design/common/design-tokens.md
+ */
+
+/* ─── Light Mode (default) ─── */
+:root {
+  /* Colors */
+  --cv-color-bg: #ffffff;
+  --cv-color-surface: #f9fafb;
+  --cv-color-surface-hover: #f3f4f6;
+  --cv-color-border: #e5e7eb;
+  --cv-color-border-strong: #d1d5db;
+  --cv-color-text: #111827;
+  --cv-color-text-secondary: #6b7280;
+  --cv-color-text-muted: #9ca3af;
+  --cv-color-event-default: #3b82f6;
+  --cv-color-now: #ef4444;
+  --cv-color-today-bg: #eff6ff;
+  --cv-color-today-border: #3b82f6;
+  --cv-color-empty: #d1d5db;
+
+  /* Event Color Palette */
+  --cv-palette-0: #3b82f6; /* Blue */
+  --cv-palette-1: #8b5cf6; /* Purple */
+  --cv-palette-2: #06b6d4; /* Cyan */
+  --cv-palette-3: #10b981; /* Green */
+  --cv-palette-4: #f59e0b; /* Amber */
+  --cv-palette-5: #ef4444; /* Red */
+  --cv-palette-6: #ec4899; /* Pink */
+  --cv-palette-7: #6b7280; /* Gray */
+
+  /* Spacing (4px base) */
+  --cv-spacing-xs: 4px;
+  --cv-spacing-sm: 8px;
+  --cv-spacing-md: 12px;
+  --cv-spacing-lg: 16px;
+  --cv-spacing-xl: 24px;
+  --cv-spacing-2xl: 32px;
+
+  /* Fixed Sizes */
+  --cv-size-sidebar-width: 200px;
+  --cv-size-time-header-height: 48px;
+  --cv-size-date-header-height: 32px;
+  --cv-size-row-min-height: 48px;
+  --cv-size-event-height: 36px;
+  --cv-size-event-min-width: 20px;
+  --cv-size-color-bar-width: 3px;
+  --cv-size-now-indicator: 2px;
+  --cv-size-now-dot: 10px;
+  --cv-size-month-cell-min-height: 100px;
+  --cv-size-month-bar-height: 24px;
+  --cv-size-date-picker-height: 48px;
+
+  /* Typography */
+  --cv-font-family: system-ui, sans-serif;
+  --cv-font-size-xs: 11px;
+  --cv-font-size-sm: 12px;
+  --cv-font-size-base: 14px;
+  --cv-font-size-lg: 16px;
+  --cv-font-size-xl: 20px;
+  --cv-font-weight-normal: 400;
+  --cv-font-weight-medium: 500;
+  --cv-font-weight-bold: 600;
+
+  /* Border Radius */
+  --cv-radius-sm: 4px;
+  --cv-radius-md: 6px;
+  --cv-radius-lg: 8px;
+  --cv-radius-full: 9999px;
+
+  /* Shadows */
+  --cv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --cv-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --cv-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* z-index Layers */
+  --cv-z-base: 0;
+  --cv-z-now: 10;
+  --cv-z-event: 20;
+  --cv-z-sticky-header: 30;
+  --cv-z-sticky-sidebar: 30;
+  --cv-z-sticky-corner: 40;
+  --cv-z-popup: 50;
+  --cv-z-overlay: 60;
+
+  /* Animation */
+  --cv-duration-fast: 100ms;
+  --cv-duration-normal: 200ms;
+  --cv-duration-slow: 300ms;
+}
+
+/* ─── Dark Mode ─── */
+[data-theme="dark"],
+.dark {
+  --cv-color-bg: #111827;
+  --cv-color-surface: #1f2937;
+  --cv-color-surface-hover: #374151;
+  --cv-color-border: #374151;
+  --cv-color-border-strong: #4b5563;
+  --cv-color-text: #f9fafb;
+  --cv-color-text-secondary: #9ca3af;
+  --cv-color-text-muted: #6b7280;
+  --cv-color-event-default: #60a5fa;
+  --cv-color-now: #f87171;
+  --cv-color-today-bg: #1e3a5f;
+  --cv-color-today-border: #60a5fa;
+  --cv-color-empty: #4b5563;
+
+  --cv-palette-0: #60a5fa;
+  --cv-palette-1: #a78bfa;
+  --cv-palette-2: #22d3ee;
+  --cv-palette-3: #34d399;
+  --cv-palette-4: #fbbf24;
+  --cv-palette-5: #f87171;
+  --cv-palette-6: #f472b6;
+  --cv-palette-7: #9ca3af;
+
+  --cv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --cv-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --cv-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+}
