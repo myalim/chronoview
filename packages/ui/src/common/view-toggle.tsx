@@ -34,7 +34,7 @@ export function ViewToggle({
   return (
     <div
       className={cn(
-        "inline-flex items-center h-9 rounded-[--cv-radius-sm] overflow-hidden border border-[--cv-color-border]",
+        "inline-flex items-center h-9 rounded-[var(--cv-radius-sm)] overflow-hidden border border-[var(--cv-color-border)]",
         className
       )}
       role="tablist"
@@ -49,10 +49,10 @@ export function ViewToggle({
             aria-selected={isActive}
             onClick={() => onViewChange(view)}
             className={cn(
-              "px-3 py-2 cursor-pointer whitespace-nowrap text-[length:--cv-font-size-sm] font-medium font-[--cv-font-family] border-none transition-colors",
+              "px-3 py-2 cursor-pointer whitespace-nowrap text-[length:var(--cv-font-size-sm)] font-medium font-[var(--cv-font-family)] border-none transition-colors",
               isActive
-                ? "bg-[--cv-color-event-default] text-white"
-                : "bg-[--cv-color-surface] text-[--cv-color-text-secondary]"
+                ? "bg-[var(--cv-color-event-default)] text-white"
+                : "bg-[var(--cv-color-surface)] text-[var(--cv-color-text-secondary)]"
             )}
           >
             {mergedLabels[view]}

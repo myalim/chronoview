@@ -56,7 +56,7 @@ export function FilterChips({
   return (
     <div
       className={cn(
-        "flex items-center gap-1 overflow-x-auto py-3 font-[--cv-font-family]",
+        "flex items-center gap-1 overflow-x-auto py-3 font-[var(--cv-font-family)]",
         className
       )}
     >
@@ -65,7 +65,7 @@ export function FilterChips({
         <Button
           variant="outline"
           onClick={allSelected ? onDeselectAll : onSelectAll}
-          className="text-[--cv-color-text-secondary]"
+          className="text-[var(--cv-color-text-secondary)]"
         >
           {allSelected ? "전체 해제" : "전체 선택"}
         </Button>
@@ -84,7 +84,7 @@ export function FilterChips({
               chipBaseClasses,
               "flex items-center gap-1 border transition-all",
               !isSelected &&
-                "bg-[--cv-color-surface] text-[--cv-color-text-muted] border-[--cv-color-border]"
+                "bg-[var(--cv-color-surface)] text-[var(--cv-color-text-muted)] border-[var(--cv-color-border)]"
             )}
             style={
               isSelected

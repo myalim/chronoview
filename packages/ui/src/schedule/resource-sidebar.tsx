@@ -31,7 +31,7 @@ export function ResourceSidebar({
   renderResource,
 }: ResourceSidebarProps) {
   return (
-    <div className="sticky left-0 shrink-0 z-[--cv-z-sticky-sidebar] w-[--cv-size-sidebar-width] bg-[--cv-color-bg] border-r border-[--cv-color-border] font-[--cv-font-family]">
+    <div className="sticky left-0 shrink-0 z-[var(--cv-z-sticky-sidebar)] w-[var(--cv-size-sidebar-width)] bg-[var(--cv-color-bg)] border-r border-[var(--cv-color-border)] font-[var(--cv-font-family)]">
       {resources.map((resource, i) => {
         const height = rowHeights[i] ?? 48;
         const isLast = i === resources.length - 1;
@@ -40,7 +40,7 @@ export function ResourceSidebar({
           return (
             <div
               key={resource.id}
-              className={cn(!isLast && "border-b border-[--cv-color-border]")}
+              className={cn(!isLast && "border-b border-[var(--cv-color-border)]")}
               style={{ height }}
             >
               {renderResource(resource)}
@@ -53,7 +53,7 @@ export function ResourceSidebar({
             key={resource.id}
             className={cn(
               "flex items-center gap-2 px-4",
-              !isLast && "border-b border-[--cv-color-border]"
+              !isLast && "border-b border-[var(--cv-color-border)]"
             )}
             style={{ height }}
           >
@@ -78,7 +78,7 @@ export function ResourceSidebar({
               )}
             </div>
             {/* Name */}
-            <span className="truncate text-[length:--cv-font-size-base] text-[--cv-color-text]">
+            <span className="truncate text-[length:var(--cv-font-size-base)] text-[var(--cv-color-text)]">
               {resource.title}
             </span>
           </div>

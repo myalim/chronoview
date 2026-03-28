@@ -50,7 +50,7 @@ export function ScheduleContainer({
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center bg-[--cv-color-bg] font-[--cv-font-family] border border-[--cv-color-border] rounded-[--cv-radius-lg] py-16",
+          "flex flex-col items-center justify-center bg-[var(--cv-color-bg)] font-[var(--cv-font-family)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-lg)] py-16",
           className
         )}
       >
@@ -98,7 +98,7 @@ export function ScheduleContainer({
             strokeDasharray="3 3"
           />
         </svg>
-        <span className="text-sm text-[--cv-color-text-muted]">
+        <span className="text-sm text-[var(--cv-color-text-muted)]">
           {emptyMessage}
         </span>
       </div>
@@ -113,27 +113,27 @@ export function ScheduleContainer({
   return (
     <div
       className={cn(
-        "grid overflow-auto relative overscroll-none bg-[--cv-color-bg] font-[--cv-font-family] border border-[--cv-color-border] rounded-[--cv-radius-lg]",
+        "grid overflow-auto relative overscroll-none bg-[var(--cv-color-bg)] font-[var(--cv-font-family)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-lg)]",
         className
       )}
       style={gridStyle}
     >
       {/* Top-left corner cell (sticky top + left) */}
       <div
-        className="sticky top-0 left-0 z-[--cv-z-sticky-corner] w-[--cv-size-sidebar-width] bg-[--cv-color-bg] border-r border-[--cv-color-border] border-b border-b-[--cv-color-border]"
+        className="sticky top-0 left-0 z-[var(--cv-z-sticky-corner)] w-[var(--cv-size-sidebar-width)] bg-[var(--cv-color-bg)] border-r border-[var(--cv-color-border)] border-b border-b-[var(--cv-color-border)]"
         style={{ height: headerHeight }}
       />
 
       {/* Header (sticky top) — border-b aligned with corner cell height */}
       <div
-        className="sticky top-0 z-[--cv-z-sticky-header] border-b border-b-[--cv-color-border] overflow-hidden"
+        className="sticky top-0 z-[var(--cv-z-sticky-header)] border-b border-b-[var(--cv-color-border)] overflow-hidden"
         style={{ width: totalMainSize, height: headerHeight }}
       >
         {header}
       </div>
 
       {/* Sidebar (sticky left) */}
-      <div className="sticky left-0 z-[--cv-z-sticky-sidebar]">{sidebar}</div>
+      <div className="sticky left-0 z-[var(--cv-z-sticky-sidebar)]">{sidebar}</div>
 
       {/* Grid body */}
       <div

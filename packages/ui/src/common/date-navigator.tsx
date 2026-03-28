@@ -95,7 +95,7 @@ export function DateNavigator({
             : undefined
         }
         className={cn(
-          "select-none whitespace-nowrap text-xl font-semibold text-[--cv-color-text]",
+          "select-none whitespace-nowrap text-xl font-semibold text-[var(--cv-color-text)]",
           onDateClick ? "cursor-pointer" : "cursor-default"
         )}
       >

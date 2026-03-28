@@ -58,7 +58,7 @@ export function Toolbar({
   return (
     <div
       className={cn(
-        "flex items-center justify-between flex-wrap gap-2 h-14 font-[--cv-font-family] border-b border-[--cv-color-border] bg-[--cv-color-bg]",
+        "flex items-center justify-between flex-wrap gap-2 h-14 font-[var(--cv-font-family)] border-b border-[var(--cv-color-border)] bg-[var(--cv-color-bg)]",
         className
       )}
     >
@@ -83,7 +83,7 @@ export function Toolbar({
           <Button
             variant="outline"
             onClick={onFilterClick}
-            className="text-[--cv-color-text-secondary]"
+            className="text-[var(--cv-color-text-secondary)]"
           >
             필터 ▾
           </Button>

@@ -50,8 +50,8 @@ function TimeSlotCell({
   return (
     <div
       className={cn(
-        "absolute flex h-full items-center justify-center text-xs text-[--cv-color-text-secondary]",
-        !isLast && "border-r border-r-[--cv-color-border]"
+        "absolute flex h-full items-center justify-center text-xs text-[var(--cv-color-text-secondary)]",
+        !isLast && "border-r border-r-[var(--cv-color-border)]"
       )}
       style={{ left: slot.offset, width: slot.width }}
     >
@@ -73,7 +73,7 @@ export function TimeHeader({
   if (view === "day") {
     return (
       <div className={headerClassName} style={{ minWidth: totalWidth }}>
-        <div className="relative h-[--cv-size-time-header-height]">
+        <div className="relative h-[var(--cv-size-time-header-height)]">
           {timeSlots.map((slot, i) => (
             <TimeSlotCell
               key={`ts-${slot.offset}`}
@@ -91,18 +91,18 @@ export function TimeHeader({
     return (
       <div className={headerClassName} style={{ minWidth: totalWidth }}>
         {/* Date row */}
-        <div className="relative h-[--cv-size-date-header-height]">
+        <div className="relative h-[var(--cv-size-date-header-height)]">
           {dateLabels.map((dl, i) => {
             const isLast = i === dateLabels.length - 1;
             return (
               <div
                 key={`dl-${dl.offset}`}
                 className={cn(
-                  "absolute flex h-full items-center justify-center border-b border-b-[--cv-color-border] text-base",
-                  !isLast && "border-r border-r-[--cv-color-border-strong]",
+                  "absolute flex h-full items-center justify-center border-b border-b-[var(--cv-color-border)] text-base",
+                  !isLast && "border-r border-r-[var(--cv-color-border-strong)]",
                   dl.isToday
-                    ? "font-[--cv-font-weight-bold] text-[--cv-color-today-border]"
-                    : "font-[--cv-font-weight-medium] text-[--cv-color-text]"
+                    ? "font-[var(--cv-font-weight-bold)] text-[var(--cv-color-today-border)]"
+                    : "font-[var(--cv-font-weight-medium)] text-[var(--cv-color-text)]"
                 )}
                 style={{ left: dl.offset, width: dl.width }}
               >
@@ -112,7 +112,7 @@ export function TimeHeader({
           })}
         </div>
         {/* Time row */}
-        <div className="relative h-[--cv-size-time-header-height]">
+        <div className="relative h-[var(--cv-size-time-header-height)]">
           {timeSlots.map((slot, i) => (
             <TimeSlotCell
               key={`ts-${slot.offset}`}
@@ -129,18 +129,18 @@ export function TimeHeader({
   return (
     <div className={headerClassName} style={{ minWidth: totalWidth }}>
       {/* Date row */}
-      <div className="relative h-[--cv-size-date-header-height]">
+      <div className="relative h-[var(--cv-size-date-header-height)]">
         {dateLabels.map((dl, i) => {
           const isLast = i === dateLabels.length - 1;
           return (
             <div
               key={`dl-${dl.offset}`}
               className={cn(
-                "absolute flex h-full items-center justify-center border-b border-b-[--cv-color-border] text-xs",
-                !isLast && "border-r border-r-[--cv-color-border]",
+                "absolute flex h-full items-center justify-center border-b border-b-[var(--cv-color-border)] text-xs",
+                !isLast && "border-r border-r-[var(--cv-color-border)]",
                 dl.isToday
-                  ? "font-[--cv-font-weight-bold] text-[--cv-color-today-border]"
-                  : "font-[--cv-font-weight-normal] text-[--cv-color-text]"
+                  ? "font-[var(--cv-font-weight-bold)] text-[var(--cv-color-today-border)]"
+                  : "font-[var(--cv-font-weight-normal)] text-[var(--cv-color-text)]"
               )}
               style={{ left: dl.offset, width: dl.width }}
             >
@@ -150,15 +150,15 @@ export function TimeHeader({
         })}
       </div>
       {/* Weekday row */}
-      <div className="relative h-[--cv-size-date-header-height]">
+      <div className="relative h-[var(--cv-size-date-header-height)]">
         {dateLabels.map((dl, i) => {
           const isLast = i === dateLabels.length - 1;
           return (
             <div
               key={`wd-${dl.offset}`}
               className={cn(
-                "absolute flex h-full items-center justify-center text-[11px] text-[--cv-color-text-muted]",
-                !isLast && "border-r border-r-[--cv-color-border]"
+                "absolute flex h-full items-center justify-center text-[11px] text-[var(--cv-color-text-muted)]",
+                !isLast && "border-r border-r-[var(--cv-color-border)]"
               )}
               style={{ left: dl.offset, width: dl.width }}
             >
