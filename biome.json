@@ -31,5 +31,21 @@
       "coverage",
       "pnpm-lock.yaml"
     ]
-  }
+  },
+  "overrides": [
+    {
+      "include": ["apps/storybook/stories/wireframes/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useButtonType": "off",
+            "useKeyWithClickEvents": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    }
+  ]
 }
