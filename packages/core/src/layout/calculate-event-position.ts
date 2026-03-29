@@ -3,7 +3,7 @@ import type { TimelineEvent } from "../types/index.js";
 
 /**
  * Calculates the main-axis position and size for an event within a time range.
- * Uses minute-level precision (independent of timeStep).
+ * Uses minute-level precision (independent of cellDuration).
  * Events extending beyond the range are clamped to the visible boundaries.
  *
  * @param config.event - The event to position

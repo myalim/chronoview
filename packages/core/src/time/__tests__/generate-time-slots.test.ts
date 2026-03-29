@@ -6,7 +6,7 @@ describe("generateTimeSlots", () => {
     const slots = generateTimeSlots({
       startTime: new Date(2026, 2, 27, 0, 0),
       endTime: new Date(2026, 2, 27, 23, 59, 59, 999),
-      timeStep: 30,
+      intervalMinutes: 30,
     });
 
     expect(slots).toHaveLength(48); // 24h × 2
@@ -19,7 +19,7 @@ describe("generateTimeSlots", () => {
     const slots = generateTimeSlots({
       startTime: new Date(2026, 2, 27, 0, 0),
       endTime: new Date(2026, 2, 27, 23, 59, 59, 999),
-      timeStep: 60,
+      intervalMinutes: 60,
     });
 
     expect(slots).toHaveLength(24);
@@ -31,7 +31,7 @@ describe("generateTimeSlots", () => {
     const slots = generateTimeSlots({
       startTime: new Date(2026, 2, 27, 9, 0),
       endTime: new Date(2026, 2, 27, 10, 59, 59, 999),
-      timeStep: 15,
+      intervalMinutes: 15,
     });
 
     expect(slots).toHaveLength(8); // 2h × 4
@@ -44,7 +44,7 @@ describe("generateTimeSlots", () => {
     const slots = generateTimeSlots({
       startTime: new Date(2026, 2, 27, 9, 0),
       endTime: new Date(2026, 2, 27, 9, 59, 59, 999),
-      timeStep: 5,
+      intervalMinutes: 5,
     });
 
     expect(slots).toHaveLength(12); // 60min / 5
@@ -54,7 +54,7 @@ describe("generateTimeSlots", () => {
     const slots = generateTimeSlots({
       startTime: new Date(2026, 2, 27, 9, 0),
       endTime: new Date(2026, 2, 27, 10, 59, 59, 999),
-      timeStep: 30,
+      intervalMinutes: 30,
     });
 
     expect(slots[0].start).toEqual(new Date(2026, 2, 27, 9, 0));
@@ -67,11 +67,22 @@ describe("generateTimeSlots", () => {
     const slots = generateTimeSlots({
       startTime: new Date(2026, 2, 27, 0, 0),
       endTime: new Date(2026, 2, 27, 23, 59, 59, 999),
-      timeStep: 30,
+      intervalMinutes: 30,
     });
 
     for (let i = 1; i < slots.length; i++) {
       expect(slots[i].start.getTime()).toBe(slots[i - 1].end.getTime());
     }
+  });
+
+  it("clamps intervalMinutes below 5 to 5", () => {
+    const slots = generateTimeSlots({
+      startTime: new Date(2026, 2, 27, 9, 0),
+      endTime: new Date(2026, 2, 27, 9, 59, 59, 999),
+      intervalMinutes: 1,
+    });
+
+    // Clamped to 5min → 60min / 5 = 12 slots (same as 5-minute test)
+    expect(slots).toHaveLength(12);
   });
 });

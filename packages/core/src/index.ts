@@ -8,6 +8,8 @@ export type {
   CalendarLayoutResult,
   CalendarMonthLayoutResult,
   DateRange,
+  CellDurationConfig,
+  DayCellDuration,
   DayColumnLayout,
   EventLayout,
   FilterState,
@@ -30,6 +32,7 @@ export type {
   TruncateResult,
   View,
   VisibleRange,
+  WeekCellDuration,
 } from "./types/index.js";
 
 // ─── Axis ───
@@ -52,6 +55,8 @@ export { calculateScrollToNow } from "./position/calculate-scroll-to-now.js";
 // ─── View ───
 export { getDefaultAvailableViews } from "./view/get-default-available-views.js";
 export { getDefaultStackMode } from "./view/get-default-stack-mode.js";
+export { getCellConfig } from "./view/get-cell-config.js";
+export type { CellConfig } from "./view/get-cell-config.js";
 
 // ─── Layout ───
 export { calculateEventPosition } from "./layout/calculate-event-position.js";

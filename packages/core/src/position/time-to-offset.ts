@@ -2,7 +2,7 @@ import { differenceInMinutes } from "date-fns";
 
 /**
  * Converts a time to a pixel offset along the main axis.
- * Uses minute-level precision (independent of timeStep).
+ * Uses minute-level precision (independent of cellDuration).
  * Clamps the result to [0, totalSize].
  */
 export function timeToOffset(config: {
