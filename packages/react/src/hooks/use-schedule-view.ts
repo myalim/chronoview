@@ -2,8 +2,8 @@
  * useScheduleView — Schedule layout orchestrator hook.
  *
  * Takes TimelineConfig and computes the full layout:
- * rows, time slots, event positions, row heights, now indicator.
- * Does NOT manage navigation or filter state — those are injected externally.
+ * rows, time slots, event positions, row heights.
+ * Does NOT manage navigation, filter, or now indicator — those are injected externally.
  */
 
 import { useMemo, type CSSProperties } from "react";
@@ -17,7 +17,6 @@ import {
   calculateVerticalStacks,
   calculateRowHeight,
   resolveColor,
-  calculateNowPosition,
   toPhysicalPosition,
   getCellConfig,
 } from "@chronoview/core";
@@ -40,9 +39,9 @@ export interface UseScheduleViewReturn {
   totalCrossSize: number;
   getEventStyle: (layout: EventLayout) => CSSProperties;
   getRowStyle: (row: RowLayout) => CSSProperties;
-  nowPosition: number | null;
 }
 
+const SCHEDULE_AXIS_CONFIG = getAxisConfig("schedule");
 const DEFAULT_EVENT_HEIGHT = 36;
 const DEFAULT_EVENT_GAP = 4;
 const DEFAULT_MIN_ROW_HEIGHT = 48;
@@ -55,14 +54,12 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     view,
     cellDuration,
     startDate,
-    showNowIndicator = true,
     weekStartsOn = 0,
     eventHeight = DEFAULT_EVENT_HEIGHT,
   } = config;
 
   const cellConfig = useMemo(() => getCellConfig(view, cellDuration), [view, cellDuration]);
-
-  const axisConfig = useMemo(() => getAxisConfig("schedule"), []);
+  const axisConfig = SCHEDULE_AXIS_CONFIG;
 
   const dateRange = useMemo(() => {
     const date = startDate ?? new Date();
@@ -175,16 +172,6 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
 
   const totalCrossSize = useMemo(() => rows.reduce((sum, r) => sum + r.height, 0), [rows]);
 
-  const nowPosition = useMemo(() => {
-    if (!showNowIndicator) return null;
-    return calculateNowPosition({
-      now: new Date(),
-      rangeStart: dateRange.start,
-      rangeEnd: dateRange.end,
-      totalSize: totalMainSize,
-    });
-  }, [showNowIndicator, dateRange, totalMainSize]);
-
   const getEventStyle = useMemo(() => {
     return (layout: EventLayout): CSSProperties => {
       const physical = toPhysicalPosition(layout.position, axisConfig);
@@ -196,7 +183,7 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
         height: physical.height,
       };
     };
-  }, [axisConfig]);
+  }, []);
 
   const getRowStyle = useMemo(() => {
     return (row: RowLayout): CSSProperties => ({
@@ -213,6 +200,5 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     totalCrossSize,
     getEventStyle,
     getRowStyle,
-    nowPosition,
   };
 }

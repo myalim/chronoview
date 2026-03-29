@@ -10,18 +10,47 @@
  */
 
 import { useState, useCallback, useEffect, type ReactNode } from "react";
-import { useDateNavigation, useTimelineFilter, useScheduleView } from "@chronoview/react";
-import type { View, TimelineEvent, Resource, TimeSlot, CellDurationConfig } from "@chronoview/core";
+import {
+  useDateNavigation,
+  useTimelineFilter,
+  useScheduleView,
+  useNowIndicator,
+} from "@chronoview/react";
+import type {
+  View,
+  TimelineEvent,
+  Resource,
+  CellDurationConfig,
+} from "@chronoview/core";
 import { getDefaultAvailableViews } from "@chronoview/core";
 
 import { ScheduleView } from "./schedule-view.js";
 import { TimeHeader } from "./time-header.js";
 import { ResourceSidebar } from "./resource-sidebar.js";
-import { EventCard, type EventCardProps, type EventCardSize } from "./event-card.js";
+import {
+  EventCard,
+  type EventCardProps,
+  type EventCardSize,
+} from "./event-card.js";
 import { NowIndicator } from "./now-indicator.js";
 import { GridLines } from "./grid-lines.js";
 import { Toolbar } from "../common/toolbar.js";
 import { FilterChips } from "../common/filter-chips.js";
+
+/** Maps EventCardSize presets to pixel values (synced with tokens.css) */
+const SIZE_TO_PX: Record<EventCardSize, number> = {
+  xs: 20,
+  sm: 24,
+  md: 36,
+  lg: 48,
+};
+
+/** View-specific header heights in px (synced with tokens.css: time=48, date=32) */
+const HEADER_HEIGHT: Record<View, number> = {
+  day: 48, // time header only
+  week: 80, // date header (32) + time header (48)
+  month: 64, // date header (32) + weekday header (32)
+};
 
 export interface ScheduleProps<TData = unknown> {
   /** Event data */
@@ -51,17 +80,16 @@ export interface ScheduleProps<TData = unknown> {
 
   // ─── Custom Rendering ───
   /** Per-event EventCard props override. Merges with computed defaults. */
-  eventProps?: (event: TimelineEvent<TData>) => Partial<Omit<EventCardProps, "style">>;
+  eventProps?: (
+    event: TimelineEvent<TData>
+  ) => Partial<Omit<EventCardProps, "style">>;
   /** Override resource sidebar row rendering */
   renderResource?: (resource: Resource) => ReactNode;
-  /** Override time header slot rendering (reserved for future use) */
-  renderTimeHeader?: (slot: TimeSlot, view: View) => ReactNode;
 
   // ─── Event Handlers ───
   onEventClick?: (event: TimelineEvent<TData>) => void;
   onEventHover?: (event: TimelineEvent<TData>) => void;
   onViewChange?: (view: View) => void;
-  onDateChange?: (date: Date) => void;
 
   // ─── Style ───
   /** Event card size preset. Affects card height and row height. Default: "md". */
@@ -101,7 +129,7 @@ export function Schedule<TData = unknown>({
       setCurrentView(v);
       onViewChange?.(v);
     },
-    [onViewChange],
+    [onViewChange]
   );
 
   // ─── Date Navigation ───
@@ -109,18 +137,6 @@ export function Schedule<TData = unknown>({
     initialDate: startDate,
     view: currentView,
   });
-
-  const handlePrev = useCallback(() => {
-    goToPrev();
-  }, [goToPrev]);
-
-  const handleNext = useCallback(() => {
-    goToNext();
-  }, [goToNext]);
-
-  const handleToday = useCallback(() => {
-    goToToday();
-  }, [goToToday]);
 
   // ─── Filter ───
   const {
@@ -133,19 +149,26 @@ export function Schedule<TData = unknown>({
   } = useTimelineFilter({ events, resources });
 
   // ─── Schedule Layout ───
-  const SIZE_TO_PX: Record<EventCardSize, number> = { xs: 20, sm: 24, md: 36, lg: 48 };
   const eventHeight = eventSize ? SIZE_TO_PX[eventSize] : undefined;
 
-  const { rows, dateRange, totalCrossSize, getEventStyle, nowPosition } = useScheduleView({
-    events: filteredEvents as TimelineEvent[],
-    resources: filteredResources,
-    view: currentView,
-    layout: "schedule",
-    cellDuration,
-    startDate: currentDate,
-    showNowIndicator,
-    weekStartsOn,
-    eventHeight,
+  const { rows, dateRange, totalMainSize, totalCrossSize, getEventStyle } =
+    useScheduleView({
+      events: filteredEvents as TimelineEvent[],
+      resources: filteredResources,
+      view: currentView,
+      layout: "schedule",
+      cellDuration,
+      startDate: currentDate,
+      weekStartsOn,
+      eventHeight,
+    });
+
+  // Real-time now indicator (updates every 60s via setInterval)
+  const { position: nowPosition } = useNowIndicator({
+    rangeStart: dateRange.start,
+    rangeEnd: dateRange.end,
+    totalSize: totalMainSize,
+    enabled: showNowIndicator,
   });
 
   // Derive data for sub-components
@@ -155,7 +178,8 @@ export function Schedule<TData = unknown>({
   // Compute selected resource IDs for FilterChips
   const selectedResourceIds = filter.resourceIds ?? resources.map((r) => r.id);
 
-  const resolvedAvailableViews = availableViews ?? getDefaultAvailableViews("schedule");
+  const resolvedAvailableViews =
+    availableViews ?? getDefaultAvailableViews("schedule");
 
   // ─── Render ───
   const sidebar = (
@@ -216,8 +240,12 @@ export function Schedule<TData = unknown>({
             variant === "default"
               ? formatTimeLabel(event.start, event.end)
               : undefined;
-          const defaultOnClick = onEventClick ? () => onEventClick(event) : undefined;
-          const defaultOnMouseEnter = onEventHover ? () => onEventHover(event) : undefined;
+          const defaultOnClick = onEventClick
+            ? () => onEventClick(event)
+            : undefined;
+          const defaultOnMouseEnter = onEventHover
+            ? () => onEventHover(event)
+            : undefined;
 
           // Merge user overrides with computed defaults
           const overrides = eventProps?.(event);
@@ -239,11 +267,13 @@ export function Schedule<TData = unknown>({
               {overrides?.children}
             </EventCard>
           );
-        }),
+        })
       )}
 
       {/* Now indicator */}
-      {nowPosition != null && <NowIndicator position={nowPosition} crossSize={totalCrossSize} />}
+      {nowPosition != null && (
+        <NowIndicator position={nowPosition} crossSize={totalCrossSize} />
+      )}
     </>
   );
 
@@ -252,9 +282,9 @@ export function Schedule<TData = unknown>({
       currentDate={currentDate}
       view={currentView}
       layout="schedule"
-      onPrev={handlePrev}
-      onNext={handleNext}
-      onToday={handleToday}
+      onPrev={goToPrev}
+      onNext={goToNext}
+      onToday={goToToday}
       onViewChange={handleViewChange}
       availableViews={resolvedAvailableViews}
     />
@@ -272,13 +302,12 @@ export function Schedule<TData = unknown>({
 
   return (
     <ScheduleView
-      view={currentView}
-      dateRange={dateRange}
-      cellDuration={cellDuration}
       sidebar={sidebar}
       header={header}
       body={body}
+      totalMainSize={totalMainSize}
       totalCrossSize={totalCrossSize}
+      headerHeight={HEADER_HEIGHT[currentView]}
       toolbar={toolbar}
       filterPanel={filterPanel}
       className={className}

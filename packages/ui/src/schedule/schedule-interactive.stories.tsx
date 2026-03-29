@@ -50,12 +50,10 @@ const meta: Meta<typeof Schedule> = {
     events: { table: { disable: true } },
     resources: { table: { disable: true } },
     onViewChange: { table: { disable: true } },
-    onDateChange: { table: { disable: true } },
     onEventClick: { table: { disable: true } },
     onEventHover: { table: { disable: true } },
     eventProps: { table: { disable: true } },
     renderResource: { table: { disable: true } },
-    renderTimeHeader: { table: { disable: true } },
     availableViews: { table: { disable: true } },
   },
   decorators: [

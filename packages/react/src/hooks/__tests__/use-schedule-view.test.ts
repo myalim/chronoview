@@ -125,26 +125,6 @@ describe("useScheduleView", () => {
     expect(style.height).toBe(row.height);
   });
 
-  it("nowPosition is calculated when showNowIndicator is true and now is in range", () => {
-    vi.useFakeTimers();
-    // Set now to midday of the same day
-    vi.setSystemTime(new Date(2026, 2, 28, 12, 0));
-
-    const config = createConfig({ showNowIndicator: true });
-    const { result } = renderHook(() => useScheduleView(config));
-
-    // Now is within the day range, so position should be a number
-    expect(result.current.nowPosition).toBeTypeOf("number");
-    expect(result.current.nowPosition).toBeGreaterThan(0);
-  });
-
-  it("nowPosition is null when showNowIndicator is false", () => {
-    const config = createConfig({ showNowIndicator: false });
-    const { result } = renderHook(() => useScheduleView(config));
-
-    expect(result.current.nowPosition).toBeNull();
-  });
-
   it("totalCrossSize equals sum of all row heights", () => {
     const { result } = renderHook(() => useScheduleView(createConfig()));
 

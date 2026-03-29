@@ -43,7 +43,10 @@ const ROW_STACKS = [2, 1, 2, 0];
 
 function getRowHeight(maxStack: number): number {
   if (maxStack === 0) return 48;
-  return Math.max(48, maxStack * BAR_HEIGHT + (maxStack - 1) * BAR_GAP + ROW_PADDING * 2);
+  return Math.max(
+    48,
+    maxStack * BAR_HEIGHT + (maxStack - 1) * BAR_GAP + ROW_PADDING * 2
+  );
 }
 
 function getRowOffset(heights: number[], rowIndex: number): number {
@@ -80,7 +83,9 @@ function ScheduleMonthStory() {
   const totalMainSize = COL_WIDTH * DAYS_IN_MONTH;
 
   const visibleResources = RESOURCES.filter((r) => selectedIds.includes(r.id));
-  const visibleEvents = EVENTS.filter(([resIdx]) => selectedIds.includes(RESOURCES[resIdx].id));
+  const visibleEvents = EVENTS.filter(([resIdx]) =>
+    selectedIds.includes(RESOURCES[resIdx].id)
+  );
 
   const visibleRowStacks = visibleResources.map((r) => {
     const idx = RESOURCES.findIndex((orig) => orig.id === r.id);
@@ -90,19 +95,30 @@ function ScheduleMonthStory() {
   const totalCrossSize = rowHeights.reduce((sum, h) => sum + h, 0);
 
   const handleToggle = (id: string) => {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
   };
 
-  const handlePrev = () => setDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
-  const handleNext = () => setDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  const handlePrev = () =>
+    setDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const handleNext = () =>
+    setDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   const handleToday = () => setDate(new Date());
 
-  const sidebar = <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />;
+  const sidebar = (
+    <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />
+  );
   const header = <TimeHeader view="month" dateRange={dateRange} />;
 
   const body = (
     <>
-      <GridLines view="month" dateRange={dateRange} crossSize={totalCrossSize} topOffset={-64} />
+      <GridLines
+        view="month"
+        dateRange={dateRange}
+        crossSize={totalCrossSize}
+        topOffset={-64}
+      />
 
       {/* Today column highlight */}
       <div
@@ -137,7 +153,9 @@ function ScheduleMonthStory() {
       })}
 
       {visibleEvents.map(([resIdx, startDay, endDay, title, lane]) => {
-        const visibleRowIdx = visibleResources.findIndex((r) => r.id === RESOURCES[resIdx].id);
+        const visibleRowIdx = visibleResources.findIndex(
+          (r) => r.id === RESOURCES[resIdx].id
+        );
         if (visibleRowIdx === -1) return null;
 
         const rowOffset = getRowOffset(rowHeights, visibleRowIdx);
@@ -181,19 +199,17 @@ function ScheduleMonthStory() {
   );
 
   return (
-    <div>
-      <div style={{ maxWidth: 1300 }}>
-        <ScheduleView
-          view="month"
-          dateRange={dateRange}
-          sidebar={sidebar}
-          header={header}
-          body={body}
-          totalCrossSize={totalCrossSize}
-          toolbar={toolbar}
-          filterPanel={filterPanel}
-        />
-      </div>
+    <div style={{ maxWidth: 1300 }}>
+      <ScheduleView
+        sidebar={sidebar}
+        header={header}
+        body={body}
+        totalMainSize={totalMainSize}
+        totalCrossSize={totalCrossSize}
+        headerHeight={64}
+        toolbar={toolbar}
+        filterPanel={filterPanel}
+      />
     </div>
   );
 }

@@ -183,13 +183,12 @@ function ScheduleWeekStory() {
   return (
     <div style={{ maxWidth: 1100 }}>
       <ScheduleView
-        view="week"
-        dateRange={dateRange}
-        cellDuration={{ week: CELL_DURATION }}
         sidebar={sidebar}
         header={header}
         body={body}
+        totalMainSize={totalMainSize}
         totalCrossSize={totalCrossSize}
+        headerHeight={80}
         toolbar={toolbar}
         filterPanel={filterPanel}
       />

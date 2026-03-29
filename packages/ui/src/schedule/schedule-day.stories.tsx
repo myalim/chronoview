@@ -190,13 +190,12 @@ function ScheduleDayStory() {
   return (
     <div style={{ maxWidth: 1100 }}>
       <ScheduleView
-        view="day"
-        dateRange={dateRange}
-        cellDuration={{ day: 60 }}
         sidebar={sidebar}
         header={header}
         body={body}
+        totalMainSize={totalMainSize}
         totalCrossSize={totalCrossSize}
+        headerHeight={48}
         toolbar={toolbar}
         filterPanel={filterPanel}
       />
