@@ -10,20 +10,28 @@
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { cn } from "../utils/cn.js";
 
+/** Event card size presets controlling height */
+export type EventCardSize = "xs" | "sm" | "md" | "lg";
+
 export interface EventCardProps {
-  title: string;
-  /** Time text (shown in Day/Week, hidden in Month) */
-  timeLabel?: string;
-  /** resolveColor() result — used for left color bar + background */
+  /** Event title — supports ReactNode for rich content */
+  title: ReactNode;
+  /** Subtitle below title (shown in Day/Week, hidden in Month variant) */
+  subtitle?: ReactNode;
+  /** Event color — used for left color bar + 10% alpha background */
   color: string;
-  /** absolute position style (left, top, width, height) */
+  /** Absolute position style from layout engine (left, top, width, height) */
   style: CSSProperties;
-  /** "day" | "week" -> 36px tall card, "month" -> 24px tall bar */
+  /** Card variant: "default" for Day/Week, "month" for compact bar */
   variant?: "default" | "month";
+  /** Card height preset. Defaults: "md" for default variant, "sm" for month. */
+  size?: EventCardSize;
+  /** Additional CSS classes for the outer container */
+  className?: string;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
-  /** Custom rendering */
+  /** Replace the entire card body with custom content (container is preserved) */
   children?: ReactNode;
 }
 
@@ -37,10 +45,12 @@ function hexToRgba(hex: string, alpha: number): string {
 
 export function EventCard({
   title,
-  timeLabel,
+  subtitle,
   color,
   style,
   variant = "default",
+  size,
+  className: userClassName,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -48,10 +58,12 @@ export function EventCard({
 }: EventCardProps) {
   const isMonth = variant === "month";
 
-  // Keep only dynamic position/size as inline styles
+  // Resolve size: explicit size prop > variant default
+  const resolvedSize = size ?? (isMonth ? "sm" : "md");
+
   const positionStyle: CSSProperties = {
     ...style,
-    height: isMonth ? "var(--cv-size-month-bar-height)" : "var(--cv-size-event-height)",
+    height: `var(--cv-size-event-height-${resolvedSize})`,
   };
 
   // Only assign button role + tabIndex when onClick is provided
@@ -69,9 +81,14 @@ export function EventCard({
     : {};
 
   const cardClassName = cn(
-    "absolute flex items-stretch overflow-hidden rounded-[var(--cv-radius-sm)] min-w-[var(--cv-size-event-min-width)] z-[var(--cv-z-event)] font-[var(--cv-font-family)] transition-shadow duration-[var(--cv-duration-fast)]",
+    "absolute flex items-stretch overflow-hidden rounded-[var(--cv-radius-sm)] min-w-[var(--cv-size-event-min-width)] z-[var(--cv-z-event)] font-[var(--cv-font-family)]",
+    "transition-[shadow,filter] duration-[var(--cv-duration-fast)] hover:shadow-[var(--cv-shadow-sm)] hover:brightness-[0.97]",
     onClick ? "cursor-pointer" : "cursor-default",
+    userClassName,
   );
+
+  // Font size: xs/sm use text-xs, md/lg use text-sm
+  const isSmallSize = resolvedSize === "xs" || resolvedSize === "sm";
 
   if (children) {
     return (
@@ -113,19 +130,19 @@ export function EventCard({
         style={{ background: hexToRgba(color, 0.1) }}
       >
         <span
-          className={cn("truncate font-medium leading-tight", isMonth ? "text-xs" : "text-sm")}
+          className={cn("truncate font-medium leading-tight", isSmallSize ? "text-xs" : "text-sm")}
           style={{ color: "var(--cv-color-text)" }}
         >
           {title}
         </span>
 
-        {/* Time label (always hidden in Month) */}
-        {!isMonth && timeLabel && (
+        {/* Subtitle: hidden in Month variant and small sizes (xs, sm) */}
+        {!isMonth && !isSmallSize && subtitle && (
           <span
             className="truncate text-xs leading-tight"
             style={{ color: "var(--cv-color-text-secondary)" }}
           >
-            {timeLabel}
+            {subtitle}
           </span>
         )}
       </div>

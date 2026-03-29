@@ -44,13 +44,15 @@
   --cv-size-time-header-height: 48px;
   --cv-size-date-header-height: 32px;
   --cv-size-row-min-height: 48px;
-  --cv-size-event-height: 36px;
+  --cv-size-event-height-xs: 20px;
+  --cv-size-event-height-sm: 24px;
+  --cv-size-event-height-md: 36px;
+  --cv-size-event-height-lg: 48px;
   --cv-size-event-min-width: 20px;
   --cv-size-color-bar-width: 3px;
   --cv-size-now-indicator: 2px;
   --cv-size-now-dot: 10px;
   --cv-size-month-cell-min-height: 100px;
-  --cv-size-month-bar-height: 24px;
   --cv-size-date-picker-height: 48px;
 
   /* Typography */
