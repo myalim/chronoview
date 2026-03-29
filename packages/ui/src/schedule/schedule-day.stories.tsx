@@ -154,7 +154,7 @@ function ScheduleDayStory() {
           <EventCard
             key={`event-${title}`}
             title={title}
-            timeLabel={`${Math.floor(startSlot + 5)}:00 - ${Math.floor(endSlot + 5)}:00`}
+            subtitle={`${Math.floor(startSlot + 5)}:00 - ${Math.floor(endSlot + 5)}:00`}
             color={RESOURCES[resIdx].color}
             style={{ left, top, width }}
           />

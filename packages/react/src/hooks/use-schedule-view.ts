@@ -57,6 +57,7 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     startDate,
     showNowIndicator = true,
     weekStartsOn = 0,
+    eventHeight = DEFAULT_EVENT_HEIGHT,
   } = config;
 
   const cellConfig = useMemo(() => getCellConfig(view, cellDuration), [view, cellDuration]);
@@ -119,7 +120,7 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
 
       const height = calculateRowHeight({
         maxStackCount: maxStack,
-        eventHeight: DEFAULT_EVENT_HEIGHT,
+        eventHeight,
         eventGap: DEFAULT_EVENT_GAP,
         minRowHeight: DEFAULT_MIN_ROW_HEIGHT,
         padding: DEFAULT_ROW_PADDING,
@@ -140,8 +141,8 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
           crossOffset:
             crossOffset +
             DEFAULT_ROW_PADDING +
-            se.lane * (DEFAULT_EVENT_HEIGHT + DEFAULT_EVENT_GAP),
-          crossSize: DEFAULT_EVENT_HEIGHT,
+            se.lane * (eventHeight + DEFAULT_EVENT_GAP),
+          crossSize: eventHeight,
         };
 
         const color = resolveColor({
@@ -170,7 +171,7 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
       crossOffset += height;
       return row;
     });
-  }, [resources, visibleEvents, dateRange, totalMainSize]);
+  }, [resources, visibleEvents, dateRange, totalMainSize, eventHeight]);
 
   const totalCrossSize = useMemo(() => rows.reduce((sum, r) => sum + r.height, 0), [rows]);
 

@@ -17,7 +17,11 @@ export { ScheduleView, type ScheduleViewProps } from "./schedule/schedule-view.j
 export { ScheduleContainer, type ScheduleContainerProps } from "./schedule/schedule-container.js";
 export { TimeHeader, type TimeHeaderProps } from "./schedule/time-header.js";
 export { ResourceSidebar, type ResourceSidebarProps } from "./schedule/resource-sidebar.js";
-export { EventCard, type EventCardProps } from "./schedule/event-card.js";
+export {
+  EventCard,
+  type EventCardProps as EventProps,
+  type EventCardSize as EventSize,
+} from "./schedule/event-card.js";
 export { NowIndicator, type NowIndicatorProps } from "./schedule/now-indicator.js";
 export { GridLines, type GridLinesProps } from "./schedule/grid-lines.js";
 
