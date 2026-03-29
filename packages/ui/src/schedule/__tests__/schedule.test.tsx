@@ -46,9 +46,7 @@ const EVENTS: TimelineEvent[] = [
 
 describe("Schedule", () => {
   it("renders with minimal props", () => {
-    render(
-      <Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />,
-    );
+    render(<Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />);
 
     // Resource names in sidebar
     expect(screen.getByText("Alice")).toBeDefined();
@@ -63,9 +61,7 @@ describe("Schedule", () => {
   });
 
   it("renders with toolbar by default", () => {
-    render(
-      <Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />,
-    );
+    render(<Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />);
 
     // Toolbar should have today button and view toggle
     expect(screen.getAllByText("오늘").length).toBeGreaterThanOrEqual(1);
@@ -73,13 +69,8 @@ describe("Schedule", () => {
   });
 
   it("hides toolbar when showToolbar=false", () => {
-    const { container } = render(
-      <Schedule
-        events={EVENTS}
-        resources={RESOURCES}
-        startDate={BASE_DATE}
-        showToolbar={false}
-      />,
+    render(
+      <Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} showToolbar={false} />,
     );
 
     // Toolbar's ViewToggle buttons should not exist
@@ -87,14 +78,7 @@ describe("Schedule", () => {
   });
 
   it("renders filter panel when showFilter=true", () => {
-    render(
-      <Schedule
-        events={EVENTS}
-        resources={RESOURCES}
-        startDate={BASE_DATE}
-        showFilter
-      />,
-    );
+    render(<Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} showFilter />);
 
     // Filter chips + sidebar = at least 2 occurrences
     expect(screen.getAllByText("Alice").length).toBeGreaterThanOrEqual(2);
@@ -102,9 +86,7 @@ describe("Schedule", () => {
   });
 
   it("switches view when ViewToggle is clicked", () => {
-    render(
-      <Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />,
-    );
+    render(<Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />);
 
     const weekBtns = screen.getAllByText("주간");
     fireEvent.click(weekBtns[0]);
@@ -115,9 +97,7 @@ describe("Schedule", () => {
   });
 
   it("navigates date with prev/next buttons", () => {
-    render(
-      <Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />,
-    );
+    render(<Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />);
 
     const nextBtns = screen.getAllByLabelText("다음");
     fireEvent.click(nextBtns[0]);
@@ -132,9 +112,7 @@ describe("Schedule", () => {
         events={EVENTS}
         resources={RESOURCES}
         startDate={BASE_DATE}
-        renderEvent={(event) => (
-          <div>{`CUSTOM: ${event.title}`}</div>
-        )}
+        renderEvent={(event) => <div>{`CUSTOM: ${event.title}`}</div>}
       />,
     );
 
@@ -148,9 +126,7 @@ describe("Schedule", () => {
         events={EVENTS}
         resources={RESOURCES}
         startDate={BASE_DATE}
-        renderResource={(resource) => (
-          <div>{`>> ${resource.title}`}</div>
-        )}
+        renderResource={(resource) => <div>{`>> ${resource.title}`}</div>}
       />,
     );
 
@@ -160,9 +136,7 @@ describe("Schedule", () => {
   });
 
   it("shows empty state when no resources", () => {
-    render(
-      <Schedule events={[]} resources={[]} startDate={BASE_DATE} />,
-    );
+    render(<Schedule events={[]} resources={[]} startDate={BASE_DATE} />);
 
     expect(screen.getByText("표시할 리소스가 없습니다")).toBeDefined();
   });

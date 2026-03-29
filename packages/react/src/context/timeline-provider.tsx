@@ -81,11 +81,7 @@ export function TimelineProvider({ config, children }: TimelineProviderProps) {
     deselectAllResources,
   };
 
-  return (
-    <TimelineContext.Provider value={value}>
-      {children}
-    </TimelineContext.Provider>
-  );
+  return <TimelineContext.Provider value={value}>{children}</TimelineContext.Provider>;
 }
 
 export function useTimelineContext(): TimelineContextValue {

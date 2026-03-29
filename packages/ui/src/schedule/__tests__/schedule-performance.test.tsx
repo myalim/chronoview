@@ -9,7 +9,16 @@ import { render } from "@testing-library/react";
 import type { TimelineEvent, Resource } from "@chronoview/core";
 import { Schedule } from "../schedule.js";
 
-const COLORS = ["#3b82f6", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#6b7280"];
+const COLORS = [
+  "#3b82f6",
+  "#8b5cf6",
+  "#06b6d4",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#ec4899",
+  "#6b7280",
+];
 const BASE_DATE = new Date(2026, 2, 27);
 
 function generateLargeDataset(resourceCount: number, eventsPerResource: number) {
@@ -43,7 +52,9 @@ function generateLargeDataset(resourceCount: number, eventsPerResource: number) 
 }
 
 describe("Schedule Performance", () => {
-  it("renders 10,000 events (100 resources × 100 events) within performance budget", { timeout: 30000 }, () => {
+  it("renders 10,000 events (100 resources × 100 events) within performance budget", {
+    timeout: 30000,
+  }, () => {
     const { resources, events } = generateLargeDataset(100, 100);
 
     const start = performance.now();

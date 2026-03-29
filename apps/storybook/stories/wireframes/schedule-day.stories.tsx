@@ -113,7 +113,13 @@ function ScheduleDayWireframe() {
                 </div>
 
                 {/* 행 내용 */}
-                <div style={{ position: "relative", height: rowHeight, borderBottom: "1px solid var(--wf-border)" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    height: rowHeight,
+                    borderBottom: "1px solid var(--wf-border)",
+                  }}
+                >
                   {/* 그리드 세로선 */}
                   {TIME_SLOTS.map((_, si) => (
                     <div
@@ -149,10 +155,7 @@ function ScheduleDayWireframe() {
                   })}
 
                   {/* Now Indicator — 도트(첫 행)+선, 이벤트 카드 뒤 (z:10 < event:20) */}
-                  <div
-                    className="wf-now-line vertical"
-                    style={{ left: nowSlot * SLOT_WIDTH }}
-                  />
+                  <div className="wf-now-line vertical" style={{ left: nowSlot * SLOT_WIDTH }} />
                   {ri === 0 && (
                     <div
                       className="wf-now-dot top"
@@ -164,7 +167,6 @@ function ScheduleDayWireframe() {
             );
           })}
         </div>
-
       </div>
     </div>
   );
@@ -194,29 +196,110 @@ export const VariableRowHeight: StoryObj = {
       <div style={{ display: "flex", gap: 24, fontSize: 13 }}>
         <div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Resource A (1 lane)</div>
-          <div style={{ padding: 8, border: "1px solid #e5e7eb", borderRadius: 4, height: getRowHeight(1), display: "flex", alignItems: "flex-start", gap: 4 }}>
-            <div style={{ background: "#3b82f615", borderLeft: "3px solid #3b82f6", borderRadius: 4, padding: "4px 8px", fontSize: 12 }}>Event</div>
-            <div style={{ background: "#3b82f615", borderLeft: "3px solid #3b82f6", borderRadius: 4, padding: "4px 8px", fontSize: 12 }}>Event</div>
+          <div
+            style={{
+              padding: 8,
+              border: "1px solid #e5e7eb",
+              borderRadius: 4,
+              height: getRowHeight(1),
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 4,
+            }}
+          >
+            <div
+              style={{
+                background: "#3b82f615",
+                borderLeft: "3px solid #3b82f6",
+                borderRadius: 4,
+                padding: "4px 8px",
+                fontSize: 12,
+              }}
+            >
+              Event
+            </div>
+            <div
+              style={{
+                background: "#3b82f615",
+                borderLeft: "3px solid #3b82f6",
+                borderRadius: 4,
+                padding: "4px 8px",
+                fontSize: 12,
+              }}
+            >
+              Event
+            </div>
           </div>
           <div style={{ color: "#9ca3af", marginTop: 4 }}>높이: {getRowHeight(1)}px</div>
         </div>
         <div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Resource B (2 lanes)</div>
-          <div style={{ padding: 8, border: "1px solid #e5e7eb", borderRadius: 4, height: getRowHeight(2), display: "flex", flexDirection: "column", gap: 4 }}>
+          <div
+            style={{
+              padding: 8,
+              border: "1px solid #e5e7eb",
+              borderRadius: 4,
+              height: getRowHeight(2),
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
             <div style={{ display: "flex", gap: 4 }}>
-              <div style={{ background: "#8b5cf615", borderLeft: "3px solid #8b5cf6", borderRadius: 4, padding: "4px 8px", fontSize: 12, flex: 1 }}>Event (lane 0)</div>
+              <div
+                style={{
+                  background: "#8b5cf615",
+                  borderLeft: "3px solid #8b5cf6",
+                  borderRadius: 4,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  flex: 1,
+                }}
+              >
+                Event (lane 0)
+              </div>
             </div>
             <div style={{ display: "flex", gap: 4 }}>
-              <div style={{ background: "#8b5cf615", borderLeft: "3px solid #8b5cf6", borderRadius: 4, padding: "4px 8px", fontSize: 12, flex: 1 }}>Event (lane 1)</div>
+              <div
+                style={{
+                  background: "#8b5cf615",
+                  borderLeft: "3px solid #8b5cf6",
+                  borderRadius: 4,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  flex: 1,
+                }}
+              >
+                Event (lane 1)
+              </div>
             </div>
           </div>
           <div style={{ color: "#9ca3af", marginTop: 4 }}>높이: {getRowHeight(2)}px</div>
         </div>
         <div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Resource C (3 lanes)</div>
-          <div style={{ padding: 8, border: "1px solid #e5e7eb", borderRadius: 4, height: getRowHeight(3), display: "flex", flexDirection: "column", gap: 4 }}>
+          <div
+            style={{
+              padding: 8,
+              border: "1px solid #e5e7eb",
+              borderRadius: 4,
+              height: getRowHeight(3),
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
             {[0, 1, 2].map((lane) => (
-              <div key={lane} style={{ background: "#06b6d415", borderLeft: "3px solid #06b6d4", borderRadius: 4, padding: "4px 8px", fontSize: 12 }}>
+              <div
+                key={lane}
+                style={{
+                  background: "#06b6d415",
+                  borderLeft: "3px solid #06b6d4",
+                  borderRadius: 4,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                }}
+              >
                 Event (lane {lane})
               </div>
             ))}
@@ -225,7 +308,18 @@ export const VariableRowHeight: StoryObj = {
         </div>
         <div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Resource D (빈 리소스)</div>
-          <div style={{ padding: 8, border: "1px solid #e5e7eb", borderRadius: 4, height: getRowHeight(0), display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db" }}>
+          <div
+            style={{
+              padding: 8,
+              border: "1px solid #e5e7eb",
+              borderRadius: 4,
+              height: getRowHeight(0),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#d1d5db",
+            }}
+          >
             이벤트 없음
           </div>
           <div style={{ color: "#9ca3af", marginTop: 4 }}>높이: {getRowHeight(0)}px (최소)</div>

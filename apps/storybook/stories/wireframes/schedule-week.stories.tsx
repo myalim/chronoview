@@ -113,7 +113,15 @@ function ScheduleWeekWireframe() {
           <div className="wf-corner" style={{ height: TOTAL_HEADER_HEIGHT }} />
 
           {/* 2단 헤더 영역 */}
-          <div style={{ display: "flex", flexDirection: "column", position: "sticky", top: 0, zIndex: 30 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              position: "sticky",
+              top: 0,
+              zIndex: 30,
+            }}
+          >
             {/* 1단: 날짜 헤더 (32px) */}
             <div
               className="wf-header"
@@ -153,9 +161,10 @@ function ScheduleWeekWireframe() {
                       className="wf-header-cell"
                       style={{
                         width: SLOT_WIDTH,
-                        borderRight: isDateBoundary && si === 0 && di < DAYS.length - 1
-                          ? undefined
-                          : "1px solid var(--wf-border)",
+                        borderRight:
+                          isDateBoundary && si === 0 && di < DAYS.length - 1
+                            ? undefined
+                            : "1px solid var(--wf-border)",
                         borderLeft: isDateBoundary && di > 0 ? "2px solid #9ca3af" : undefined,
                       }}
                     >
@@ -181,7 +190,13 @@ function ScheduleWeekWireframe() {
                 </div>
 
                 {/* 행 내용 */}
-                <div style={{ position: "relative", height: rowHeight, borderBottom: "1px solid var(--wf-border)" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    height: rowHeight,
+                    borderBottom: "1px solid var(--wf-border)",
+                  }}
+                >
                   {/* 그리드 세로선 + 날짜 경계선 */}
                   {Array.from({ length: TOTAL_SLOTS }).map((_, si) => {
                     const isDateBoundary = si > 0 && si % SLOTS_PER_DAY === 0;
@@ -194,7 +209,9 @@ function ScheduleWeekWireframe() {
                           left: si * SLOT_WIDTH,
                           top: 0,
                           bottom: 0,
-                          borderRight: isDateBoundary ? "2px solid #9ca3af" : "1px solid var(--wf-border)",
+                          borderRight: isDateBoundary
+                            ? "2px solid #9ca3af"
+                            : "1px solid var(--wf-border)",
                         }}
                       />
                     );
@@ -221,10 +238,7 @@ function ScheduleWeekWireframe() {
                   })}
 
                   {/* Now Indicator — 도트(첫 행)+선, 이벤트 카드 뒤 (z:10 < event:20) */}
-                  <div
-                    className="wf-now-line vertical"
-                    style={{ left: nowSlot * SLOT_WIDTH }}
-                  />
+                  <div className="wf-now-line vertical" style={{ left: nowSlot * SLOT_WIDTH }} />
                   {ri === 0 && (
                     <div
                       className="wf-now-dot top"
@@ -236,7 +250,6 @@ function ScheduleWeekWireframe() {
             );
           })}
         </div>
-
       </div>
     </div>
   );

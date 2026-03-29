@@ -30,11 +30,11 @@ const RESOURCES = [
 
 // Bar 모드 이벤트 데이터: [weekIdx, startCol, endCol, title, color, row]
 const BARS: [number, number, number, string, string, number][] = [
-  [0, 1, 5, "Event Alpha", "#3b82f6", 0],    // Week 1: Mon-Fri
-  [0, 2, 3, "Event Beta", "#8b5cf6", 1],      // Week 1: Tue-Wed (row 1)
-  [2, 0, 0, "Event Gamma", "#06b6d4", 0],     // Week 3: Sun only
-  [2, 3, 6, "Event Delta", "#10b981", 0],      // Week 3: Wed-Sat
-  [3, 0, 2, "Event Epsilon", "#f59e0b", 0],   // Week 4: Sun-Tue
+  [0, 1, 5, "Event Alpha", "#3b82f6", 0], // Week 1: Mon-Fri
+  [0, 2, 3, "Event Beta", "#8b5cf6", 1], // Week 1: Tue-Wed (row 1)
+  [2, 0, 0, "Event Gamma", "#06b6d4", 0], // Week 3: Sun only
+  [2, 3, 6, "Event Delta", "#10b981", 0], // Week 3: Wed-Sat
+  [3, 0, 2, "Event Epsilon", "#f59e0b", 0], // Week 4: Sun-Tue
 ];
 
 const BAR_HEIGHT = 22;
@@ -75,7 +75,9 @@ function CalendarMonthBarWireframe() {
       <div className="wf-month-grid">
         {/* 요일 헤더 */}
         {WEEKDAYS.map((d) => (
-          <div key={d} className="wf-month-header-cell">{d}</div>
+          <div key={d} className="wf-month-header-cell">
+            {d}
+          </div>
         ))}
 
         {/* 주차별 행 — 각 주차를 감싸는 wrapper로 바를 절대 배치 */}
@@ -106,25 +108,27 @@ function CalendarMonthBarWireframe() {
             ))}
 
             {/* 바 이벤트 — 주차 행 레벨에서 절대 배치로 셀 경계를 넘어 연속 렌더링 */}
-            {BARS.filter(([weekIdx]) => weekIdx === wi).map(([, startCol, endCol, title, color, row], i) => (
-              <div
-                key={i}
-                className="wf-month-bar"
-                style={{
-                  position: "absolute",
-                  left: `${(startCol / 7) * 100}%`,
-                  width: `${((endCol - startCol + 1) / 7) * 100}%`,
-                  top: BAR_TOP_OFFSET + row * (BAR_HEIGHT + BAR_GAP),
-                  height: BAR_HEIGHT,
-                  background: color,
-                  boxSizing: "border-box",
-                  padding: "2px 6px",
-                  zIndex: 20,
-                }}
-              >
-                {title}
-              </div>
-            ))}
+            {BARS.filter(([weekIdx]) => weekIdx === wi).map(
+              ([, startCol, endCol, title, color, row], i) => (
+                <div
+                  key={i}
+                  className="wf-month-bar"
+                  style={{
+                    position: "absolute",
+                    left: `${(startCol / 7) * 100}%`,
+                    width: `${((endCol - startCol + 1) / 7) * 100}%`,
+                    top: BAR_TOP_OFFSET + row * (BAR_HEIGHT + BAR_GAP),
+                    height: BAR_HEIGHT,
+                    background: color,
+                    boxSizing: "border-box",
+                    padding: "2px 6px",
+                    zIndex: 20,
+                  }}
+                >
+                  {title}
+                </div>
+              ),
+            )}
           </div>
         ))}
       </div>
@@ -136,14 +140,18 @@ function CalendarMonthBarWireframe() {
           <div className="wf-month-dot" style={{ background: "#3b82f6" }} />
           <div>
             <strong>Event Alpha</strong>
-            <span style={{ color: "#9ca3af", marginLeft: 8, fontSize: 12 }}>03.02(월) - 03.06(금)</span>
+            <span style={{ color: "#9ca3af", marginLeft: 8, fontSize: 12 }}>
+              03.02(월) - 03.06(금)
+            </span>
           </div>
         </div>
         <div className="wf-detail-item">
           <div className="wf-month-dot" style={{ background: "#10b981" }} />
           <div>
             <strong>Event Delta</strong>
-            <span style={{ color: "#9ca3af", marginLeft: 8, fontSize: 12 }}>03.18(목) - 03.21(일)</span>
+            <span style={{ color: "#9ca3af", marginLeft: 8, fontSize: 12 }}>
+              03.18(목) - 03.21(일)
+            </span>
           </div>
         </div>
       </div>
@@ -161,9 +169,7 @@ function CalendarMonthListWireframe() {
       { time: "11:00", title: "Event B", color: "#8b5cf6" },
       { time: "14:00", title: "Event C", color: "#06b6d4" },
     ],
-    5: [
-      { time: "10:00", title: "Event D", color: "#10b981" },
-    ],
+    5: [{ time: "10:00", title: "Event D", color: "#10b981" }],
     10: [
       { time: "09:30", title: "Event E", color: "#f59e0b" },
       { time: "11:00", title: "Event F", color: "#3b82f6" },
@@ -171,9 +177,7 @@ function CalendarMonthListWireframe() {
       { time: "15:00", title: "Event H", color: "#06b6d4" },
       { time: "16:00", title: "Event I", color: "#10b981" },
     ],
-    15: [
-      { time: "10:00", title: "Event J", color: "#ef4444" },
-    ],
+    15: [{ time: "10:00", title: "Event J", color: "#ef4444" }],
     27: [
       { time: "09:00", title: "Event K", color: "#3b82f6" },
       { time: "14:00", title: "Event L", color: "#10b981" },
@@ -210,10 +214,12 @@ function CalendarMonthListWireframe() {
 
       <div className="wf-month-grid">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="wf-month-header-cell">{d}</div>
+          <div key={d} className="wf-month-header-cell">
+            {d}
+          </div>
         ))}
 
-        {WEEKS.map((week, wi) => (
+        {WEEKS.map((week, wi) =>
           week.map((day, di) => {
             const events = cellEvents[day];
             const maxShow = 2;
@@ -237,10 +243,7 @@ function CalendarMonthListWireframe() {
                       </div>
                     ))}
                     {hidden > 0 && (
-                      <div
-                        className="wf-more-link"
-                        onClick={() => setPopupDay(day)}
-                      >
+                      <div className="wf-more-link" onClick={() => setPopupDay(day)}>
                         {hidden}개 더보기
                       </div>
                     )}
@@ -250,10 +253,7 @@ function CalendarMonthListWireframe() {
                       <div className="wf-popup" style={{ top: 0, left: "100%", marginLeft: 4 }}>
                         <div className="wf-popup-header">
                           <span>3월 {day}일</span>
-                          <button
-                            className="wf-popup-close"
-                            onClick={() => setPopupDay(null)}
-                          >
+                          <button className="wf-popup-close" onClick={() => setPopupDay(null)}>
                             ✕
                           </button>
                         </div>
@@ -272,8 +272,8 @@ function CalendarMonthListWireframe() {
                 )}
               </div>
             );
-          })
-        ))}
+          }),
+        )}
       </div>
     </div>
   );

@@ -297,10 +297,7 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story, context) => (
-      <div
-        className={context.args.darkMode ? "dark" : ""}
-        style={{ maxWidth: 1100 }}
-      >
+      <div className={context.args.darkMode ? "dark" : ""} style={{ maxWidth: 1100 }}>
         <Story />
       </div>
     ),
@@ -348,13 +345,6 @@ export const Performance: Story = {
       }
     }
 
-    return (
-      <Schedule
-        events={events}
-        resources={resources}
-        view="day"
-        startDate={BASE_DATE}
-      />
-    );
+    return <Schedule events={events} resources={resources} view="day" startDate={BASE_DATE} />;
   },
 };

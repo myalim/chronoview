@@ -33,15 +33,9 @@ export function useTimelineFilter({
 }: UseTimelineFilterConfig): UseTimelineFilterReturn {
   const [filter, setFilterState] = useState<FilterState>(initialFilter);
 
-  const filteredResources = useMemo(
-    () => filterResources(resources, filter),
-    [resources, filter],
-  );
+  const filteredResources = useMemo(() => filterResources(resources, filter), [resources, filter]);
 
-  const visibleResourceIds = useMemo(
-    () => filteredResources.map((r) => r.id),
-    [filteredResources],
-  );
+  const visibleResourceIds = useMemo(() => filteredResources.map((r) => r.id), [filteredResources]);
 
   const filteredEvents = useMemo(
     () => filterEvents(events, filter, visibleResourceIds),
@@ -52,23 +46,24 @@ export function useTimelineFilter({
     setFilterState((prev) => ({ ...prev, ...partial }));
   }, []);
 
-  const toggleResource = useCallback((resourceId: string) => {
-    setFilterState((prev) => {
-      const current = prev.resourceIds;
-      if (!current) {
-        // No filter set — exclude this resource (select all others)
-        const allIds = resources.map((r) => r.id);
-        return { ...prev, resourceIds: allIds.filter((id) => id !== resourceId) };
-      }
-      const has = current.includes(resourceId);
-      return {
-        ...prev,
-        resourceIds: has
-          ? current.filter((id) => id !== resourceId)
-          : [...current, resourceId],
-      };
-    });
-  }, [resources]);
+  const toggleResource = useCallback(
+    (resourceId: string) => {
+      setFilterState((prev) => {
+        const current = prev.resourceIds;
+        if (!current) {
+          // No filter set — exclude this resource (select all others)
+          const allIds = resources.map((r) => r.id);
+          return { ...prev, resourceIds: allIds.filter((id) => id !== resourceId) };
+        }
+        const has = current.includes(resourceId);
+        return {
+          ...prev,
+          resourceIds: has ? current.filter((id) => id !== resourceId) : [...current, resourceId],
+        };
+      });
+    },
+    [resources],
+  );
 
   const toggleCategory = useCallback((category: string) => {
     setFilterState((prev) => {
@@ -79,9 +74,7 @@ export function useTimelineFilter({
       const has = current.includes(category);
       return {
         ...prev,
-        categories: has
-          ? current.filter((c) => c !== category)
-          : [...current, category],
+        categories: has ? current.filter((c) => c !== category) : [...current, category],
       };
     });
   }, []);

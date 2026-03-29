@@ -59,10 +59,7 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     weekStartsOn = 0,
   } = config;
 
-  const cellConfig = useMemo(
-    () => getCellConfig(view, cellDuration),
-    [view, cellDuration],
-  );
+  const cellConfig = useMemo(() => getCellConfig(view, cellDuration), [view, cellDuration]);
 
   const axisConfig = useMemo(() => getAxisConfig("schedule"), []);
 
@@ -117,9 +114,8 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
       const stackedEvents = groups.flatMap((group) => calculateVerticalStacks(group));
 
       // Calculate max stack count for row height
-      const maxStack = stackedEvents.length > 0
-        ? Math.max(...stackedEvents.map((se) => se.lane + 1))
-        : 0;
+      const maxStack =
+        stackedEvents.length > 0 ? Math.max(...stackedEvents.map((se) => se.lane + 1)) : 0;
 
       const height = calculateRowHeight({
         maxStackCount: maxStack,
@@ -141,7 +137,10 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
         const position: Position = {
           mainOffset,
           mainSize,
-          crossOffset: crossOffset + DEFAULT_ROW_PADDING + se.lane * (DEFAULT_EVENT_HEIGHT + DEFAULT_EVENT_GAP),
+          crossOffset:
+            crossOffset +
+            DEFAULT_ROW_PADDING +
+            se.lane * (DEFAULT_EVENT_HEIGHT + DEFAULT_EVENT_GAP),
           crossSize: DEFAULT_EVENT_HEIGHT,
         };
 
@@ -173,10 +172,7 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     });
   }, [resources, visibleEvents, dateRange, totalMainSize]);
 
-  const totalCrossSize = useMemo(
-    () => rows.reduce((sum, r) => sum + r.height, 0),
-    [rows],
-  );
+  const totalCrossSize = useMemo(() => rows.reduce((sum, r) => sum + r.height, 0), [rows]);
 
   const nowPosition = useMemo(() => {
     if (!showNowIndicator) return null;

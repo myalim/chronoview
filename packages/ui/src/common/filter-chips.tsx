@@ -40,7 +40,7 @@ const chipBaseClasses = cn(
   "px-[var(--cv-spacing-md)] py-[var(--cv-spacing-xs)]",
   "text-[length:var(--cv-font-size-sm)]",
   "font-medium",
-  "rounded-[var(--cv-radius-sm)]"
+  "rounded-[var(--cv-radius-sm)]",
 );
 
 export function FilterChips({
@@ -57,7 +57,7 @@ export function FilterChips({
     <div
       className={cn(
         "flex items-center gap-1 overflow-x-auto pt-3 font-[var(--cv-font-family)]",
-        className
+        className,
       )}
     >
       {/* Select all / deselect all button */}
@@ -84,7 +84,7 @@ export function FilterChips({
               chipBaseClasses,
               "flex items-center gap-1 border transition-all",
               !isSelected &&
-                "bg-[var(--cv-color-surface)] text-[var(--cv-color-text-muted)] border-[var(--cv-color-border)]"
+                "bg-[var(--cv-color-surface)] text-[var(--cv-color-text-muted)] border-[var(--cv-color-border)]",
             )}
             style={
               isSelected
@@ -99,13 +99,7 @@ export function FilterChips({
             }
           >
             {isSelected && (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                aria-hidden="true"
-              >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                 <path
                   d="M2 6L5 9L10 3"
                   stroke="currentColor"

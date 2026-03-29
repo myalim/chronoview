@@ -53,7 +53,7 @@ export function Toolbar({
     <div
       className={cn(
         "flex items-center justify-between flex-wrap gap-2 h-14 font-[var(--cv-font-family)] border-b border-[var(--cv-color-border)] bg-[var(--cv-color-bg)]",
-        className
+        className,
       )}
     >
       {/* Left: DateNavigator + Today button */}

@@ -10,11 +10,7 @@
  */
 
 import { useState, useCallback, useEffect, type ReactNode } from "react";
-import {
-  useDateNavigation,
-  useTimelineFilter,
-  useScheduleView,
-} from "@chronoview/react";
+import { useDateNavigation, useTimelineFilter, useScheduleView } from "@chronoview/react";
 import type {
   View,
   TimelineEvent,
@@ -94,7 +90,6 @@ export function Schedule<TData = unknown>({
   onEventClick,
   onEventHover,
   onViewChange,
-  onDateChange,
   className,
 }: ScheduleProps<TData>) {
   // ─── View State ───
@@ -114,15 +109,13 @@ export function Schedule<TData = unknown>({
   );
 
   // ─── Date Navigation ───
-  const { currentDate, goToPrev, goToNext, goToDate, goToToday } = useDateNavigation({
+  const { currentDate, goToPrev, goToNext, goToToday } = useDateNavigation({
     initialDate: startDate,
     view: currentView,
   });
 
   const handlePrev = useCallback(() => {
     goToPrev();
-    // onDateChange is called after state update via effect would be complex,
-    // so we compute the new date inline
   }, [goToPrev]);
 
   const handleNext = useCallback(() => {
@@ -144,13 +137,7 @@ export function Schedule<TData = unknown>({
   } = useTimelineFilter({ events, resources });
 
   // ─── Schedule Layout ───
-  const {
-    rows,
-    dateRange,
-    totalCrossSize,
-    getEventStyle,
-    nowPosition,
-  } = useScheduleView({
+  const { rows, dateRange, totalCrossSize, getEventStyle, nowPosition } = useScheduleView({
     events: filteredEvents as TimelineEvent[],
     resources: filteredResources,
     view: currentView,
@@ -247,17 +234,23 @@ export function Schedule<TData = unknown>({
               color={eventLayout.color}
               variant={variant}
               style={style}
-              onClick={onEventClick ? () => onEventClick(eventLayout.event as TimelineEvent<TData>) : undefined}
-              onMouseEnter={onEventHover ? () => onEventHover(eventLayout.event as TimelineEvent<TData>) : undefined}
+              onClick={
+                onEventClick
+                  ? () => onEventClick(eventLayout.event as TimelineEvent<TData>)
+                  : undefined
+              }
+              onMouseEnter={
+                onEventHover
+                  ? () => onEventHover(eventLayout.event as TimelineEvent<TData>)
+                  : undefined
+              }
             />
           );
         }),
       )}
 
       {/* Now indicator */}
-      {nowPosition != null && (
-        <NowIndicator position={nowPosition} crossSize={totalCrossSize} />
-      )}
+      {nowPosition != null && <NowIndicator position={nowPosition} crossSize={totalCrossSize} />}
     </>
   );
 

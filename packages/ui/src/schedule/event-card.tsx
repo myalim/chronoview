@@ -75,6 +75,8 @@ export function EventCard({
 
   if (children) {
     return (
+      // biome-ignore lint/a11y/noStaticElementInteractions: role/tabIndex/onKeyDown are spread via interactiveProps when onClick is provided
+      // biome-ignore lint/a11y/useKeyWithClickEvents: onKeyDown is included in interactiveProps spread
       <div
         className={cardClassName}
         style={positionStyle}
@@ -89,6 +91,8 @@ export function EventCard({
   }
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: role/tabIndex/onKeyDown are spread via interactiveProps when onClick is provided
+    // biome-ignore lint/a11y/useKeyWithClickEvents: onKeyDown is included in interactiveProps spread
     <div
       className={cardClassName}
       style={positionStyle}
@@ -98,10 +102,7 @@ export function EventCard({
       {...interactiveProps}
     >
       {/* Left color bar */}
-      <div
-        className="shrink-0"
-        style={{ width: 3, background: color }}
-      />
+      <div className="shrink-0" style={{ width: 3, background: color }} />
 
       {/* Card body — background generated from dynamic color */}
       <div
@@ -112,10 +113,7 @@ export function EventCard({
         style={{ background: hexToRgba(color, 0.1) }}
       >
         <span
-          className={cn(
-            "truncate font-medium leading-tight",
-            isMonth ? "text-xs" : "text-sm",
-          )}
+          className={cn("truncate font-medium leading-tight", isMonth ? "text-xs" : "text-sm")}
           style={{ color: "var(--cv-color-text)" }}
         >
           {title}

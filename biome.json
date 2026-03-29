@@ -1,12 +1,14 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.4.9/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      }
     }
   },
   "formatter": {
@@ -15,6 +17,7 @@
     "indentWidth": 2,
     "lineWidth": 100
   },
+  "css": { "parser": { "tailwindDirectives": true } },
   "javascript": {
     "formatter": {
       "quoteStyle": "double",
@@ -23,21 +26,23 @@
     }
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      "dist",
-      ".turbo",
-      "storybook-static",
-      "coverage",
-      "pnpm-lock.yaml"
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/storybook-static",
+      "!**/coverage",
+      "!**/pnpm-lock.yaml"
     ]
   },
   "overrides": [
     {
-      "include": ["apps/storybook/stories/wireframes/**"],
+      "includes": ["**/apps/storybook/stories/wireframes/**"],
       "linter": {
         "rules": {
           "a11y": {
+            "noStaticElementInteractions": "off",
             "useButtonType": "off",
             "useKeyWithClickEvents": "off"
           },

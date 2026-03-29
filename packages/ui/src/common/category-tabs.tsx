@@ -30,7 +30,7 @@ export function CategoryTabs({
     <div
       className={cn(
         "flex items-center overflow-x-auto gap-4 px-4 font-[var(--cv-font-family)] border-b border-[var(--cv-color-border)]",
-        className
+        className,
       )}
       role="tablist"
     >
@@ -47,7 +47,7 @@ export function CategoryTabs({
               "shrink-0 cursor-pointer h-9 py-2 text-[length:var(--cv-font-size-sm)] bg-transparent border-none border-b-2 transition-all",
               isActive
                 ? "text-[var(--cv-color-event-default)] font-medium border-b-[var(--cv-color-event-default)]"
-                : "text-[var(--cv-color-text-secondary)] border-b-transparent"
+                : "text-[var(--cv-color-text-secondary)] border-b-transparent",
             )}
           >
             {tab.label}

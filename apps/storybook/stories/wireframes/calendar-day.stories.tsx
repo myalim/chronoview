@@ -30,8 +30,8 @@ const EVENTS: [number, number, string, string, number, number][] = [
 ];
 
 function CalendarDayWireframe() {
-  const totalHeight = SLOT_HEIGHT * TIME_SLOTS.length;
-  const columnWidth = 500;
+  const _totalHeight = SLOT_HEIGHT * TIME_SLOTS.length;
+  const _columnWidth = 500;
   const nowSlot = 4.8;
 
   return (
@@ -65,7 +65,14 @@ function CalendarDayWireframe() {
       {/* 그리드 */}
       <div style={{ display: "flex", overflow: "auto", maxHeight: 460 }}>
         {/* 시간 사이드바 */}
-        <div style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: "var(--wf-sidebar-bg)", borderRight: "1px solid var(--wf-border)" }}>
+        <div
+          style={{
+            width: SIDEBAR_WIDTH,
+            flexShrink: 0,
+            background: "var(--wf-sidebar-bg)",
+            borderRight: "1px solid var(--wf-border)",
+          }}
+        >
           {TIME_SLOTS.map((t, i) => (
             <div
               key={i}
@@ -123,15 +130,9 @@ function CalendarDayWireframe() {
           })}
 
           {/* Now Indicator (가로선) */}
-          <div
-            className="wf-now-line horizontal"
-            style={{ top: nowSlot * SLOT_HEIGHT }}
-          />
+          <div className="wf-now-line horizontal" style={{ top: nowSlot * SLOT_HEIGHT }} />
           {/* Now dot */}
-          <div
-            className="wf-now-dot left"
-            style={{ top: nowSlot * SLOT_HEIGHT, left: 0 }}
-          />
+          <div className="wf-now-dot left" style={{ top: nowSlot * SLOT_HEIGHT, left: 0 }} />
         </div>
       </div>
     </div>
