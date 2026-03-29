@@ -8,21 +8,15 @@
  */
 
 import type { ReactNode } from "react";
+import type { Resource } from "@chronoview/core";
 import { cn } from "../utils/cn.js";
 
-export interface SidebarResource {
-  id: string;
-  title: string;
-  color?: string;
-  icon?: string;
-}
-
 export interface ResourceSidebarProps {
-  resources: SidebarResource[];
+  resources: Resource[];
   /** Row height for each resource (variable row heights) */
   rowHeights: number[];
   /** Custom rendering */
-  renderResource?: (resource: SidebarResource) => ReactNode;
+  renderResource?: (resource: Resource) => ReactNode;
 }
 
 export function ResourceSidebar({

@@ -1,4 +1,4 @@
-import type { DayCellDuration, View, WeekCellDuration } from "../types/index.js";
+import type { CellDurationConfig, View } from "../types/index.js";
 
 /**
  * Cell configuration returned by getCellConfig.
@@ -18,20 +18,16 @@ const WEEK_TOTAL_WIDTH = 1680; // 7d × 4cells × 60px baseline
 const MONTH_CELL_WIDTH = 40;
 
 /**
- * Returns the cell configuration for a given view and cellDuration.
+ * Returns the cell configuration for a given view and cellDuration config.
  * cellWidthPx is auto-calculated to keep totalMainSize constant per view.
  *
- * Day:   cellDuration (min) → cells = 24h × 60 / duration → width = 2880 / cells
- * Week:  cellDuration (hours) → cells = 168h / duration → width = 1680 / cells
+ * Day:   cellDuration.day (min) → cells = 24h × 60 / duration → width = 2880 / cells
+ * Week:  cellDuration.week (hours) → cells = 168h / duration → width = 1680 / cells
  * Month: fixed 40px per day, intervalMinutes = 0 (no slots)
  */
-export function getCellConfig(
-  view: View,
-  dayCellDuration?: DayCellDuration,
-  weekCellDuration?: WeekCellDuration,
-): CellConfig {
+export function getCellConfig(view: View, cellDuration?: CellDurationConfig): CellConfig {
   if (view === "day") {
-    const duration = dayCellDuration ?? 60;
+    const duration = cellDuration?.day ?? 60;
     const cells = (24 * 60) / duration;
     return {
       cellWidthPx: DAY_TOTAL_WIDTH / cells,
@@ -40,7 +36,7 @@ export function getCellConfig(
   }
 
   if (view === "week") {
-    const durationHours = weekCellDuration ?? 6;
+    const durationHours = cellDuration?.week ?? 6;
     const cells = 168 / durationHours; // 7 days × 24 hours = 168
     return {
       cellWidthPx: WEEK_TOTAL_WIDTH / cells,

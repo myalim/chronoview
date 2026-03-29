@@ -8,6 +8,7 @@ export type {
   CalendarLayoutResult,
   CalendarMonthLayoutResult,
   DateRange,
+  CellDurationConfig,
   DayCellDuration,
   DayColumnLayout,
   EventLayout,

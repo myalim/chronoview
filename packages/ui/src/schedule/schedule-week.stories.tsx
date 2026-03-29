@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+import { getCellConfig, type DateRange } from "@chronoview/core";
 import { EventCard } from "./event-card.js";
-import { GridLines, type GridLineConfig } from "./grid-lines.js";
+import { GridLines } from "./grid-lines.js";
 import { NowIndicator } from "./now-indicator.js";
 import { ResourceSidebar } from "./resource-sidebar.js";
 import { ScheduleView } from "./schedule-view.js";
-import { TimeHeader, type TimeSlotLabel, type DateLabel } from "./time-header.js";
+import { TimeHeader } from "./time-header.js";
 import { Toolbar } from "../common/toolbar.js";
 import { FilterChips } from "../common/filter-chips.js";
 
@@ -13,7 +14,7 @@ import { FilterChips } from "../common/filter-chips.js";
  * Schedule Week — Interactive story
  *
  * Verifies: 2-tier header, date boundary lines, cross-date cards, variable row heights
- * Interactions: date navigation, filter toggle, dark mode switch
+ * Interactions: date navigation, filter toggle
  */
 
 const meta: Meta = {
@@ -24,14 +25,14 @@ export default meta;
 type Story = StoryObj;
 
 // ─── Constants ───
-const SLOT_WIDTH = 60;
-const SLOTS_PER_DAY = 4;
-const DAYS = 7;
-const TOTAL_SLOTS = SLOTS_PER_DAY * DAYS;
+const CELL_DURATION = 6 as const;
+const { cellWidthPx: SLOT_WIDTH } = getCellConfig("week", {
+  week: CELL_DURATION,
+});
+const SLOTS_PER_DAY = 4; // 24h / 6h = 4 slots per day
 const EVENT_HEIGHT = 36;
 const EVENT_GAP = 4;
 const ROW_PADDING = 4;
-const HEADER_HEIGHT = 80;
 
 const RESOURCES = [
   { id: "a", title: "Resource A", color: "#3b82f6" },
@@ -39,43 +40,31 @@ const RESOURCES = [
   { id: "c", title: "Resource C", color: "#06b6d4" },
 ];
 
-const DATE_LABELS: string[] = [
-  "03/22 (일)", "03/23 (월)", "03/24 (화)", "03/25 (수)",
-  "03/26 (목)", "03/27 (금)", "03/28 (토)",
-];
-const TIME_LABEL_PATTERN = ["00:00", "06:00", "12:00", "18:00"];
-
 const ROW_STACKS = [2, 1, 1];
 
 function getRowHeight(maxStack: number): number {
   if (maxStack === 0) return 48;
-  return Math.max(48, maxStack * EVENT_HEIGHT + (maxStack - 1) * EVENT_GAP + ROW_PADDING * 2);
+  return Math.max(
+    48,
+    maxStack * EVENT_HEIGHT + (maxStack - 1) * EVENT_GAP + ROW_PADDING * 2
+  );
 }
 
 function getRowOffset(heights: number[], rowIndex: number): number {
   return heights.slice(0, rowIndex).reduce((sum, h) => sum + h, 0);
 }
 
-const dateLabels: DateLabel[] = DATE_LABELS.map((label, i) => ({
-  label,
-  offset: i * SLOTS_PER_DAY * SLOT_WIDTH,
-  width: SLOTS_PER_DAY * SLOT_WIDTH,
-  isToday: i === 5,
-}));
-
-const timeSlots: TimeSlotLabel[] = Array.from({ length: TOTAL_SLOTS }, (_, i) => ({
-  label: TIME_LABEL_PATTERN[i % SLOTS_PER_DAY],
-  offset: i * SLOT_WIDTH,
-  width: SLOT_WIDTH,
-}));
-
-// Exclude offset 0 as it overlaps with the sidebar border-r
-const gridLines: GridLineConfig[] = Array.from({ length: TOTAL_SLOTS - 1 }, (_, i) => ({
-  offset: (i + 1) * SLOT_WIDTH,
-  isBoundary: (i + 1) % SLOTS_PER_DAY === 0,
-}));
-
-const totalMainSize = SLOT_WIDTH * TOTAL_SLOTS;
+/** Build a week DateRange (7 days starting from Sunday of the given date's week) */
+function makeWeekRange(date: Date): DateRange {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const dayOfWeek = d.getDay();
+  d.setDate(d.getDate() - dayOfWeek); // go to Sunday
+  const start = new Date(d);
+  const end = new Date(d);
+  end.setDate(end.getDate() + 7);
+  return { start, end };
+}
 
 // [resourceIdx, startSlot, endSlot, title, lane]
 const EVENTS: [number, number, number, string, number][] = [
@@ -92,10 +81,14 @@ const EVENTS: [number, number, number, string, number][] = [
 function ScheduleWeekStory() {
   const [date, setDate] = useState(new Date(2026, 2, 22));
   const [selectedIds, setSelectedIds] = useState(RESOURCES.map((r) => r.id));
-  const [darkMode, setDarkMode] = useState(false);
+
+  const dateRange = makeWeekRange(date);
+  const totalMainSize = SLOTS_PER_DAY * 7 * SLOT_WIDTH;
 
   const visibleResources = RESOURCES.filter((r) => selectedIds.includes(r.id));
-  const visibleEvents = EVENTS.filter(([resIdx]) => selectedIds.includes(RESOURCES[resIdx].id));
+  const visibleEvents = EVENTS.filter(([resIdx]) =>
+    selectedIds.includes(RESOURCES[resIdx].id)
+  );
 
   const visibleRowStacks = visibleResources.map((r) => {
     const idx = RESOURCES.findIndex((orig) => orig.id === r.id);
@@ -106,22 +99,38 @@ function ScheduleWeekStory() {
 
   const handleToggle = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
-  const handlePrev = () => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7));
-  const handleNext = () => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7));
+  const handlePrev = () =>
+    setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7));
+  const handleNext = () =>
+    setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7));
   const handleToday = () => setDate(new Date());
 
   const nowPosition = (5 * SLOTS_PER_DAY + 2.3) * SLOT_WIDTH;
 
-  const sidebar = <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />;
-  const header = <TimeHeader view="week" dateLabels={dateLabels} timeSlots={timeSlots} totalWidth={totalMainSize} />;
+  const sidebar = (
+    <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />
+  );
+  const header = (
+    <TimeHeader
+      view="week"
+      dateRange={dateRange}
+      cellDuration={{ week: CELL_DURATION }}
+    />
+  );
 
   const body = (
     <>
-      <GridLines lines={gridLines} crossSize={totalCrossSize} topOffset={-HEADER_HEIGHT} />
+      <GridLines
+        view="week"
+        dateRange={dateRange}
+        crossSize={totalCrossSize}
+        cellDuration={{ week: CELL_DURATION }}
+        topOffset={-80}
+      />
 
       {rowHeights.map((_, i) => {
         if (i === 0) return null;
@@ -142,7 +151,9 @@ function ScheduleWeekStory() {
       })}
 
       {visibleEvents.map(([resIdx, startSlot, endSlot, title, lane]) => {
-        const visibleRowIdx = visibleResources.findIndex((r) => r.id === RESOURCES[resIdx].id);
+        const visibleRowIdx = visibleResources.findIndex(
+          (r) => r.id === RESOURCES[resIdx].id
+        );
         if (visibleRowIdx === -1) return null;
 
         const rowOffset = getRowOffset(rowHeights, visibleRowIdx);
@@ -187,32 +198,18 @@ function ScheduleWeekStory() {
   );
 
   return (
-    <div className={darkMode ? "dark" : ""}>
-      <div style={{ padding: "8px 16px", display: "flex", gap: 8, alignItems: "center" }}>
-        <label style={{ fontSize: 14, fontFamily: "system-ui" }}>
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={(e) => setDarkMode(e.target.checked)}
-            style={{ marginRight: 6 }}
-          />
-          Dark Mode
-        </label>
-      </div>
-
-      <div style={{ maxWidth: 1100 }}>
-        <ScheduleView
-          view="week"
-          toolbar={toolbar}
-          filterPanel={filterPanel}
-          sidebar={sidebar}
-          header={header}
-          body={body}
-          totalMainSize={totalMainSize}
-          totalCrossSize={totalCrossSize}
-          headerHeight={HEADER_HEIGHT}
-        />
-      </div>
+    <div style={{ maxWidth: 1100 }}>
+      <ScheduleView
+        view="week"
+        dateRange={dateRange}
+        cellDuration={{ week: CELL_DURATION }}
+        sidebar={sidebar}
+        header={header}
+        body={body}
+        totalCrossSize={totalCrossSize}
+        toolbar={toolbar}
+        filterPanel={filterPanel}
+      />
     </div>
   );
 }

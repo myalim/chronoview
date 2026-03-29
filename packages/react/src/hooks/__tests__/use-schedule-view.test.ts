@@ -62,7 +62,7 @@ describe("useScheduleView", () => {
   });
 
   it("computes time slots for day view", () => {
-    const config = createConfig({ day: { cellDuration: 60 } });
+    const config = createConfig({ cellDuration: { day: 60 } });
     const { result } = renderHook(() => useScheduleView(config));
 
     // Day view: 24 hours with 60min cells = 24 slots
@@ -153,9 +153,9 @@ describe("useScheduleView", () => {
   });
 
   it("totalMainSize is constant per view, independent of cellDuration", () => {
-    const config60 = createConfig({ day: { cellDuration: 60 } });
-    const config30 = createConfig({ day: { cellDuration: 30 } });
-    const config15 = createConfig({ day: { cellDuration: 15 } });
+    const config60 = createConfig({ cellDuration: { day: 60 } });
+    const config30 = createConfig({ cellDuration: { day: 30 } });
+    const config15 = createConfig({ cellDuration: { day: 15 } });
     const { result: r60 } = renderHook(() => useScheduleView(config60));
     const { result: r30 } = renderHook(() => useScheduleView(config30));
     const { result: r15 } = renderHook(() => useScheduleView(config15));

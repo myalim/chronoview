@@ -11,7 +11,6 @@ import {
   getAxisConfig,
   calculateDayRange,
   calculateWeekRange,
-  calculateMonthRange,
   generateTimeSlots,
   calculateEventPosition,
   detectOverlaps,
@@ -54,16 +53,15 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     events,
     resources,
     view,
-    day,
-    week,
+    cellDuration,
     startDate,
     showNowIndicator = true,
     weekStartsOn = 0,
   } = config;
 
   const cellConfig = useMemo(
-    () => getCellConfig(view, day?.cellDuration, week?.cellDuration),
-    [view, day?.cellDuration, week?.cellDuration],
+    () => getCellConfig(view, cellDuration),
+    [view, cellDuration],
   );
 
   const axisConfig = useMemo(() => getAxisConfig("schedule"), []);
@@ -71,7 +69,14 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
   const dateRange = useMemo(() => {
     const date = startDate ?? new Date();
     if (view === "week") return calculateWeekRange(date, weekStartsOn);
-    if (view === "month") return calculateMonthRange(date, weekStartsOn);
+    if (view === "month") {
+      // Schedule Month uses actual month boundaries (not calendar-padded range).
+      // calculateMonthRange pads to full weeks for Calendar Month grid,
+      // but Schedule shows day-columns for only the target month.
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0, 0);
+      return { start: monthStart, end: monthEnd };
+    }
     return calculateDayRange(date);
   }, [view, startDate, weekStartsOn]);
 
@@ -94,12 +99,18 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     return timeSlots.length * cellConfig.cellWidthPx;
   }, [view, timeSlots, dateRange, cellConfig.cellWidthPx]);
 
+  // Filter events to only those overlapping with dateRange to prevent overflow rendering
+  const visibleEvents = useMemo(
+    () => events.filter((e) => e.end > dateRange.start && e.start < dateRange.end),
+    [events, dateRange],
+  );
+
   // Build row layouts: group events by resource, detect overlaps, stack, position
   const rows = useMemo(() => {
     let crossOffset = 0;
 
     return resources.map((resource) => {
-      const resourceEvents = events.filter((e) => e.resourceId === resource.id);
+      const resourceEvents = visibleEvents.filter((e) => e.resourceId === resource.id);
 
       // Detect overlaps and assign lanes via vertical stacking
       const groups = detectOverlaps(resourceEvents);
@@ -160,7 +171,7 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
       crossOffset += height;
       return row;
     });
-  }, [resources, events, dateRange, totalMainSize]);
+  }, [resources, visibleEvents, dateRange, totalMainSize]);
 
   const totalCrossSize = useMemo(
     () => rows.reduce((sum, r) => sum + r.height, 0),

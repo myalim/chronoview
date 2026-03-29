@@ -18,6 +18,18 @@ export type DayCellDuration = 15 | 30 | 60;
 /** Week view cell duration presets (hours) */
 export type WeekCellDuration = 3 | 4 | 6 | 8 | 12;
 
+/**
+ * Per-view cell duration configuration.
+ * Each view has its own valid duration range.
+ * Omitted values use defaults (day: 60, week: 6).
+ */
+export interface CellDurationConfig {
+  /** Day view cell interval in minutes */
+  day?: DayCellDuration;
+  /** Week view cell interval in hours */
+  week?: WeekCellDuration;
+}
+
 /** Axis direction for position mapping */
 export type AxisDirection = "horizontal" | "vertical";
 
@@ -63,10 +75,8 @@ export interface TimelineConfig<TData = unknown> {
   resources: Resource[];
   view: View;
   layout: Layout;
-  /** Day view cell configuration */
-  day?: { cellDuration?: DayCellDuration };
-  /** Week view cell configuration */
-  week?: { cellDuration?: WeekCellDuration };
+  /** Per-view cell duration (day: minutes, week: hours). Omitted = defaults. */
+  cellDuration?: CellDurationConfig;
   /** Stacking strategy (defaults based on layout × view) */
   stackMode?: StackMode;
   /** Calendar Month display mode (default: "bar") */

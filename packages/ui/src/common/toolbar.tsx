@@ -28,10 +28,6 @@ export interface ToolbarProps {
   availableViews?: View[];
   viewLabels?: ViewToggleProps["labels"];
 
-  // Filter
-  showFilter?: boolean;
-  onFilterClick?: () => void;
-
   // Custom slots
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
@@ -49,8 +45,6 @@ export function Toolbar({
   onViewChange,
   availableViews,
   viewLabels,
-  showFilter = false,
-  onFilterClick,
   leftSlot,
   rightSlot,
   className,
@@ -79,15 +73,6 @@ export function Toolbar({
 
       {/* Right: Filter + ViewToggle */}
       <div className="flex items-center gap-2">
-        {showFilter && (
-          <Button
-            variant="outline"
-            onClick={onFilterClick}
-            className="text-[var(--cv-color-text-secondary)]"
-          >
-            필터 ▾
-          </Button>
-        )}
         {rightSlot}
         <ViewToggle
           currentView={view}

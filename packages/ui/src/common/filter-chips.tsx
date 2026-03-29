@@ -56,7 +56,7 @@ export function FilterChips({
   return (
     <div
       className={cn(
-        "flex items-center gap-1 overflow-x-auto py-3 font-[var(--cv-font-family)]",
+        "flex items-center gap-1 overflow-x-auto pt-3 font-[var(--cv-font-family)]",
         className
       )}
     >

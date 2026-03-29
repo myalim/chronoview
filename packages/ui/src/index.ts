@@ -11,8 +11,11 @@ export { CategoryTabs, type CategoryTabsProps } from "./common/category-tabs.js"
 // ─── Schedule Components ───
 export { ScheduleView, type ScheduleViewProps } from "./schedule/schedule-view.js";
 export { ScheduleContainer, type ScheduleContainerProps } from "./schedule/schedule-container.js";
-export { TimeHeader, type TimeHeaderProps, type TimeSlotLabel, type DateLabel } from "./schedule/time-header.js";
-export { ResourceSidebar, type ResourceSidebarProps, type SidebarResource } from "./schedule/resource-sidebar.js";
+export { TimeHeader, type TimeHeaderProps } from "./schedule/time-header.js";
+export { ResourceSidebar, type ResourceSidebarProps } from "./schedule/resource-sidebar.js";
 export { EventCard, type EventCardProps } from "./schedule/event-card.js";
 export { NowIndicator, type NowIndicatorProps } from "./schedule/now-indicator.js";
-export { GridLines, type GridLinesProps, type GridLineConfig } from "./schedule/grid-lines.js";
+export { GridLines, type GridLinesProps } from "./schedule/grid-lines.js";
+
+// ─── Schedule Connected Component ───
+export { Schedule, type ScheduleProps } from "./schedule/schedule.js";

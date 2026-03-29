@@ -2,32 +2,31 @@
  * ScheduleView — Top-level compound component for Schedule layout.
  *
  * Composes Toolbar + FilterPanel + ScheduleContainer.
- * In Step 1 (static UI), this accepts pre-computed layout data.
- * In Step 3 (integration), hooks will provide the data.
+ * Passes view + dateRange + cellDuration config to ScheduleContainer,
+ * which internally computes totalMainSize and headerHeight.
  *
  * Reference: docs/design/schedule/schedule-day.md §2
  */
 
 import type { ReactNode } from "react";
+import type { View, DateRange, CellDurationConfig } from "@chronoview/core";
 import type { ScheduleContainerProps } from "./schedule-container.js";
 import { ScheduleContainer } from "./schedule-container.js";
 import { cn } from "../utils/cn.js";
 
-type View = "day" | "week" | "month";
-type Layout = "schedule" | "grid" | "calendar";
-
 export interface ScheduleViewProps {
   // Layout
   view: View;
-  layout?: Layout;
+
+  // Config (passed through to ScheduleContainer)
+  dateRange: DateRange;
+  cellDuration?: CellDurationConfig;
 
   // Container props (pass-through)
   sidebar: ScheduleContainerProps["sidebar"];
   header: ScheduleContainerProps["header"];
   body: ScheduleContainerProps["body"];
-  totalMainSize: number;
   totalCrossSize: number;
-  headerHeight: number;
 
   // Toolbar (optional — not rendered if not provided)
   toolbar?: ReactNode;
@@ -39,13 +38,12 @@ export interface ScheduleViewProps {
 
 export function ScheduleView({
   view,
-  layout: _layout,
+  dateRange,
+  cellDuration,
   sidebar,
   header,
   body,
-  totalMainSize,
   totalCrossSize,
-  headerHeight,
   toolbar,
   filterPanel,
   className,
@@ -61,12 +59,12 @@ export function ScheduleView({
       {filterPanel}
       <ScheduleContainer
         view={view}
+        dateRange={dateRange}
+        cellDuration={cellDuration}
         sidebar={sidebar}
         header={header}
         body={body}
-        totalMainSize={totalMainSize}
         totalCrossSize={totalCrossSize}
-        headerHeight={headerHeight}
       />
     </div>
   );

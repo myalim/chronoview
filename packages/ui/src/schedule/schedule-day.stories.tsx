@@ -1,19 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+import { getCellConfig, type DateRange } from "@chronoview/core";
 import { EventCard } from "./event-card.js";
-import { GridLines, type GridLineConfig } from "./grid-lines.js";
+import { GridLines } from "./grid-lines.js";
 import { NowIndicator } from "./now-indicator.js";
 import { ResourceSidebar } from "./resource-sidebar.js";
 import { ScheduleView } from "./schedule-view.js";
-import { TimeHeader, type TimeSlotLabel } from "./time-header.js";
+import { TimeHeader } from "./time-header.js";
 import { Toolbar } from "../common/toolbar.js";
 import { FilterChips } from "../common/filter-chips.js";
 
 /**
  * Schedule Day — Interactive story
  *
- * Verifies: sidebar, time header, event cards, variable row heights, NowIndicator, dark mode
- * Interactions: date navigation, filter toggle, dark mode switch
+ * Verifies: sidebar, time header, event cards, variable row heights, NowIndicator
+ * Interactions: date navigation, filter toggle
  */
 
 const meta: Meta = {
@@ -24,12 +25,10 @@ export default meta;
 type Story = StoryObj;
 
 // ─── Constants ───
-const SLOT_WIDTH = 120;
-const TIME_LABELS = ["5:00", "6:00", "7:00", "8:00", "9:00", "10:00", "11:00", "12:00"];
+const { cellWidthPx: SLOT_WIDTH } = getCellConfig("day", { day: 60 });
 const EVENT_HEIGHT = 36;
 const EVENT_GAP = 4;
 const ROW_PADDING = 4;
-const HEADER_HEIGHT = 48;
 const NOW_SLOT = 4.3;
 
 const RESOURCES = [
@@ -63,34 +62,36 @@ const ROW_STACKS = [1, 2, 3, 0];
 
 function getRowHeight(maxStack: number): number {
   if (maxStack === 0) return 48;
-  return Math.max(48, maxStack * EVENT_HEIGHT + (maxStack - 1) * EVENT_GAP + ROW_PADDING * 2);
+  return Math.max(
+    48,
+    maxStack * EVENT_HEIGHT + (maxStack - 1) * EVENT_GAP + ROW_PADDING * 2
+  );
 }
 
 function getRowOffset(heights: number[], rowIndex: number): number {
   return heights.slice(0, rowIndex).reduce((sum, h) => sum + h, 0);
 }
 
-const timeSlots: TimeSlotLabel[] = TIME_LABELS.map((label, i) => ({
-  label,
-  offset: i * SLOT_WIDTH,
-  width: SLOT_WIDTH,
-}));
-
-// Exclude offset 0 as it overlaps with the sidebar border-r
-const gridLines: GridLineConfig[] = TIME_LABELS.slice(1).map((_, i) => ({
-  offset: (i + 1) * SLOT_WIDTH,
-}));
-
-const totalMainSize = SLOT_WIDTH * TIME_LABELS.length;
+/** Build a DateRange for a single day (mock: 5:00~12:00 = 8 hours subset) */
+function makeDayRange(date: Date): DateRange {
+  const start = new Date(date);
+  start.setHours(5, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(13, 0, 0, 0);
+  return { start, end };
+}
 
 function ScheduleDayStory() {
   const [date, setDate] = useState(new Date(2026, 2, 27));
   const [selectedIds, setSelectedIds] = useState(RESOURCES.map((r) => r.id));
-  const [darkMode, setDarkMode] = useState(false);
+
+  const dateRange = makeDayRange(date);
 
   // Filtered resources/events
   const visibleResources = RESOURCES.filter((r) => selectedIds.includes(r.id));
-  const visibleEvents = EVENTS.filter(([resIdx]) => selectedIds.includes(RESOURCES[resIdx].id));
+  const visibleEvents = EVENTS.filter(([resIdx]) =>
+    selectedIds.includes(RESOURCES[resIdx].id)
+  );
 
   // Recalculate row heights based on filter
   const visibleRowStacks = visibleResources.map((r) => {
@@ -102,23 +103,36 @@ function ScheduleDayStory() {
 
   const handleToggle = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
-  const handlePrev = () => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
-  const handleNext = () => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
+  const handlePrev = () =>
+    setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
+  const handleNext = () =>
+    setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
   const handleToday = () => setDate(new Date());
 
   const nowPosition = NOW_SLOT * SLOT_WIDTH;
+  const totalMainSize = 8 * SLOT_WIDTH; // 8 slots for mock
 
-  const sidebar = <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />;
+  const sidebar = (
+    <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />
+  );
 
-  const header = <TimeHeader view="day" timeSlots={timeSlots} totalWidth={totalMainSize} />;
+  const header = (
+    <TimeHeader view="day" dateRange={dateRange} cellDuration={{ day: 60 }} />
+  );
 
   const body = (
     <>
-      <GridLines lines={gridLines} crossSize={totalCrossSize} topOffset={-HEADER_HEIGHT} />
+      <GridLines
+        view="day"
+        dateRange={dateRange}
+        crossSize={totalCrossSize}
+        cellDuration={{ day: 60 }}
+        topOffset={-48}
+      />
 
       {/* Resource row dividers */}
       {rowHeights.map((_, i) => {
@@ -141,8 +155,9 @@ function ScheduleDayStory() {
 
       {/* Event cards — with filter applied */}
       {visibleEvents.map(([resIdx, startSlot, endSlot, title, lane]) => {
-        // Convert original resource index to filtered row index
-        const visibleRowIdx = visibleResources.findIndex((r) => r.id === RESOURCES[resIdx].id);
+        const visibleRowIdx = visibleResources.findIndex(
+          (r) => r.id === RESOURCES[resIdx].id
+        );
         if (visibleRowIdx === -1) return null;
 
         const rowOffset = getRowOffset(rowHeights, visibleRowIdx);
@@ -154,7 +169,9 @@ function ScheduleDayStory() {
           <EventCard
             key={`event-${title}`}
             title={title}
-            timeLabel={`${TIME_LABELS[Math.floor(startSlot)] ?? ""} - ${TIME_LABELS[Math.floor(endSlot)] ?? ""}`}
+            timeLabel={`${Math.floor(startSlot + 5)}:00 - ${Math.floor(
+              endSlot + 5
+            )}:00`}
             color={RESOURCES[resIdx].color}
             style={{ left, top, width }}
           />
@@ -188,33 +205,18 @@ function ScheduleDayStory() {
   );
 
   return (
-    <div className={darkMode ? "dark" : ""}>
-      {/* Dark mode toggle */}
-      <div style={{ padding: "8px 16px", display: "flex", gap: 8, alignItems: "center" }}>
-        <label style={{ fontSize: 14, fontFamily: "system-ui" }}>
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={(e) => setDarkMode(e.target.checked)}
-            style={{ marginRight: 6 }}
-          />
-          Dark Mode
-        </label>
-      </div>
-
-      <div style={{ maxWidth: 1100 }}>
-        <ScheduleView
-          view="day"
-          toolbar={toolbar}
-          filterPanel={filterPanel}
-          sidebar={sidebar}
-          header={header}
-          body={body}
-          totalMainSize={totalMainSize}
-          totalCrossSize={totalCrossSize}
-          headerHeight={HEADER_HEIGHT}
-        />
-      </div>
+    <div style={{ maxWidth: 1100 }}>
+      <ScheduleView
+        view="day"
+        dateRange={dateRange}
+        cellDuration={{ day: 60 }}
+        sidebar={sidebar}
+        header={header}
+        body={body}
+        totalCrossSize={totalCrossSize}
+        toolbar={toolbar}
+        filterPanel={filterPanel}
+      />
     </div>
   );
 }
