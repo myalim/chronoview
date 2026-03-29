@@ -1,13 +1,4 @@
-import {
-  addDays,
-  eachDayOfInterval,
-  endOfMonth,
-  endOfWeek,
-  startOfDay,
-  startOfMonth,
-  startOfWeek,
-} from "date-fns";
-import type { DateRange } from "../types/index.js";
+import { eachDayOfInterval, endOfMonth, endOfWeek, startOfMonth, startOfWeek } from "date-fns";
 
 /**
  * Returns a 2D array (weeks × 7 days) for Calendar Month grid.

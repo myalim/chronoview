@@ -29,12 +29,12 @@ function CalendarWeekWireframe() {
 
   // 이벤트: [요일idx, 시작슬롯, 끝슬롯, 제목, 색상, lane, totalLanes]
   const weekEvents: [number, number, number, string, string, number, number][] = [
-    [1, 1, 2.5, "Standup", "#3b82f6", 0, 1],       // 월
-    [2, 2, 4, "Design Review", "#8b5cf6", 0, 1],    // 화
-    [4, 1, 2, "Event A", "#06b6d4", 0, 2],          // 목
-    [4, 1.5, 2.5, "Event B", "#10b981", 1, 2],      // 목
-    [5, 2, 4, "Sprint Plan", "#f59e0b", 0, 1],      // 금 (today)
-    [6, 3, 5, "Workshop", "#ef4444", 0, 1],         // 토
+    [1, 1, 2.5, "Standup", "#3b82f6", 0, 1], // 월
+    [2, 2, 4, "Design Review", "#8b5cf6", 0, 1], // 화
+    [4, 1, 2, "Event A", "#06b6d4", 0, 2], // 목
+    [4, 1.5, 2.5, "Event B", "#10b981", 1, 2], // 목
+    [5, 2, 4, "Sprint Plan", "#f59e0b", 0, 1], // 금 (today)
+    [6, 3, 5, "Workshop", "#ef4444", 0, 1], // 토
   ];
 
   return (
@@ -66,7 +66,14 @@ function CalendarWeekWireframe() {
 
       <div style={{ display: "flex", overflow: "auto", maxHeight: 420 }}>
         {/* 시간 사이드바 */}
-        <div style={{ width: SIDEBAR_WIDTH, flexShrink: 0, background: "var(--wf-sidebar-bg)", borderRight: "1px solid var(--wf-border)" }}>
+        <div
+          style={{
+            width: SIDEBAR_WIDTH,
+            flexShrink: 0,
+            background: "var(--wf-sidebar-bg)",
+            borderRight: "1px solid var(--wf-border)",
+          }}
+        >
           <div style={{ height: 48, borderBottom: "1px solid var(--wf-border)" }} />
           {TIME_SLOTS.map((t, i) => (
             <div
@@ -91,7 +98,17 @@ function CalendarWeekWireframe() {
         {/* 7열 */}
         <div style={{ flex: 1, position: "relative" }}>
           {/* 요일 헤더 */}
-          <div style={{ display: "flex", height: 48, borderBottom: "1px solid var(--wf-border)", position: "sticky", top: 0, zIndex: 30, background: "var(--wf-header-bg)" }}>
+          <div
+            style={{
+              display: "flex",
+              height: 48,
+              borderBottom: "1px solid var(--wf-border)",
+              position: "sticky",
+              top: 0,
+              zIndex: 30,
+              background: "var(--wf-header-bg)",
+            }}
+          >
             {DAYS.map((d, i) => (
               <div
                 key={i}
@@ -114,9 +131,23 @@ function CalendarWeekWireframe() {
           {/* 시간 그리드 */}
           <div style={{ position: "relative" }}>
             {TIME_SLOTS.map((_, i) => (
-              <div key={i} style={{ height: SLOT_HEIGHT, borderBottom: "1px solid var(--wf-border)", display: "flex" }}>
+              <div
+                key={i}
+                style={{
+                  height: SLOT_HEIGHT,
+                  borderBottom: "1px solid var(--wf-border)",
+                  display: "flex",
+                }}
+              >
                 {DAYS.map((_, di) => (
-                  <div key={di} style={{ flex: 1, borderRight: "1px solid var(--wf-border)", background: di === todayIndex ? "var(--wf-today-bg)" : undefined }} />
+                  <div
+                    key={di}
+                    style={{
+                      flex: 1,
+                      borderRight: "1px solid var(--wf-border)",
+                      background: di === todayIndex ? "var(--wf-today-bg)" : undefined,
+                    }}
+                  />
                 ))}
               </div>
             ))}

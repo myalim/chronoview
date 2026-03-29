@@ -139,9 +139,7 @@ function ScheduleMonthWireframe() {
                   className={`wf-header-cell ${i === TODAY_COL ? "wf-today-highlight" : ""}`}
                   style={{ width: COLUMN_WIDTH }}
                 >
-                  <span className={i === TODAY_COL ? "wf-today-number" : ""}>
-                    {d.date}
-                  </span>
+                  <span className={i === TODAY_COL ? "wf-today-number" : ""}>{d.date}</span>
                 </div>
               ))}
             </div>
@@ -174,7 +172,13 @@ function ScheduleMonthWireframe() {
                 </div>
 
                 {/* 행 내용 */}
-                <div style={{ position: "relative", height: rowHeight, borderBottom: "1px solid var(--wf-border)" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    height: rowHeight,
+                    borderBottom: "1px solid var(--wf-border)",
+                  }}
+                >
                   {/* 오늘 열 하이라이트 배경 */}
                   <div
                     style={{
@@ -205,31 +209,33 @@ function ScheduleMonthWireframe() {
                   ))}
 
                   {/* 이벤트 바 — 여러 날 걸침 */}
-                  {EVENTS.filter(([eri]) => eri === ri).map(([, startCol, endCol, title, lane], ei) => {
-                    const style: CSSProperties = {
-                      position: "absolute",
-                      left: startCol * COLUMN_WIDTH + 2,
-                      width: (endCol - startCol) * COLUMN_WIDTH - 4,
-                      top: ROW_PADDING + lane * (EVENT_HEIGHT + EVENT_GAP),
-                      height: EVENT_HEIGHT,
-                      zIndex: 20,
-                    };
-                    return (
-                      <div
-                        key={ei}
-                        className="wf-month-bar"
-                        style={{
-                          ...style,
-                          background: resource.color,
-                          display: "flex",
-                          alignItems: "center",
-                          marginBottom: 0,
-                        }}
-                      >
-                        {title}
-                      </div>
-                    );
-                  })}
+                  {EVENTS.filter(([eri]) => eri === ri).map(
+                    ([, startCol, endCol, title, lane], ei) => {
+                      const style: CSSProperties = {
+                        position: "absolute",
+                        left: startCol * COLUMN_WIDTH + 2,
+                        width: (endCol - startCol) * COLUMN_WIDTH - 4,
+                        top: ROW_PADDING + lane * (EVENT_HEIGHT + EVENT_GAP),
+                        height: EVENT_HEIGHT,
+                        zIndex: 20,
+                      };
+                      return (
+                        <div
+                          key={ei}
+                          className="wf-month-bar"
+                          style={{
+                            ...style,
+                            background: resource.color,
+                            display: "flex",
+                            alignItems: "center",
+                            marginBottom: 0,
+                          }}
+                        >
+                          {title}
+                        </div>
+                      );
+                    },
+                  )}
                 </div>
               </div>
             );

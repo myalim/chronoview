@@ -62,10 +62,7 @@ const ROW_STACKS = [1, 2, 3, 0];
 
 function getRowHeight(maxStack: number): number {
   if (maxStack === 0) return 48;
-  return Math.max(
-    48,
-    maxStack * EVENT_HEIGHT + (maxStack - 1) * EVENT_GAP + ROW_PADDING * 2
-  );
+  return Math.max(48, maxStack * EVENT_HEIGHT + (maxStack - 1) * EVENT_GAP + ROW_PADDING * 2);
 }
 
 function getRowOffset(heights: number[], rowIndex: number): number {
@@ -89,9 +86,7 @@ function ScheduleDayStory() {
 
   // Filtered resources/events
   const visibleResources = RESOURCES.filter((r) => selectedIds.includes(r.id));
-  const visibleEvents = EVENTS.filter(([resIdx]) =>
-    selectedIds.includes(RESOURCES[resIdx].id)
-  );
+  const visibleEvents = EVENTS.filter(([resIdx]) => selectedIds.includes(RESOURCES[resIdx].id));
 
   // Recalculate row heights based on filter
   const visibleRowStacks = visibleResources.map((r) => {
@@ -102,27 +97,19 @@ function ScheduleDayStory() {
   const totalCrossSize = rowHeights.reduce((sum, h) => sum + h, 0);
 
   const handleToggle = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
-  const handlePrev = () =>
-    setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
-  const handleNext = () =>
-    setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
+  const handlePrev = () => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
+  const handleNext = () => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
   const handleToday = () => setDate(new Date());
 
   const nowPosition = NOW_SLOT * SLOT_WIDTH;
   const totalMainSize = 8 * SLOT_WIDTH; // 8 slots for mock
 
-  const sidebar = (
-    <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />
-  );
+  const sidebar = <ResourceSidebar resources={visibleResources} rowHeights={rowHeights} />;
 
-  const header = (
-    <TimeHeader view="day" dateRange={dateRange} cellDuration={{ day: 60 }} />
-  );
+  const header = <TimeHeader view="day" dateRange={dateRange} cellDuration={{ day: 60 }} />;
 
   const body = (
     <>
@@ -155,9 +142,7 @@ function ScheduleDayStory() {
 
       {/* Event cards — with filter applied */}
       {visibleEvents.map(([resIdx, startSlot, endSlot, title, lane]) => {
-        const visibleRowIdx = visibleResources.findIndex(
-          (r) => r.id === RESOURCES[resIdx].id
-        );
+        const visibleRowIdx = visibleResources.findIndex((r) => r.id === RESOURCES[resIdx].id);
         if (visibleRowIdx === -1) return null;
 
         const rowOffset = getRowOffset(rowHeights, visibleRowIdx);
@@ -169,9 +154,7 @@ function ScheduleDayStory() {
           <EventCard
             key={`event-${title}`}
             title={title}
-            timeLabel={`${Math.floor(startSlot + 5)}:00 - ${Math.floor(
-              endSlot + 5
-            )}:00`}
+            timeLabel={`${Math.floor(startSlot + 5)}:00 - ${Math.floor(endSlot + 5)}:00`}
             color={RESOURCES[resIdx].color}
             style={{ left, top, width }}
           />

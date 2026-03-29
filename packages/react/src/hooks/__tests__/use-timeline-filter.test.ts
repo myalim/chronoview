@@ -39,9 +39,7 @@ const events: TimelineEvent[] = [
 
 describe("useTimelineFilter", () => {
   it("returns all events and resources when no filter is set", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     expect(result.current.filteredResources).toHaveLength(3);
     expect(result.current.filteredEvents).toHaveLength(3);
@@ -49,9 +47,7 @@ describe("useTimelineFilter", () => {
   });
 
   it("toggleResource removes a resource and filters its events", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     // First toggle on "r1" — when no resourceIds filter exists,
     // toggleResource selects all EXCEPT the toggled one
@@ -70,9 +66,7 @@ describe("useTimelineFilter", () => {
   });
 
   it("toggleResource re-adds a previously removed resource", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     // Remove r1
     act(() => {
@@ -91,9 +85,7 @@ describe("useTimelineFilter", () => {
   });
 
   it("toggleCategory filters events by category", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     // Toggle "work" category — first toggle creates filter with ["work"]
     act(() => {
@@ -106,9 +98,7 @@ describe("useTimelineFilter", () => {
   });
 
   it("toggleCategory removes an already-active category", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     act(() => {
       result.current.toggleCategory("work");
@@ -123,9 +113,7 @@ describe("useTimelineFilter", () => {
   });
 
   it("selectAllResources clears the resource filter", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     // First remove a resource
     act(() => {
@@ -143,9 +131,7 @@ describe("useTimelineFilter", () => {
   });
 
   it("deselectAllResources sets empty resource list in filter state", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     act(() => {
       result.current.deselectAllResources();
@@ -161,9 +147,7 @@ describe("useTimelineFilter", () => {
   });
 
   it("setFilter merges partial filter state", () => {
-    const { result } = renderHook(() =>
-      useTimelineFilter({ events, resources }),
-    );
+    const { result } = renderHook(() => useTimelineFilter({ events, resources }));
 
     act(() => {
       result.current.setFilter({ categories: ["work"] });

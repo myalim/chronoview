@@ -32,10 +32,7 @@ export function useVirtualScroll({
   const [scrollOffset, setScrollOffset] = useState(0);
   const [viewportSize, setViewportSize] = useState(0);
 
-  const totalSize = useMemo(
-    () => itemSizes.reduce((sum, s) => sum + s, 0),
-    [itemSizes],
-  );
+  const totalSize = useMemo(() => itemSizes.reduce((sum, s) => sum + s, 0), [itemSizes]);
 
   useEffect(() => {
     const el = containerRef.current;

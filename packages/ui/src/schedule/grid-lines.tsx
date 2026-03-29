@@ -91,9 +91,7 @@ export function GridLines({
               left: offset - 1,
               top: topOffset,
               height: totalHeight,
-              background: isBoundary
-                ? "var(--cv-color-border-strong)"
-                : "var(--cv-color-border)",
+              background: isBoundary ? "var(--cv-color-border-strong)" : "var(--cv-color-border)",
             }}
           />
         );

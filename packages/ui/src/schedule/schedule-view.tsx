@@ -52,7 +52,7 @@ export function ScheduleView({
     <div
       className={cn(
         "flex flex-col font-[var(--cv-font-family)] bg-[var(--cv-color-bg)] text-[var(--cv-color-text)]",
-        className
+        className,
       )}
     >
       {toolbar}

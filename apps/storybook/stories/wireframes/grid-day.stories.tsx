@@ -57,7 +57,9 @@ function GridDayWireframe() {
 
       {/* 날짜 스크롤 피커 */}
       <div className="wf-date-picker">
-        <button className="wf-nav-btn" style={{ width: 28, height: 28 }}>◀</button>
+        <button className="wf-nav-btn" style={{ width: 28, height: 28 }}>
+          ◀
+        </button>
         {Array.from({ length: 7 }, (_, i) => {
           const day = 24 + i;
           const isToday = day === 27;
@@ -71,7 +73,9 @@ function GridDayWireframe() {
             </div>
           );
         })}
-        <button className="wf-nav-btn" style={{ width: 28, height: 28 }}>▶</button>
+        <button className="wf-nav-btn" style={{ width: 28, height: 28 }}>
+          ▶
+        </button>
       </div>
 
       {/* 필터 칩 (리소스 필수이므로 항상 표시) */}
@@ -90,15 +94,17 @@ function GridDayWireframe() {
           <div className="wf-corner" style={{ height: 64 }} />
 
           {/* 리소스 헤더 */}
-          <div style={{
-            display: "flex",
-            height: 64,
-            borderBottom: "1px solid var(--wf-border)",
-            position: "sticky",
-            top: 0,
-            zIndex: 30,
-            background: "var(--wf-header-bg)",
-          }}>
+          <div
+            style={{
+              display: "flex",
+              height: 64,
+              borderBottom: "1px solid var(--wf-border)",
+              position: "sticky",
+              top: 0,
+              zIndex: 30,
+              background: "var(--wf-header-bg)",
+            }}
+          >
             {RESOURCES.map((r, i) => (
               <div
                 key={i}
@@ -113,7 +119,9 @@ function GridDayWireframe() {
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: r.color }} />
+                  <div
+                    style={{ width: 28, height: 28, borderRadius: "50%", background: r.color }}
+                  />
                   <span style={{ fontSize: 13, fontWeight: 500 }}>{r.name}</span>
                 </div>
                 <span style={{ fontSize: 11, color: "var(--wf-text-secondary)" }}>{r.badge}건</span>
@@ -122,7 +130,15 @@ function GridDayWireframe() {
           </div>
 
           {/* 시간 사이드바 */}
-          <div style={{ background: "var(--wf-sidebar-bg)", borderRight: "1px solid var(--wf-border)", position: "sticky", left: 0, zIndex: 30 }}>
+          <div
+            style={{
+              background: "var(--wf-sidebar-bg)",
+              borderRight: "1px solid var(--wf-border)",
+              position: "sticky",
+              left: 0,
+              zIndex: 30,
+            }}
+          >
             {TIME_SLOTS.map((t, i) => (
               <div
                 key={i}
@@ -147,9 +163,19 @@ function GridDayWireframe() {
           <div style={{ position: "relative" }}>
             {/* 가로 + 세로선 */}
             {TIME_SLOTS.map((_, ti) => (
-              <div key={ti} style={{ height: SLOT_HEIGHT, borderBottom: "1px solid var(--wf-border)", display: "flex" }}>
+              <div
+                key={ti}
+                style={{
+                  height: SLOT_HEIGHT,
+                  borderBottom: "1px solid var(--wf-border)",
+                  display: "flex",
+                }}
+              >
                 {RESOURCES.map((_, ri) => (
-                  <div key={ri} style={{ width: COLUMN_WIDTH, borderRight: "1px solid var(--wf-border)" }} />
+                  <div
+                    key={ri}
+                    style={{ width: COLUMN_WIDTH, borderRight: "1px solid var(--wf-border)" }}
+                  />
                 ))}
               </div>
             ))}
@@ -185,10 +211,7 @@ function GridDayWireframe() {
 
             {/* Now Indicator — 도트+선, 이벤트 카드 뒤 (z:10 < event:20) */}
             <div className="wf-now-line horizontal" style={{ top: nowSlot * SLOT_HEIGHT }} />
-            <div
-              className="wf-now-dot left"
-              style={{ top: nowSlot * SLOT_HEIGHT, left: 0 }}
-            />
+            <div className="wf-now-dot left" style={{ top: nowSlot * SLOT_HEIGHT, left: 0 }} />
           </div>
         </div>
       </div>

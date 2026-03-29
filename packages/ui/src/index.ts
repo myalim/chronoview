@@ -5,7 +5,11 @@ export { Button, type ButtonProps } from "./common/button.js";
 export { DateNavigator, type DateNavigatorProps } from "./common/date-navigator.js";
 export { ViewToggle, type ViewToggleProps } from "./common/view-toggle.js";
 export { Toolbar, type ToolbarProps } from "./common/toolbar.js";
-export { FilterChips, type FilterChipsProps, type FilterChipResource } from "./common/filter-chips.js";
+export {
+  FilterChips,
+  type FilterChipsProps,
+  type FilterChipResource,
+} from "./common/filter-chips.js";
 export { CategoryTabs, type CategoryTabsProps } from "./common/category-tabs.js";
 
 // ─── Schedule Components ───

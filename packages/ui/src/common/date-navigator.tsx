@@ -33,7 +33,7 @@ function defaultFormatDate(date: Date, view: View): string {
   if (view === "day") {
     return `${y}년 ${String(m).padStart(2, "0")}월 ${String(d).padStart(
       2,
-      "0"
+      "0",
     )}일 ${dayOfWeek}요일`;
   }
 
@@ -66,13 +66,7 @@ export function DateNavigator({
   return (
     <div className={cn("flex items-center gap-1 h-10", className)}>
       <Button variant="ghost" size="icon" onClick={onPrev} aria-label="이전">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden="true"
-        >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path
             d="M10 12L6 8L10 4"
             stroke="currentColor"
@@ -83,6 +77,7 @@ export function DateNavigator({
         </svg>
       </Button>
 
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: role="button" + tabIndex + onKeyDown are conditionally set when onDateClick is provided */}
       <span
         role={onDateClick ? "button" : undefined}
         tabIndex={onDateClick ? 0 : undefined}
@@ -96,20 +91,14 @@ export function DateNavigator({
         }
         className={cn(
           "select-none whitespace-nowrap text-xl font-semibold text-[var(--cv-color-text)]",
-          onDateClick ? "cursor-pointer" : "cursor-default"
+          onDateClick ? "cursor-pointer" : "cursor-default",
         )}
       >
         {dateText}
       </span>
 
       <Button variant="ghost" size="icon" onClick={onNext} aria-label="다음">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden="true"
-        >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path
             d="M6 4L10 8L6 12"
             stroke="currentColor"

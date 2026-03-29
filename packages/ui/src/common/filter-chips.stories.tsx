@@ -21,9 +21,7 @@ function FilterChipsDemo() {
   const [selectedIds, setSelectedIds] = useState(RESOURCES.map((r) => r.id));
 
   const handleToggle = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
   return (

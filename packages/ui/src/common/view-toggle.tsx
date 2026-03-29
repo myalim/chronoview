@@ -35,7 +35,7 @@ export function ViewToggle({
     <div
       className={cn(
         "inline-flex items-center h-9 rounded-[var(--cv-radius-sm)] overflow-hidden border border-[var(--cv-color-border)]",
-        className
+        className,
       )}
       role="tablist"
     >
@@ -52,7 +52,7 @@ export function ViewToggle({
               "px-3 py-2 cursor-pointer whitespace-nowrap text-[length:var(--cv-font-size-sm)] font-medium font-[var(--cv-font-family)] border-none transition-colors",
               isActive
                 ? "bg-[var(--cv-color-event-default)] text-white"
-                : "bg-[var(--cv-color-surface)] text-[var(--cv-color-text-secondary)]"
+                : "bg-[var(--cv-color-surface)] text-[var(--cv-color-text-secondary)]",
             )}
           >
             {mergedLabels[view]}

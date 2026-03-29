@@ -19,12 +19,8 @@ function ToolbarDemo() {
       currentDate={date}
       view={view}
       layout="schedule"
-      onPrev={() =>
-        setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))
-      }
-      onNext={() =>
-        setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))
-      }
+      onPrev={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}
+      onNext={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))}
       onToday={() => setDate(new Date())}
       onViewChange={setView}
       onFilterClick={() => alert("Filter clicked")}

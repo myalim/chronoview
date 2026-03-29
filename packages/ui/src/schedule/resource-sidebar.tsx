@@ -19,11 +19,7 @@ export interface ResourceSidebarProps {
   renderResource?: (resource: Resource) => ReactNode;
 }
 
-export function ResourceSidebar({
-  resources,
-  rowHeights,
-  renderResource,
-}: ResourceSidebarProps) {
+export function ResourceSidebar({ resources, rowHeights, renderResource }: ResourceSidebarProps) {
   return (
     <div className="sticky left-0 shrink-0 z-[var(--cv-z-sticky-sidebar)] w-[var(--cv-size-sidebar-width)] bg-[var(--cv-color-bg)] border-r border-[var(--cv-color-border)] font-[var(--cv-font-family)]">
       {resources.map((resource, i) => {
@@ -47,7 +43,7 @@ export function ResourceSidebar({
             key={resource.id}
             className={cn(
               "flex items-center gap-2 px-4",
-              !isLast && "border-b border-[var(--cv-color-border)]"
+              !isLast && "border-b border-[var(--cv-color-border)]",
             )}
             style={{ height }}
           >
@@ -60,11 +56,7 @@ export function ResourceSidebar({
               }}
             >
               {resource.icon ? (
-                <img
-                  src={resource.icon}
-                  alt={resource.title}
-                  className="h-6 w-6 rounded-full"
-                />
+                <img src={resource.icon} alt={resource.title} className="h-6 w-6 rounded-full" />
               ) : (
                 <span className="text-[11px] font-semibold text-white">
                   {resource.title.charAt(0).toUpperCase()}

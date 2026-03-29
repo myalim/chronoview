@@ -6,18 +6,14 @@ describe("useDateNavigation", () => {
   const fixedDate = new Date(2026, 2, 28, 0, 0, 0, 0);
 
   it("returns initialDate when provided", () => {
-    const { result } = renderHook(() =>
-      useDateNavigation({ initialDate: fixedDate, view: "day" }),
-    );
+    const { result } = renderHook(() => useDateNavigation({ initialDate: fixedDate, view: "day" }));
 
     expect(result.current.currentDate).toEqual(fixedDate);
   });
 
   it("defaults to now when initialDate is not provided", () => {
     const before = new Date();
-    const { result } = renderHook(() =>
-      useDateNavigation({ view: "day" }),
-    );
+    const { result } = renderHook(() => useDateNavigation({ view: "day" }));
     const after = new Date();
 
     // currentDate should be between before and after (inclusive)
@@ -26,9 +22,7 @@ describe("useDateNavigation", () => {
   });
 
   it("goToPrev moves date backward by view unit (day: -1 day)", () => {
-    const { result } = renderHook(() =>
-      useDateNavigation({ initialDate: fixedDate, view: "day" }),
-    );
+    const { result } = renderHook(() => useDateNavigation({ initialDate: fixedDate, view: "day" }));
 
     act(() => {
       result.current.goToPrev();
@@ -50,9 +44,7 @@ describe("useDateNavigation", () => {
   });
 
   it("goToNext moves date forward by view unit (day: +1 day)", () => {
-    const { result } = renderHook(() =>
-      useDateNavigation({ initialDate: fixedDate, view: "day" }),
-    );
+    const { result } = renderHook(() => useDateNavigation({ initialDate: fixedDate, view: "day" }));
 
     act(() => {
       result.current.goToNext();
@@ -74,9 +66,7 @@ describe("useDateNavigation", () => {
   });
 
   it("goToDate sets a specific date (normalized to start of day)", () => {
-    const { result } = renderHook(() =>
-      useDateNavigation({ initialDate: fixedDate, view: "day" }),
-    );
+    const { result } = renderHook(() => useDateNavigation({ initialDate: fixedDate, view: "day" }));
 
     const targetDate = new Date(2026, 5, 15, 14, 30, 0, 0);
 
@@ -90,9 +80,7 @@ describe("useDateNavigation", () => {
 
   it("goToToday sets current date (start of today)", () => {
     const pastDate = new Date(2020, 0, 1);
-    const { result } = renderHook(() =>
-      useDateNavigation({ initialDate: pastDate, view: "day" }),
-    );
+    const { result } = renderHook(() => useDateNavigation({ initialDate: pastDate, view: "day" }));
 
     const before = new Date();
     act(() => {

@@ -63,11 +63,7 @@ function formatWeekDate(d: Date): string {
   return `${mm}/${dd} (${wd})`;
 }
 
-export function TimeHeader({
-  view,
-  dateRange,
-  cellDuration,
-}: TimeHeaderProps) {
+export function TimeHeader({ view, dateRange, cellDuration }: TimeHeaderProps) {
   const { cellWidthPx, intervalMinutes } = getCellConfig(view, cellDuration);
   const headerClassName =
     "sticky top-0 z-[var(--cv-z-sticky-header)] bg-[var(--cv-color-bg)] font-[var(--cv-font-family)]";
