@@ -90,23 +90,6 @@ export function EventCard({
   // Font size: xs/sm use text-xs, md/lg use text-sm
   const isSmallSize = resolvedSize === "xs" || resolvedSize === "sm";
 
-  if (children) {
-    return (
-      // biome-ignore lint/a11y/noStaticElementInteractions: role/tabIndex/onKeyDown are spread via interactiveProps when onClick is provided
-      // biome-ignore lint/a11y/useKeyWithClickEvents: onKeyDown is included in interactiveProps spread
-      <div
-        className={cardClassName}
-        style={positionStyle}
-        onClick={onClick}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        {...interactiveProps}
-      >
-        {children}
-      </div>
-    );
-  }
-
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: role/tabIndex/onKeyDown are spread via interactiveProps when onClick is provided
     // biome-ignore lint/a11y/useKeyWithClickEvents: onKeyDown is included in interactiveProps spread
@@ -118,34 +101,38 @@ export function EventCard({
       onMouseLeave={onMouseLeave}
       {...interactiveProps}
     >
-      {/* Left color bar */}
-      <div className="shrink-0" style={{ width: 3, background: color }} />
+      {children ?? (
+        <>
+          {/* Left color bar */}
+          <div className="shrink-0" style={{ width: 3, background: color }} />
 
-      {/* Card body — background generated from dynamic color */}
-      <div
-        className={cn(
-          "flex flex-1 flex-col justify-center overflow-hidden",
-          isMonth ? "px-1.5 py-0" : "px-2 py-0.5",
-        )}
-        style={{ background: hexToRgba(color, 0.1) }}
-      >
-        <span
-          className={cn("truncate font-medium leading-tight", isSmallSize ? "text-xs" : "text-sm")}
-          style={{ color: "var(--cv-color-text)" }}
-        >
-          {title}
-        </span>
-
-        {/* Subtitle: hidden in Month variant and small sizes (xs, sm) */}
-        {!isMonth && !isSmallSize && subtitle && (
-          <span
-            className="truncate text-xs leading-tight"
-            style={{ color: "var(--cv-color-text-secondary)" }}
+          {/* Card body — background generated from dynamic color */}
+          <div
+            className={cn(
+              "flex flex-1 flex-col justify-center overflow-hidden",
+              isMonth ? "px-1.5 py-0" : "px-2 py-0.5",
+            )}
+            style={{ background: hexToRgba(color, 0.1) }}
           >
-            {subtitle}
-          </span>
-        )}
-      </div>
+            <span
+              className={cn("truncate font-medium leading-tight", isSmallSize ? "text-xs" : "text-sm")}
+              style={{ color: "var(--cv-color-text)" }}
+            >
+              {title}
+            </span>
+
+            {/* Subtitle: hidden in Month variant and small sizes (xs, sm) */}
+            {!isMonth && !isSmallSize && subtitle && (
+              <span
+                className="truncate text-xs leading-tight"
+                style={{ color: "var(--cv-color-text-secondary)" }}
+              >
+                {subtitle}
+              </span>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
