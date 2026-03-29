@@ -62,10 +62,10 @@ describe("useScheduleView", () => {
   });
 
   it("computes time slots for day view", () => {
-    const config = createConfig({ timeStep: 60 });
+    const config = createConfig({ day: { cellDuration: 60 } });
     const { result } = renderHook(() => useScheduleView(config));
 
-    // Day view: 24 hours with 60min step = 24 slots
+    // Day view: 24 hours with 60min cells = 24 slots
     expect(result.current.timeSlots).toHaveLength(24);
     expect(result.current.timeSlots[0].label).toBeDefined();
   });
@@ -152,11 +152,24 @@ describe("useScheduleView", () => {
     expect(result.current.totalCrossSize).toBe(expectedTotal);
   });
 
-  it("totalMainSize is based on time slots and slot width", () => {
-    const config = createConfig({ timeStep: 30 });
+  it("totalMainSize is constant per view, independent of cellDuration", () => {
+    const config60 = createConfig({ day: { cellDuration: 60 } });
+    const config30 = createConfig({ day: { cellDuration: 30 } });
+    const config15 = createConfig({ day: { cellDuration: 15 } });
+    const { result: r60 } = renderHook(() => useScheduleView(config60));
+    const { result: r30 } = renderHook(() => useScheduleView(config30));
+    const { result: r15 } = renderHook(() => useScheduleView(config15));
+
+    // Day totalMainSize = 2880px regardless of cellDuration
+    expect(r60.current.totalMainSize).toBe(2880);
+    expect(r30.current.totalMainSize).toBe(2880);
+    expect(r15.current.totalMainSize).toBe(2880);
+  });
+
+  it("week view totalMainSize = 1680px", () => {
+    const config = createConfig({ view: "week" });
     const { result } = renderHook(() => useScheduleView(config));
 
-    // day view: 24h / 30min = 48 slots, each 120px wide = 5760px
-    expect(result.current.totalMainSize).toBe(48 * 120);
+    expect(result.current.totalMainSize).toBe(1680);
   });
 });

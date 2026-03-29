@@ -12,6 +12,12 @@ export type StackMode = "horizontal" | "vertical" | "none";
 /** Calendar Month display mode */
 export type MonthMode = "bar" | "list";
 
+/** Day view cell duration presets (minutes) */
+export type DayCellDuration = 15 | 30 | 60;
+
+/** Week view cell duration presets (hours) */
+export type WeekCellDuration = 3 | 4 | 6 | 8 | 12;
+
 /** Axis direction for position mapping */
 export type AxisDirection = "horizontal" | "vertical";
 
@@ -57,8 +63,10 @@ export interface TimelineConfig<TData = unknown> {
   resources: Resource[];
   view: View;
   layout: Layout;
-  /** Grid line interval in minutes (default: 30, min: 5) */
-  timeStep?: number;
+  /** Day view cell configuration */
+  day?: { cellDuration?: DayCellDuration };
+  /** Week view cell configuration */
+  week?: { cellDuration?: WeekCellDuration };
   /** Stacking strategy (defaults based on layout × view) */
   stackMode?: StackMode;
   /** Calendar Month display mode (default: "bar") */

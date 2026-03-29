@@ -20,11 +20,10 @@ import {
   resolveColor,
   calculateNowPosition,
   toPhysicalPosition,
+  getCellConfig,
 } from "@chronoview/core";
 import type {
   TimelineConfig,
-  TimelineEvent,
-  Resource,
   AxisConfig,
   DateRange,
   TimeSlot,
@@ -45,8 +44,6 @@ export interface UseScheduleViewReturn {
   nowPosition: number | null;
 }
 
-const DEFAULT_SLOT_WIDTH = 120;
-const DEFAULT_TIME_STEP = 30;
 const DEFAULT_EVENT_HEIGHT = 36;
 const DEFAULT_EVENT_GAP = 4;
 const DEFAULT_MIN_ROW_HEIGHT = 48;
@@ -57,11 +54,17 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     events,
     resources,
     view,
-    timeStep = DEFAULT_TIME_STEP,
+    day,
+    week,
     startDate,
     showNowIndicator = true,
     weekStartsOn = 0,
   } = config;
+
+  const cellConfig = useMemo(
+    () => getCellConfig(view, day?.cellDuration, week?.cellDuration),
+    [view, day?.cellDuration, week?.cellDuration],
+  );
 
   const axisConfig = useMemo(() => getAxisConfig("schedule"), []);
 
@@ -77,19 +80,19 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
     return generateTimeSlots({
       startTime: dateRange.start,
       endTime: dateRange.end,
-      timeStep,
+      intervalMinutes: cellConfig.intervalMinutes,
     });
-  }, [view, dateRange, timeStep]);
+  }, [view, dateRange, cellConfig.intervalMinutes]);
 
   const totalMainSize = useMemo(() => {
     if (view === "month") {
       const days = Math.round(
         (dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24),
       );
-      return days * 40; // column width for month
+      return days * cellConfig.cellWidthPx;
     }
-    return timeSlots.length * DEFAULT_SLOT_WIDTH;
-  }, [view, timeSlots, dateRange]);
+    return timeSlots.length * cellConfig.cellWidthPx;
+  }, [view, timeSlots, dateRange, cellConfig.cellWidthPx]);
 
   // Build row layouts: group events by resource, detect overlaps, stack, position
   const rows = useMemo(() => {
