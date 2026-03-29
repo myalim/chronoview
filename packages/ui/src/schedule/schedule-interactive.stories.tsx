@@ -33,6 +33,11 @@ const meta: Meta<typeof Schedule> = {
     showToolbar: { control: "boolean" },
     showFilter: { control: "boolean" },
     showNowIndicator: { control: "boolean" },
+    eventSize: {
+      control: "inline-radio",
+      options: ["xs", "sm", "md", "lg"],
+      description: "Event card size preset",
+    },
     weekStartsOn: {
       options: [0, 1],
       control: {
@@ -48,7 +53,7 @@ const meta: Meta<typeof Schedule> = {
     onDateChange: { table: { disable: true } },
     onEventClick: { table: { disable: true } },
     onEventHover: { table: { disable: true } },
-    renderEvent: { table: { disable: true } },
+    eventProps: { table: { disable: true } },
     renderResource: { table: { disable: true } },
     renderTimeHeader: { table: { disable: true } },
     availableViews: { table: { disable: true } },
@@ -224,7 +229,7 @@ export const Default: Story = {
   },
 };
 
-/** Custom Rendering — renderEvent + renderResource */
+/** Custom Rendering — eventProps + renderResource */
 export const CustomRendering: Story = {
   args: {
     events: EVENTS,
@@ -232,23 +237,12 @@ export const CustomRendering: Story = {
     view: "day",
     cellDuration: { day: 60 },
 
-    renderEvent: (event: TimelineEvent, layout: { color: string }) => (
-      <div
-        style={{
-          padding: "2px 6px",
-          background: layout.color,
-          color: "white",
-          borderRadius: 4,
-          fontSize: 12,
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          overflow: "hidden",
-        }}
-      >
-        <strong>{event.title}</strong>
-      </div>
-    ),
+    eventSize: "lg",
+
+    eventProps: (event: TimelineEvent) => ({
+      title: <strong>{event.title}</strong>,
+      subtitle: <span style={{ fontStyle: "italic" }}>Custom subtitle</span>,
+    }),
 
     renderResource: (resource: Resource) => (
       <div
@@ -271,8 +265,6 @@ export const CustomRendering: Story = {
         <span style={{ fontWeight: 600, fontSize: 13 }}>{resource.title}</span>
       </div>
     ),
-
-    className: "",
   },
 };
 

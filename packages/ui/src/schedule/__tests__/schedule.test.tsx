@@ -106,18 +106,46 @@ describe("Schedule", () => {
     expect(nextBtns[0]).toBeDefined();
   });
 
-  it("renders custom event via renderEvent", () => {
+  it("customizes event card via eventProps", () => {
     render(
       <Schedule
         events={EVENTS}
         resources={RESOURCES}
         startDate={BASE_DATE}
-        renderEvent={(event) => <div>{`CUSTOM: ${event.title}`}</div>}
+        eventProps={(event) => ({
+          title: `CUSTOM: ${event.title}`,
+        })}
       />,
     );
 
     expect(screen.getByText("CUSTOM: Sprint Planning")).toBeDefined();
     expect(screen.getByText("CUSTOM: Design Review")).toBeDefined();
+  });
+
+  it("eventProps onClick overrides onEventClick for specific events", () => {
+    const globalClicks: string[] = [];
+    const customClicks: string[] = [];
+
+    render(
+      <Schedule
+        events={EVENTS}
+        resources={RESOURCES}
+        startDate={BASE_DATE}
+        onEventClick={(event) => globalClicks.push(event.id)}
+        eventProps={(event) =>
+          event.id === "e1" ? { onClick: () => customClicks.push(event.id) } : {}
+        }
+      />,
+    );
+
+    // Click e1 (Sprint Planning) — should use custom onClick
+    fireEvent.click(screen.getAllByText("Sprint Planning")[0]);
+    expect(customClicks).toContain("e1");
+    expect(globalClicks).not.toContain("e1");
+
+    // Click e3 (Code Review) — should use default onEventClick
+    fireEvent.click(screen.getAllByText("Code Review")[0]);
+    expect(globalClicks).toContain("e3");
   });
 
   it("renders custom resource via renderResource", () => {

@@ -93,6 +93,8 @@ export interface TimelineConfig<TData = unknown> {
   availableViews?: View[];
   /** Week start day: 0 = Sunday (default), 1 = Monday */
   weekStartsOn?: 0 | 1;
+  /** Event card height in px (default: 36). Used for row height calculation. */
+  eventHeight?: number;
 }
 
 // ─── Axis Abstraction ───

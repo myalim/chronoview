@@ -11,20 +11,13 @@
 
 import { useState, useCallback, useEffect, type ReactNode } from "react";
 import { useDateNavigation, useTimelineFilter, useScheduleView } from "@chronoview/react";
-import type {
-  View,
-  TimelineEvent,
-  Resource,
-  EventLayout,
-  TimeSlot,
-  CellDurationConfig,
-} from "@chronoview/core";
+import type { View, TimelineEvent, Resource, TimeSlot, CellDurationConfig } from "@chronoview/core";
 import { getDefaultAvailableViews } from "@chronoview/core";
 
 import { ScheduleView } from "./schedule-view.js";
 import { TimeHeader } from "./time-header.js";
 import { ResourceSidebar } from "./resource-sidebar.js";
-import { EventCard } from "./event-card.js";
+import { EventCard, type EventCardProps, type EventCardSize } from "./event-card.js";
 import { NowIndicator } from "./now-indicator.js";
 import { GridLines } from "./grid-lines.js";
 import { Toolbar } from "../common/toolbar.js";
@@ -57,8 +50,8 @@ export interface ScheduleProps<TData = unknown> {
   showFilter?: boolean;
 
   // ─── Custom Rendering ───
-  /** Override event card rendering */
-  renderEvent?: (event: TimelineEvent<TData>, layout: EventLayout) => ReactNode;
+  /** Per-event EventCard props override. Merges with computed defaults. */
+  eventProps?: (event: TimelineEvent<TData>) => Partial<Omit<EventCardProps, "style">>;
   /** Override resource sidebar row rendering */
   renderResource?: (resource: Resource) => ReactNode;
   /** Override time header slot rendering (reserved for future use) */
@@ -71,6 +64,8 @@ export interface ScheduleProps<TData = unknown> {
   onDateChange?: (date: Date) => void;
 
   // ─── Style ───
+  /** Event card size preset. Affects card height and row height. Default: "md". */
+  eventSize?: EventCardSize;
   className?: string;
 }
 
@@ -85,11 +80,12 @@ export function Schedule<TData = unknown>({
   showNowIndicator = true,
   showToolbar = true,
   showFilter = false,
-  renderEvent,
+  eventProps,
   renderResource,
   onEventClick,
   onEventHover,
   onViewChange,
+  eventSize,
   className,
 }: ScheduleProps<TData>) {
   // ─── View State ───
@@ -137,6 +133,9 @@ export function Schedule<TData = unknown>({
   } = useTimelineFilter({ events, resources });
 
   // ─── Schedule Layout ───
+  const SIZE_TO_PX: Record<EventCardSize, number> = { xs: 20, sm: 24, md: 36, lg: 48 };
+  const eventHeight = eventSize ? SIZE_TO_PX[eventSize] : undefined;
+
   const { rows, dateRange, totalCrossSize, getEventStyle, nowPosition } = useScheduleView({
     events: filteredEvents as TimelineEvent[],
     resources: filteredResources,
@@ -146,6 +145,7 @@ export function Schedule<TData = unknown>({
     startDate: currentDate,
     showNowIndicator,
     weekStartsOn,
+    eventHeight,
   });
 
   // Derive data for sub-components
@@ -209,42 +209,35 @@ export function Schedule<TData = unknown>({
       {/* Event cards */}
       {rows.flatMap((row) =>
         row.events.map((eventLayout) => {
+          const event = eventLayout.event as TimelineEvent<TData>;
           const style = getEventStyle(eventLayout);
           const variant = currentView === "month" ? "month" : "default";
-
-          if (renderEvent) {
-            return (
-              <div key={eventLayout.event.id} style={style}>
-                {renderEvent(eventLayout.event as TimelineEvent<TData>, eventLayout)}
-              </div>
-            );
-          }
-
-          // Format time label for day/week views
-          const timeLabel =
+          const defaultSubtitle =
             variant === "default"
-              ? formatTimeLabel(eventLayout.event.start, eventLayout.event.end)
+              ? formatTimeLabel(event.start, event.end)
               : undefined;
+          const defaultOnClick = onEventClick ? () => onEventClick(event) : undefined;
+          const defaultOnMouseEnter = onEventHover ? () => onEventHover(event) : undefined;
+
+          // Merge user overrides with computed defaults
+          const overrides = eventProps?.(event);
 
           return (
             <EventCard
-              key={eventLayout.event.id}
-              title={eventLayout.event.title}
-              timeLabel={timeLabel}
-              color={eventLayout.color}
-              variant={variant}
+              key={event.id}
+              title={overrides?.title ?? event.title}
+              subtitle={overrides?.subtitle ?? defaultSubtitle}
+              color={overrides?.color ?? eventLayout.color}
+              variant={overrides?.variant ?? variant}
+              size={overrides?.size ?? eventSize}
               style={style}
-              onClick={
-                onEventClick
-                  ? () => onEventClick(eventLayout.event as TimelineEvent<TData>)
-                  : undefined
-              }
-              onMouseEnter={
-                onEventHover
-                  ? () => onEventHover(eventLayout.event as TimelineEvent<TData>)
-                  : undefined
-              }
-            />
+              className={overrides?.className}
+              onClick={overrides?.onClick ?? defaultOnClick}
+              onMouseEnter={overrides?.onMouseEnter ?? defaultOnMouseEnter}
+              onMouseLeave={overrides?.onMouseLeave}
+            >
+              {overrides?.children}
+            </EventCard>
           );
         }),
       )}
