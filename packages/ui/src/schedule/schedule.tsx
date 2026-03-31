@@ -70,8 +70,12 @@ export interface ScheduleProps<TData = unknown> {
   // ─── View Configuration ───
   /** Initial view (default: "day") */
   view?: View;
-  /** Initial start date (default: today) */
+  /** Initial start date for uncontrolled mode (default: today). Ignored when `date` is provided. */
   startDate?: Date;
+  /** Controlled current date. When provided, Schedule delegates date state to the consumer. */
+  date?: Date;
+  /** Called when the displayed date changes (prev/next/goToDate). Required for controlled mode. */
+  onDateChange?: (date: Date) => void;
   /** Per-view cell duration (day: minutes, week: hours) */
   cellDuration?: CellDurationConfig;
   /** Week start day (0=Sun, 1=Mon) */
@@ -125,6 +129,8 @@ export function Schedule<TData = unknown>({
   resources,
   view: initialView = "day",
   startDate,
+  date,
+  onDateChange,
   cellDuration,
   weekStartsOn = 0,
   availableViews,
@@ -161,6 +167,8 @@ export function Schedule<TData = unknown>({
   // ─── Date Navigation ───
   const { currentDate, goToPrev, goToNext, goToDate, goToToday } = useDateNavigation({
     initialDate: startDate,
+    date,
+    onDateChange,
     view: currentView,
   });
 

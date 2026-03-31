@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { TimelineEvent, Resource } from "@chronoview/core";
 import { Schedule } from "./schedule.js";
@@ -287,7 +288,10 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story, context) => (
-      <div className={context.args.darkMode ? "dark" : ""} style={{ maxWidth: 1100 }}>
+      <div
+        className={context.args.darkMode ? "dark" : ""}
+        style={{ maxWidth: 1100 }}
+      >
         <Story />
       </div>
     ),
@@ -456,6 +460,60 @@ export const TooltipDisabled: Story = {
   },
 };
 
+/** Controlled Date — external state synced via date + onDateChange */
+export const ControlledDate: Story = {
+  argTypes: {
+    theme: {
+      control: "inline-radio",
+      options: ["light", "dark"],
+    },
+  },
+  render: (args) => {
+    const [date, setDate] = useState(BASE_DATE);
+    const [view, setView] = useState<"day" | "week" | "month">("day");
+
+    const formatRange = () => {
+      const fmt = (d: Date) => d.toLocaleDateString();
+      if (view === "week") {
+        const start = new Date(date);
+        start.setDate(start.getDate() - start.getDay());
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        return `${fmt(start)} – ${fmt(end)}`;
+      }
+      if (view === "month") {
+        return date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+      }
+      return fmt(date);
+    };
+
+    // Resolve dark mode: explicit theme prop or system preference
+    const prefersDark =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = args.theme === "dark" || (args.theme == null && prefersDark);
+
+    return (
+      <div style={{ color: isDark ? "#e5e7eb" : "#1f2937", background: isDark ? "#0f172a" : "#fff" }}>
+        <p style={{ fontFamily: "monospace", fontSize: 13, marginBottom: 8 }}>
+          External state: <strong>{formatRange()}</strong>
+        </p>
+        <Schedule
+          events={EVENTS}
+          resources={RESOURCES}
+          view={view}
+          onViewChange={setView}
+          date={date}
+          onDateChange={setDate}
+          theme={args.theme}
+          showToolbar
+          showFilter
+        />
+      </div>
+    );
+  },
+};
+
 /** Performance — 100 resources x 10,000 events */
 export const Performance: Story = {
   render: () => {
@@ -497,6 +555,13 @@ export const Performance: Story = {
       }
     }
 
-    return <Schedule events={events} resources={resources} view="day" startDate={BASE_DATE} />;
+    return (
+      <Schedule
+        events={events}
+        resources={resources}
+        view="day"
+        startDate={BASE_DATE}
+      />
+    );
   },
 };
