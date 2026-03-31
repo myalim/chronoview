@@ -7,7 +7,7 @@
  * Reference: docs/design/schedule/schedule-day.md §2
  */
 
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import type { ScheduleContainerProps } from "./schedule-container.js";
 import { ScheduleContainer } from "./schedule-container.js";
 import { cn } from "../utils/cn.js";
@@ -26,6 +26,8 @@ export interface ScheduleViewProps {
   // Filter panel (optional)
   filterPanel?: ReactNode;
 
+  /** Ref to the ScheduleContainer element (used as popover boundary) */
+  containerRef?: Ref<HTMLDivElement>;
   className?: string;
 }
 
@@ -38,6 +40,7 @@ export function ScheduleView({
   headerHeight,
   toolbar,
   filterPanel,
+  containerRef,
   className,
 }: ScheduleViewProps) {
   return (
@@ -50,6 +53,7 @@ export function ScheduleView({
       {toolbar}
       {filterPanel}
       <ScheduleContainer
+        ref={containerRef}
         sidebar={sidebar}
         header={header}
         body={body}

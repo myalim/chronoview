@@ -294,6 +294,168 @@ export const DarkMode: Story = {
   ],
 };
 
+/** WithTooltip — Hover an event card to see the built-in tooltip */
+export const WithTooltip: Story = {
+  args: {
+    events: EVENTS,
+    resources: RESOURCES,
+    view: "day",
+    showToolbar: true,
+  },
+};
+
+/** WithPopover — Click an event to see a custom detail popover */
+export const WithPopover: Story = {
+  args: {
+    events: EVENTS,
+    resources: RESOURCES,
+    view: "day",
+    showToolbar: true,
+    renderEventDetail: (event: TimelineEvent, { close }: { close: () => void }) => (
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontWeight: 600, fontSize: 14 }}>{event.title}</div>
+        <div style={{ fontSize: 12, color: "var(--cv-color-text-secondary)" }}>
+          {event.start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {" - "}
+          {event.end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
+        <div style={{ fontSize: 12, color: "var(--cv-color-text-muted)" }}>
+          Resource: {event.resourceId}
+        </div>
+        <button
+          type="button"
+          onClick={close}
+          style={{
+            marginTop: 4,
+            padding: "4px 12px",
+            fontSize: 12,
+            borderRadius: "var(--cv-radius-sm)",
+            border: "1px solid var(--cv-color-border)",
+            background: "var(--cv-color-surface-hover)",
+            color: "var(--cv-color-text)",
+            cursor: "pointer",
+          }}
+        >
+          Close
+        </button>
+      </div>
+    ),
+  },
+};
+
+/** WithPopoverCustomData — Demonstrates TData generic with custom event data */
+export const WithPopoverCustomData: Story = {
+  render: () => {
+    interface MeetingData {
+      description: string;
+      attendees: string[];
+      location: string;
+    }
+
+    const events: TimelineEvent<MeetingData>[] = [
+      {
+        id: "m1",
+        resourceId: "r1",
+        start: (() => { const d = new Date(BASE_DATE); d.setHours(9, 0, 0, 0); return d; })(),
+        end: (() => { const d = new Date(BASE_DATE); d.setHours(11, 0, 0, 0); return d; })(),
+        title: "Sprint Planning",
+        color: "#3b82f6",
+        data: {
+          description: "Plan the next sprint goals and assign stories.",
+          attendees: ["Alice", "Bob", "Carol"],
+          location: "Meeting Room A",
+        },
+      },
+      {
+        id: "m2",
+        resourceId: "r2",
+        start: (() => { const d = new Date(BASE_DATE); d.setHours(13, 0, 0, 0); return d; })(),
+        end: (() => { const d = new Date(BASE_DATE); d.setHours(14, 30, 0, 0); return d; })(),
+        title: "Design Review",
+        color: "#8b5cf6",
+        data: {
+          description: "Review the UI mockups for the new dashboard.",
+          attendees: ["Bob", "David"],
+          location: "Design Lab",
+        },
+      },
+    ];
+
+    return (
+      <div style={{ maxWidth: 1100 }}>
+        <Schedule<MeetingData>
+          events={events}
+          resources={RESOURCES}
+          startDate={BASE_DATE}
+          view="day"
+          renderEventDetail={(event, { close }) => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>{event.title}</div>
+              <div style={{ fontSize: 12, color: "var(--cv-color-text-secondary)" }}>
+                {event.data?.description}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--cv-color-text-muted)" }}>
+                Attendees: {event.data?.attendees.join(", ")}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--cv-color-text-muted)" }}>
+                Location: {event.data?.location}
+              </div>
+              <button
+                type="button"
+                onClick={close}
+                style={{
+                  marginTop: 4,
+                  padding: "4px 12px",
+                  fontSize: 12,
+                  borderRadius: "var(--cv-radius-sm)",
+                  border: "1px solid var(--cv-color-border)",
+                  background: "var(--cv-color-surface-hover)",
+                  color: "var(--cv-color-text)",
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
+          )}
+        />
+      </div>
+    );
+  },
+};
+
+/** TooltipDisabled — Tooltip is disabled, only popover works */
+export const TooltipDisabled: Story = {
+  args: {
+    events: EVENTS,
+    resources: RESOURCES,
+    view: "day",
+    showToolbar: true,
+    disableTooltip: true,
+    renderEventDetail: (event: TimelineEvent, { close }: { close: () => void }) => (
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontWeight: 600 }}>{event.title}</div>
+        <div style={{ fontSize: 12 }}>Tooltip is disabled. Only popover appears on click.</div>
+        <button
+          type="button"
+          onClick={close}
+          style={{
+            padding: "4px 12px",
+            fontSize: 12,
+            borderRadius: "var(--cv-radius-sm)",
+            border: "1px solid var(--cv-color-border)",
+            background: "var(--cv-color-surface-hover)",
+            color: "var(--cv-color-text)",
+            cursor: "pointer",
+          }}
+        >
+          Close
+        </button>
+      </div>
+    ),
+  },
+};
+
 /** Performance — 100 resources x 10,000 events */
 export const Performance: Story = {
   render: () => {

@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ["react", "react-dom", "@chronoview/core", "@chronoview/react"],
+  external: ["react", "react-dom", "@chronoview/core", "@chronoview/react", "@floating-ui/react"],
 });

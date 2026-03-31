@@ -27,6 +27,7 @@
     "@chronoview/react": "workspace:*"
   },
   "peerDependencies": {
+    "@floating-ui/react": ">=0.27.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "tailwindcss": ">=4.0.0"

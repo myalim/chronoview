@@ -28,8 +28,10 @@ export interface EventCardProps {
   size?: EventCardSize;
   /** Additional CSS classes for the outer container */
   className?: string;
-  onClick?: () => void;
-  onMouseEnter?: () => void;
+  /** Click handler — receives the card's DOM element for positioning (tooltip/popover) */
+  onClick?: (element: HTMLDivElement) => void;
+  /** Mouse enter handler — receives the card's DOM element for positioning */
+  onMouseEnter?: (element: HTMLDivElement) => void;
   onMouseLeave?: () => void;
   /** Replace the entire card body with custom content (container is preserved) */
   children?: ReactNode;
@@ -74,7 +76,7 @@ export function EventCard({
         onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            onClick();
+            onClick(e.currentTarget);
           }
         },
       } as const)
@@ -96,8 +98,8 @@ export function EventCard({
     <div
       className={cardClassName}
       style={positionStyle}
-      onClick={onClick}
-      onMouseEnter={onMouseEnter}
+      onClick={onClick ? (e) => onClick(e.currentTarget) : undefined}
+      onMouseEnter={onMouseEnter ? (e) => onMouseEnter(e.currentTarget) : undefined}
       onMouseLeave={onMouseLeave}
       {...interactiveProps}
     >
