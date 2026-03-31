@@ -31,3 +31,26 @@ function ToolbarDemo() {
 export const Default: Story = {
   render: () => <ToolbarDemo />,
 };
+
+/** Toolbar with calendar date picker button */
+function ToolbarWithCalendarDemo() {
+  const [date, setDate] = useState(new Date(2026, 2, 27));
+  const [view, setView] = useState<"day" | "week" | "month">("day");
+
+  return (
+    <Toolbar
+      currentDate={date}
+      view={view}
+      layout="schedule"
+      onPrev={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}
+      onNext={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))}
+      onToday={() => setDate(new Date())}
+      onGoToDate={setDate}
+      onViewChange={setView}
+    />
+  );
+}
+
+export const WithCalendar: Story = {
+  render: () => <ToolbarWithCalendarDemo />,
+};

@@ -159,7 +159,7 @@ export function Schedule<TData = unknown>({
   );
 
   // ─── Date Navigation ───
-  const { currentDate, goToPrev, goToNext, goToToday } = useDateNavigation({
+  const { currentDate, goToPrev, goToNext, goToDate, goToToday } = useDateNavigation({
     initialDate: startDate,
     view: currentView,
   });
@@ -402,6 +402,8 @@ export function Schedule<TData = unknown>({
       onPrev={goToPrev}
       onNext={goToNext}
       onToday={goToToday}
+      onGoToDate={goToDate}
+      weekStartsOn={weekStartsOn}
       onViewChange={handleViewChange}
       availableViews={resolvedAvailableViews}
     />
