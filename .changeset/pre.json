@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@chronoview/storybook": "0.0.0",
+    "@chronoview/core": "0.0.0",
+    "@chronoview/react": "0.0.0",
+    "@chronoview/ui": "0.0.0"
+  },
+  "changesets": [
+    "initial-alpha-release"
+  ]
+}

@@ -1,8 +1,26 @@
 {
   "name": "@chronoview/core",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "Framework-agnostic core engine for ChronoView",
   "license": "MIT",
+  "author": "myalim",
+  "homepage": "https://github.com/myalim/chronoview#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/myalim/chronoview.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/myalim/chronoview/issues",
+  "keywords": [
+    "chronoview",
+    "schedule",
+    "timeline",
+    "calendar",
+    "headless"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "exports": {
     ".": {
