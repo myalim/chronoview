@@ -5,7 +5,7 @@
  * Escape/click-outside dismissal is delegated to EventPopover's useDismiss.
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { TimelineEvent } from "@chronoview/core";
 
 interface UseEventDetailConfig {
@@ -47,6 +47,11 @@ export function useEventDetail<TData = unknown>(
       hoverTimerRef.current = null;
     }
   }, []);
+
+  // Clear pending timer on unmount to prevent state updates on unmounted component
+  useEffect(() => {
+    return () => clearHoverTimer();
+  }, [clearHoverTimer]);
 
   const handleMouseEnter = useCallback(
     (event: TimelineEvent<TData>, element: HTMLElement) => {
