@@ -4,8 +4,8 @@
  * Tests the full flow: data → hooks → UI rendering.
  */
 
-import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
 import type { TimelineEvent, Resource } from "@chronoview/core";
 import { Schedule } from "../schedule.js";
 
@@ -186,5 +186,156 @@ describe("Schedule", () => {
     fireEvent.click(eventCards[0]);
 
     expect(clickedEvents).toContain("e1");
+  });
+
+  // ─── Event Detail (Tooltip / Popover) ───
+
+  describe("Event Detail UI", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("shows tooltip on hover with event info", () => {
+      render(
+        <Schedule events={EVENTS} resources={RESOURCES} startDate={BASE_DATE} />,
+      );
+
+      // Record count before hover (title/time also appears in EventCard subtitle)
+      const titleCountBefore = screen.getAllByText("Sprint Planning").length;
+      const aliceCountBefore = screen.getAllByText("Alice").length;
+
+      const eventCard = screen.getAllByText("Sprint Planning")[0];
+      fireEvent.mouseEnter(eventCard);
+
+      // Tooltip appears after 150ms delay
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+
+      // Tooltip adds extra rendering → count increases
+      expect(screen.getAllByText("Sprint Planning").length).toBeGreaterThan(titleCountBefore);
+      expect(screen.getAllByText("Alice").length).toBeGreaterThan(aliceCountBefore);
+    });
+
+    it("hides tooltip when disableTooltip is true", () => {
+      render(
+        <Schedule
+          events={EVENTS}
+          resources={RESOURCES}
+          startDate={BASE_DATE}
+          disableTooltip
+        />,
+      );
+
+      // Record count before hover
+      const titleCountBefore = screen.getAllByText("Sprint Planning").length;
+
+      const eventCard = screen.getAllByText("Sprint Planning")[0];
+      fireEvent.mouseEnter(eventCard);
+
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+
+      // No tooltip → count unchanged
+      expect(screen.getAllByText("Sprint Planning").length).toBe(titleCountBefore);
+    });
+
+    it("shows popover with renderEventDetail content on click", () => {
+      render(
+        <Schedule
+          events={EVENTS}
+          resources={RESOURCES}
+          startDate={BASE_DATE}
+          renderEventDetail={(event, { close }) => (
+            <div>
+              <span>Detail: {event.title}</span>
+              <button type="button" onClick={close}>
+                Close
+              </button>
+            </div>
+          )}
+        />,
+      );
+
+      const eventCard = screen.getAllByText("Sprint Planning")[0];
+      fireEvent.click(eventCard);
+
+      expect(screen.getByText("Detail: Sprint Planning")).toBeDefined();
+      expect(screen.getByText("Close")).toBeDefined();
+    });
+
+    it("fires onEventClick AND opens popover simultaneously", () => {
+      const clicked: string[] = [];
+
+      render(
+        <Schedule
+          events={EVENTS}
+          resources={RESOURCES}
+          startDate={BASE_DATE}
+          onEventClick={(event) => clicked.push(event.id)}
+          renderEventDetail={(event) => <span>Detail: {event.title}</span>}
+        />,
+      );
+
+      const eventCard = screen.getAllByText("Sprint Planning")[0];
+      fireEvent.click(eventCard);
+
+      // onEventClick callback fires
+      expect(clicked).toContain("e1");
+      // Popover also appears
+      expect(screen.getByText("Detail: Sprint Planning")).toBeDefined();
+    });
+
+    it("does not open popover when eventProps provides custom onClick", () => {
+      render(
+        <Schedule
+          events={EVENTS}
+          resources={RESOURCES}
+          startDate={BASE_DATE}
+          renderEventDetail={(event) => <span>Detail: {event.title}</span>}
+          eventProps={(event) =>
+            event.id === "e1" ? { onClick: () => {} } : {}
+          }
+        />,
+      );
+
+      const eventCard = screen.getAllByText("Sprint Planning")[0];
+      fireEvent.click(eventCard);
+
+      // eventProps has custom onClick → popover should not open
+      expect(screen.queryByText("Detail: Sprint Planning")).toBeNull();
+    });
+
+    it("closes popover when close helper is called", () => {
+      render(
+        <Schedule
+          events={EVENTS}
+          resources={RESOURCES}
+          startDate={BASE_DATE}
+          renderEventDetail={(event, { close }) => (
+            <div>
+              <span>Detail: {event.title}</span>
+              <button type="button" onClick={close}>
+                Close
+              </button>
+            </div>
+          )}
+        />,
+      );
+
+      // Open popover
+      const eventCard = screen.getAllByText("Sprint Planning")[0];
+      fireEvent.click(eventCard);
+      expect(screen.getByText("Detail: Sprint Planning")).toBeDefined();
+
+      // Click close button
+      fireEvent.click(screen.getByText("Close"));
+      expect(screen.queryByText("Detail: Sprint Planning")).toBeNull();
+    });
   });
 });

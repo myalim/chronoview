@@ -9,7 +9,7 @@
  *   <Schedule events={events} resources={resources} view="week" cellDuration={6} />
  */
 
-import { useState, useCallback, useEffect, type ReactNode } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from "react";
 import {
   useDateNavigation,
   useTimelineFilter,
@@ -34,8 +34,12 @@ import {
 } from "./event-card.js";
 import { NowIndicator } from "./now-indicator.js";
 import { GridLines } from "./grid-lines.js";
+import { cn } from "../utils/cn.js";
 import { Toolbar } from "../common/toolbar.js";
 import { FilterChips } from "../common/filter-chips.js";
+import { useEventDetail } from "./use-event-detail.js";
+import { EventTooltip } from "./event-tooltip.js";
+import { EventPopover } from "./event-popover.js";
 
 /** Maps EventCardSize presets to pixel values (synced with tokens.css) */
 const SIZE_TO_PX: Record<EventCardSize, number> = {
@@ -86,6 +90,18 @@ export interface ScheduleProps<TData = unknown> {
   /** Override resource sidebar row rendering */
   renderResource?: (resource: Resource) => ReactNode;
 
+  // ─── Event Detail ───
+  /**
+   * Render custom content inside the click popover.
+   * When provided, clicking an event opens a popover with this content.
+   */
+  renderEventDetail?: (
+    event: TimelineEvent<TData>,
+    helpers: { close: () => void },
+  ) => ReactNode;
+  /** Disable the built-in hover tooltip. Default: false. */
+  disableTooltip?: boolean;
+
   // ─── Event Handlers ───
   onEventClick?: (event: TimelineEvent<TData>) => void;
   onEventHover?: (event: TimelineEvent<TData>) => void;
@@ -94,6 +110,8 @@ export interface ScheduleProps<TData = unknown> {
   // ─── Style ───
   /** Event card size preset. Affects card height and row height. Default: "md". */
   eventSize?: EventCardSize;
+  /** Theme override. Default: follows system preference. */
+  theme?: "light" | "dark";
   className?: string;
 }
 
@@ -110,10 +128,13 @@ export function Schedule<TData = unknown>({
   showFilter = false,
   eventProps,
   renderResource,
+  renderEventDetail,
+  disableTooltip = false,
   onEventClick,
   onEventHover,
   onViewChange,
   eventSize,
+  theme,
   className,
 }: ScheduleProps<TData>) {
   // ─── View State ───
@@ -170,6 +191,24 @@ export function Schedule<TData = unknown>({
     totalSize: totalMainSize,
     enabled: showNowIndicator,
   });
+
+  // ─── Container Ref (popover boundary) ───
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // ─── Event Detail (tooltip/popover) ───
+  const detail = useEventDetail<TData>({
+    tooltipEnabled: !disableTooltip,
+    popoverEnabled: !!renderEventDetail,
+  });
+
+  // Resource name lookup for tooltip display
+  const resourceNameMap = useMemo(
+    () => new Map(resources.map((r) => [r.id, r.title])),
+    [resources],
+  );
+
+  // Theme class for portal-rendered tooltip/popover (dark mode support)
+  const themeClass = theme ?? undefined;
 
   // Derive data for sub-components
   const sidebarResources = rows.map((r) => r.resource);
@@ -240,15 +279,33 @@ export function Schedule<TData = unknown>({
             variant === "default"
               ? formatTimeLabel(event.start, event.end)
               : undefined;
-          const defaultOnClick = onEventClick
-            ? () => onEventClick(event)
-            : undefined;
-          const defaultOnMouseEnter = onEventHover
-            ? () => onEventHover(event)
-            : undefined;
 
           // Merge user overrides with computed defaults
           const overrides = eventProps?.(event);
+
+          // When eventProps provides a custom onClick, the consumer controls click behavior —
+          // skip popover and use the consumer's handler instead of onEventClick
+          const hasCustomClick = !!overrides?.onClick;
+
+          const handleClick = hasCustomClick
+            ? overrides.onClick
+            : (element: HTMLDivElement) => {
+                onEventClick?.(event);
+                detail.handleClick(event, element);
+              };
+
+          const handleMouseEnter = hasCustomClick
+            ? overrides?.onMouseEnter
+            : (element: HTMLDivElement) => {
+                onEventHover?.(event);
+                detail.handleMouseEnter(event, element);
+              };
+
+          const handleMouseLeave = hasCustomClick
+            ? overrides?.onMouseLeave
+            : () => {
+                detail.handleMouseLeave();
+              };
 
           return (
             <EventCard
@@ -260,9 +317,9 @@ export function Schedule<TData = unknown>({
               size={overrides?.size ?? eventSize}
               style={style}
               className={overrides?.className}
-              onClick={overrides?.onClick ?? defaultOnClick}
-              onMouseEnter={overrides?.onMouseEnter ?? defaultOnMouseEnter}
-              onMouseLeave={overrides?.onMouseLeave}
+              onClick={handleClick}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
               {overrides?.children}
             </EventCard>
@@ -273,6 +330,41 @@ export function Schedule<TData = unknown>({
       {/* Now indicator */}
       {nowPosition != null && (
         <NowIndicator position={nowPosition} crossSize={totalCrossSize} />
+      )}
+
+      {/* Hover tooltip */}
+      {detail.tooltipEvent && detail.tooltipReference && (
+        <EventTooltip
+          event={detail.tooltipEvent}
+          resourceName={resourceNameMap.get(detail.tooltipEvent.resourceId) ?? ""}
+          reference={detail.tooltipReference}
+          themeClass={themeClass}
+          boundary={containerRef.current ?? undefined}
+          boundaryPadding={{
+            left: 212,
+            top: HEADER_HEIGHT[currentView] + 12,
+            right: 12,
+            bottom: 12,
+          }}
+        />
+      )}
+
+      {/* Click popover */}
+      {renderEventDetail && detail.popoverEvent && detail.popoverReference && (
+        <EventPopover
+          reference={detail.popoverReference}
+          onClose={detail.closePopover}
+          themeClass={themeClass}
+          boundary={containerRef.current ?? undefined}
+          boundaryPadding={{
+            left: 212, // sidebar(200px) + gap
+            top: HEADER_HEIGHT[currentView] + 12,
+            right: 12,
+            bottom: 12,
+          }}
+        >
+          {renderEventDetail(detail.popoverEvent, { close: detail.closePopover })}
+        </EventPopover>
       )}
     </>
   );
@@ -310,7 +402,8 @@ export function Schedule<TData = unknown>({
       headerHeight={HEADER_HEIGHT[currentView]}
       toolbar={toolbar}
       filterPanel={filterPanel}
-      className={className}
+      containerRef={containerRef}
+      className={cn(themeClass, className)}
     />
   );
 }
