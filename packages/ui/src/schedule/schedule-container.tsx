@@ -24,8 +24,8 @@ export interface ScheduleContainerProps {
   totalMainSize: number;
   /** Total cross axis size — height of all rows (from layout result) */
   totalCrossSize: number;
-  /** Header height in px (view-dependent) */
-  headerHeight: number;
+  /** Header height — px number (e.g. 48) or CSS expression (e.g. "var(--cv-size-time-header-height)") */
+  headerHeight: string | number;
   /** Empty state message (when no resources/events) */
   emptyMessage?: string;
   className?: string;
@@ -100,7 +100,10 @@ export const ScheduleContainer = forwardRef<HTMLDivElement, ScheduleContainerPro
 
     const gridStyle: CSSProperties = {
       gridTemplateColumns: "var(--cv-size-sidebar-width) 1fr",
-      gridTemplateRows: `${headerHeight}px 1fr`,
+      gridTemplateRows:
+        typeof headerHeight === "number"
+          ? `${headerHeight}px 1fr`
+          : `${headerHeight} 1fr`,
     };
 
     return (

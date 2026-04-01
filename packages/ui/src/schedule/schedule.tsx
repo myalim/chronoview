@@ -49,12 +49,18 @@ const SIZE_TO_PX: Record<EventCardSize, number> = {
   lg: 48,
 };
 
-/** View-specific header heights in px (synced with tokens.css: time=48, date=32) */
-const HEADER_HEIGHT: Record<View, number> = {
-  day: 48, // time header only
-  week: 80, // date header (32) + time header (48)
-  month: 64, // date header (32) + weekday header (32)
+/**
+ * CSS expression for grid header height per view (source of truth: tokens.css).
+ * View → header composition mapping is mirrored in boundaryPadding pixel calculation below.
+ */
+const HEADER_HEIGHT_CSS: Record<View, string> = {
+  day: "var(--cv-size-time-header-height)",
+  week: "calc(var(--cv-size-date-header-height) + var(--cv-size-time-header-height))",
+  month: "calc(var(--cv-size-date-header-height) * 2)",
 };
+
+/** Boundary gap between sticky areas and floating elements (= --cv-spacing-md) */
+const BOUNDARY_GAP = 12;
 
 export interface ScheduleProps<TData = unknown> {
   /** Event data */
@@ -195,6 +201,22 @@ export function Schedule<TData = unknown>({
   // ─── Container Ref (popover boundary) ───
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // ─── Layout Insets (floating-ui boundaryPadding) ───
+  // CSS variables don't change at runtime — read once on mount.
+  // Tooltip/popover only render after user interaction, so ref is always populated by then.
+  const layoutInsetsRef = useRef({ sidebarWidth: 0, timeHeaderHeight: 0, dateHeaderHeight: 0 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const styles = getComputedStyle(el);
+    layoutInsetsRef.current = {
+      sidebarWidth: parseFloat(styles.getPropertyValue("--cv-size-sidebar-width")) || 0,
+      timeHeaderHeight: parseFloat(styles.getPropertyValue("--cv-size-time-header-height")) || 0,
+      dateHeaderHeight: parseFloat(styles.getPropertyValue("--cv-size-date-header-height")) || 0,
+    };
+  }, []);
+
   // ─── Event Detail (tooltip/popover) ───
   const detail = useEventDetail<TData>({
     tooltipEnabled: !disableTooltip,
@@ -219,6 +241,20 @@ export function Schedule<TData = unknown>({
 
   const resolvedAvailableViews =
     availableViews ?? getDefaultAvailableViews("schedule");
+
+  // ─── Boundary Padding (floating-ui: exclude sticky sidebar/header) ───
+  // View → header composition mapping mirrors HEADER_HEIGHT_CSS above.
+  const { sidebarWidth, timeHeaderHeight, dateHeaderHeight } = layoutInsetsRef.current;
+  const headerHeightPx = currentView === "day" ? timeHeaderHeight
+    : currentView === "week" ? dateHeaderHeight + timeHeaderHeight
+    : dateHeaderHeight * 2;
+
+  const boundaryPadding = {
+    left: sidebarWidth + BOUNDARY_GAP,
+    top: headerHeightPx + BOUNDARY_GAP,
+    right: BOUNDARY_GAP,
+    bottom: BOUNDARY_GAP,
+  };
 
   // ─── Render ───
   const sidebar = (
@@ -340,12 +376,7 @@ export function Schedule<TData = unknown>({
           reference={detail.tooltipReference}
           themeClass={themeClass}
           boundary={containerRef.current ?? undefined}
-          boundaryPadding={{
-            left: 212,
-            top: HEADER_HEIGHT[currentView] + 12,
-            right: 12,
-            bottom: 12,
-          }}
+          boundaryPadding={boundaryPadding}
         />
       )}
 
@@ -356,12 +387,7 @@ export function Schedule<TData = unknown>({
           onClose={detail.closePopover}
           themeClass={themeClass}
           boundary={containerRef.current ?? undefined}
-          boundaryPadding={{
-            left: 212, // sidebar(200px) + gap
-            top: HEADER_HEIGHT[currentView] + 12,
-            right: 12,
-            bottom: 12,
-          }}
+          boundaryPadding={boundaryPadding}
         >
           {renderEventDetail(detail.popoverEvent, { close: detail.closePopover })}
         </EventPopover>
@@ -399,7 +425,7 @@ export function Schedule<TData = unknown>({
       body={body}
       totalMainSize={totalMainSize}
       totalCrossSize={totalCrossSize}
-      headerHeight={HEADER_HEIGHT[currentView]}
+      headerHeight={HEADER_HEIGHT_CSS[currentView]}
       toolbar={toolbar}
       filterPanel={filterPanel}
       containerRef={containerRef}
