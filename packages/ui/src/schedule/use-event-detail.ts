@@ -52,8 +52,8 @@ export function useEventDetail<TData = unknown>(
     (event: TimelineEvent<TData>, element: HTMLElement) => {
       if (!tooltipEnabled) return;
 
-      // Skip tooltip if popover is open for the same event
-      if (popoverEvent?.id === event.id) return;
+      // Skip tooltip while any popover is open (popover takes focus priority)
+      if (popoverEvent) return;
 
       clearHoverTimer();
       hoverTimerRef.current = setTimeout(() => {
@@ -61,7 +61,7 @@ export function useEventDetail<TData = unknown>(
         setTooltipReference(element);
       }, TOOLTIP_DELAY);
     },
-    [tooltipEnabled, popoverEvent?.id, clearHoverTimer],
+    [tooltipEnabled, popoverEvent, clearHoverTimer],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -89,7 +89,7 @@ export function useEventDetail<TData = unknown>(
       setPopoverEvent(event);
       setPopoverReference(element);
     },
-    [popoverEnabled, popoverEvent?.id, clearHoverTimer],
+    [popoverEnabled, popoverEvent, clearHoverTimer],
   );
 
   const closePopover = useCallback(() => {
