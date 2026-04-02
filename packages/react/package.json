@@ -1,8 +1,27 @@
 {
   "name": "@chronoview/react",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "React hooks and context for ChronoView",
   "license": "MIT",
+  "author": "myalim",
+  "homepage": "https://github.com/myalim/chronoview#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/myalim/chronoview.git",
+    "directory": "packages/react"
+  },
+  "bugs": "https://github.com/myalim/chronoview/issues",
+  "keywords": [
+    "chronoview",
+    "react",
+    "hooks",
+    "schedule",
+    "timeline",
+    "calendar"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "exports": {
     ".": {
