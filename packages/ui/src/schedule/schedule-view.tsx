@@ -28,6 +28,8 @@ export interface ScheduleViewProps {
 
   /** Ref to the ScheduleContainer element (used as popover boundary) */
   containerRef?: Ref<HTMLDivElement>;
+  /** Force light or dark theme */
+  theme?: "light" | "dark";
   className?: string;
 }
 
@@ -41,12 +43,14 @@ export function ScheduleView({
   toolbar,
   filterPanel,
   containerRef,
+  theme,
   className,
 }: ScheduleViewProps) {
   return (
     <div
       className={cn(
-        "flex flex-col font-[var(--cv-font-family)] bg-[var(--cv-color-bg)] text-[var(--cv-color-text)]",
+        "flex flex-col text-left font-[var(--cv-font-family)] bg-[var(--cv-color-bg)] text-[var(--cv-color-text)]",
+        theme,
         className,
       )}
     >

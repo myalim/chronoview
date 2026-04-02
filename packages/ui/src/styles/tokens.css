@@ -93,7 +93,70 @@
   --cv-duration-slow: 300ms;
 }
 
-/* ─── Dark Mode ─── */
+/* ─── Dark Mode (system preference) ─── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cv-color-bg: #111827;
+    --cv-color-surface: #1f2937;
+    --cv-color-surface-hover: #374151;
+    --cv-color-border: #374151;
+    --cv-color-border-strong: #4b5563;
+    --cv-color-text: #f9fafb;
+    --cv-color-text-secondary: #9ca3af;
+    --cv-color-text-muted: #6b7280;
+    --cv-color-event-default: #60a5fa;
+    --cv-color-now: #f87171;
+    --cv-color-today-bg: #1e3a5f;
+    --cv-color-today-border: #60a5fa;
+    --cv-color-empty: #4b5563;
+
+    --cv-palette-0: #60a5fa;
+    --cv-palette-1: #a78bfa;
+    --cv-palette-2: #22d3ee;
+    --cv-palette-3: #34d399;
+    --cv-palette-4: #fbbf24;
+    --cv-palette-5: #f87171;
+    --cv-palette-6: #f472b6;
+    --cv-palette-7: #9ca3af;
+
+    --cv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --cv-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --cv-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ─── Light Mode (manual override — ignores system dark preference) ─── */
+[data-theme="light"],
+.light {
+  --cv-color-bg: #ffffff;
+  --cv-color-surface: #f9fafb;
+  --cv-color-surface-hover: #f3f4f6;
+  --cv-color-border: #e5e7eb;
+  --cv-color-border-strong: #d1d5db;
+  --cv-color-text: #111827;
+  --cv-color-text-secondary: #6b7280;
+  --cv-color-text-muted: #9ca3af;
+  --cv-color-event-default: #3b82f6;
+  --cv-color-now: #ef4444;
+  --cv-color-today-bg: #eff6ff;
+  --cv-color-today-border: #3b82f6;
+  --cv-color-empty: #d1d5db;
+
+  --cv-palette-0: #3b82f6;
+  --cv-palette-1: #8b5cf6;
+  --cv-palette-2: #06b6d4;
+  --cv-palette-3: #10b981;
+  --cv-palette-4: #f59e0b;
+  --cv-palette-5: #ef4444;
+  --cv-palette-6: #ec4899;
+  --cv-palette-7: #6b7280;
+
+  --cv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --cv-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --cv-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ─── Dark Mode (manual override) ─── */
 [data-theme="dark"],
 .dark {
   --cv-color-bg: #111827;

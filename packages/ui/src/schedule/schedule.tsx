@@ -429,7 +429,8 @@ export function Schedule<TData = unknown>({
       toolbar={toolbar}
       filterPanel={filterPanel}
       containerRef={containerRef}
-      className={cn(themeClass, className)}
+      theme={theme}
+      className={className}
     />
   );
 }

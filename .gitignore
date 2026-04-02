@@ -5,6 +5,7 @@ node_modules/
 dist/
 .turbo/
 *.tsbuildinfo
+*.tgz
 storybook-static/
 
 # Test
