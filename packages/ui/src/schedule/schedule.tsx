@@ -34,7 +34,6 @@ import {
 } from "./event-card.js";
 import { NowIndicator } from "./now-indicator.js";
 import { GridLines } from "./grid-lines.js";
-import { cn } from "../utils/cn.js";
 import { Toolbar } from "../common/toolbar.js";
 import { FilterChips } from "../common/filter-chips.js";
 import { useEventDetail } from "./use-event-detail.js";
