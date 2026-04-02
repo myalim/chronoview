@@ -86,7 +86,7 @@ export function EventCard({
     "absolute flex items-stretch overflow-hidden rounded-[var(--cv-radius-sm)] min-w-[var(--cv-size-event-min-width)] z-[var(--cv-z-event)] font-[var(--cv-font-family)]",
     "transition-[shadow,filter] duration-[var(--cv-duration-fast)] hover:shadow-[var(--cv-shadow-sm)] hover:brightness-[0.97]",
     onClick ? "cursor-pointer" : "cursor-default",
-    userClassName,
+    userClassName
   );
 
   // Font size: xs/sm use text-xs, md/lg use text-sm
@@ -112,12 +112,15 @@ export function EventCard({
           <div
             className={cn(
               "flex flex-1 flex-col justify-center overflow-hidden",
-              isMonth ? "px-1.5 py-0" : "px-2 py-0.5",
+              isMonth ? "px-1.5 py-0" : "px-2 py-0.5"
             )}
             style={{ background: hexToRgba(color, 0.1) }}
           >
             <span
-              className={cn("truncate font-medium leading-tight", isSmallSize ? "text-xs" : "text-sm")}
+              className={cn(
+                "truncate font-medium leading-4",
+                isSmallSize ? "text-xs" : "text-sm"
+              )}
               style={{ color: "var(--cv-color-text)" }}
             >
               {title}
@@ -126,7 +129,7 @@ export function EventCard({
             {/* Subtitle: hidden in Month variant and small sizes (xs, sm) */}
             {!isMonth && !isSmallSize && subtitle && (
               <span
-                className="truncate text-xs leading-tight"
+                className="truncate text-xs leading-4"
                 style={{ color: "var(--cv-color-text-secondary)" }}
               >
                 {subtitle}

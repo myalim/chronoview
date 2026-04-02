@@ -1,0 +1,25 @@
+/*
+ * Tailwind CSS entry point for @chronoview/ui
+ * Build: tailwindcss -i src/styles/input.css -o dist/styles.css --minify
+ *
+ * Scans src/ for Tailwind utility classes and bundles them
+ * together with design tokens into a single CSS file.
+ */
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* px 기반 theme — 루트 폰트 크기와 무관하게 일관된 렌더링 */
+@theme {
+  --spacing: 4px;
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 28px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+}
+@source "..";
