@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useDateNavigation } from "../use-date-navigation.js";
 
@@ -95,5 +95,126 @@ describe("useDateNavigation", () => {
     expect(today.getSeconds()).toBe(0);
     expect(today.getDate()).toBeGreaterThanOrEqual(before.getDate());
     expect(today.getDate()).toBeLessThanOrEqual(after.getDate());
+  });
+
+  // ─── Controlled Mode ───
+
+  describe("controlled mode (date + onDateChange)", () => {
+    it("returns the controlled date instead of internal state", () => {
+      const controlledDate = new Date(2026, 5, 1);
+      const { result } = renderHook(() =>
+        useDateNavigation({ date: controlledDate, onDateChange: vi.fn(), view: "day" }),
+      );
+
+      expect(result.current.currentDate).toBe(controlledDate);
+    });
+
+    it("ignores initialDate when date is provided", () => {
+      const initial = new Date(2026, 0, 1);
+      const controlled = new Date(2026, 6, 15);
+      const { result } = renderHook(() =>
+        useDateNavigation({ initialDate: initial, date: controlled, onDateChange: vi.fn(), view: "day" }),
+      );
+
+      expect(result.current.currentDate).toBe(controlled);
+    });
+
+    it("goToPrev calls onDateChange with the previous date", () => {
+      const controlledDate = new Date(2026, 2, 28);
+      const onChange = vi.fn();
+      const { result } = renderHook(() =>
+        useDateNavigation({ date: controlledDate, onDateChange: onChange, view: "day" }),
+      );
+
+      act(() => {
+        result.current.goToPrev();
+      });
+
+      expect(onChange).toHaveBeenCalledOnce();
+      expect(onChange.mock.calls[0][0]).toEqual(new Date(2026, 2, 27));
+    });
+
+    it("goToNext calls onDateChange with the next date", () => {
+      const controlledDate = new Date(2026, 2, 28);
+      const onChange = vi.fn();
+      const { result } = renderHook(() =>
+        useDateNavigation({ date: controlledDate, onDateChange: onChange, view: "week" }),
+      );
+
+      act(() => {
+        result.current.goToNext();
+      });
+
+      expect(onChange).toHaveBeenCalledOnce();
+      expect(onChange.mock.calls[0][0]).toEqual(new Date(2026, 3, 4));
+    });
+
+    it("goToDate calls onDateChange with the normalized date", () => {
+      const controlledDate = new Date(2026, 2, 28);
+      const onChange = vi.fn();
+      const { result } = renderHook(() =>
+        useDateNavigation({ date: controlledDate, onDateChange: onChange, view: "day" }),
+      );
+
+      act(() => {
+        result.current.goToDate(new Date(2026, 5, 15, 14, 30));
+      });
+
+      expect(onChange).toHaveBeenCalledOnce();
+      expect(onChange.mock.calls[0][0]).toEqual(new Date(2026, 5, 15, 0, 0, 0, 0));
+    });
+
+    it("goToToday calls onDateChange with start of today", () => {
+      const controlledDate = new Date(2026, 2, 28);
+      const onChange = vi.fn();
+      const { result } = renderHook(() =>
+        useDateNavigation({ date: controlledDate, onDateChange: onChange, view: "day" }),
+      );
+
+      const before = new Date();
+      act(() => {
+        result.current.goToToday();
+      });
+      const after = new Date();
+
+      expect(onChange).toHaveBeenCalledOnce();
+      const called = onChange.mock.calls[0][0] as Date;
+      expect(called.getHours()).toBe(0);
+      expect(called.getMinutes()).toBe(0);
+      expect(called.getDate()).toBeGreaterThanOrEqual(before.getDate());
+      expect(called.getDate()).toBeLessThanOrEqual(after.getDate());
+    });
+
+    it("does not update internal state in controlled mode", () => {
+      const controlledDate = new Date(2026, 2, 28);
+      const onChange = vi.fn();
+      const { result } = renderHook(() =>
+        useDateNavigation({ date: controlledDate, onDateChange: onChange, view: "day" }),
+      );
+
+      act(() => {
+        result.current.goToNext();
+      });
+
+      // currentDate should still be the controlled value (consumer hasn't updated it)
+      expect(result.current.currentDate).toBe(controlledDate);
+    });
+
+    it("reflects updated controlled date on re-render", () => {
+      const onChange = vi.fn();
+      let controlledDate = new Date(2026, 2, 28);
+
+      const { result, rerender } = renderHook(() =>
+        useDateNavigation({ date: controlledDate, onDateChange: onChange, view: "day" }),
+      );
+
+      expect(result.current.currentDate).toEqual(new Date(2026, 2, 28));
+
+      // Simulate consumer updating state after onDateChange
+      controlledDate = new Date(2026, 2, 29);
+      rerender();
+
+      expect(result.current.currentDate).toEqual(new Date(2026, 2, 29));
+    });
   });
 });
