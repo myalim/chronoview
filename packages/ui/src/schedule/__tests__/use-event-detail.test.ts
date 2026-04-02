@@ -198,20 +198,28 @@ describe("useEventDetail", () => {
     expect(result.current.popoverReference).toBe(el2);
   });
 
-  it("does not show tooltip when hovering the event with open popover", () => {
+  it("does not show tooltip when hovering any event with open popover", () => {
     const { result } = renderHook(() =>
       useEventDetail({ tooltipEnabled: true, popoverEnabled: true }),
     );
-    const el = mockElement();
+    const el1 = mockElement();
+    const el2 = mockElement();
 
-    // Open popover
+    // Open popover for event 1
     act(() => {
-      result.current.handleClick(mockEvent, el);
+      result.current.handleClick(mockEvent, el1);
     });
 
     // Hover same event → tooltip should not appear
     act(() => {
-      result.current.handleMouseEnter(mockEvent, el);
+      result.current.handleMouseEnter(mockEvent, el1);
+      vi.advanceTimersByTime(200);
+    });
+    expect(result.current.tooltipEvent).toBeNull();
+
+    // Hover different event → tooltip should still not appear (popover takes focus priority)
+    act(() => {
+      result.current.handleMouseEnter(mockEvent2, el2);
       vi.advanceTimersByTime(200);
     });
     expect(result.current.tooltipEvent).toBeNull();

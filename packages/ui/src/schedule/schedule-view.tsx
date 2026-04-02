@@ -19,7 +19,7 @@ export interface ScheduleViewProps {
   body: ScheduleContainerProps["body"];
   totalMainSize: number;
   totalCrossSize: number;
-  headerHeight: number;
+  headerHeight: string | number;
 
   // Toolbar (optional — not rendered if not provided)
   toolbar?: ReactNode;

@@ -5,7 +5,7 @@
  * Escape/click-outside dismissal is delegated to EventPopover's useDismiss.
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { TimelineEvent } from "@chronoview/core";
 
 interface UseEventDetailConfig {
@@ -48,12 +48,17 @@ export function useEventDetail<TData = unknown>(
     }
   }, []);
 
+  // Clear pending timer on unmount to prevent state updates on unmounted component
+  useEffect(() => {
+    return () => clearHoverTimer();
+  }, [clearHoverTimer]);
+
   const handleMouseEnter = useCallback(
     (event: TimelineEvent<TData>, element: HTMLElement) => {
       if (!tooltipEnabled) return;
 
-      // Skip tooltip if popover is open for the same event
-      if (popoverEvent?.id === event.id) return;
+      // Skip tooltip while any popover is open (popover takes focus priority)
+      if (popoverEvent) return;
 
       clearHoverTimer();
       hoverTimerRef.current = setTimeout(() => {
@@ -61,7 +66,7 @@ export function useEventDetail<TData = unknown>(
         setTooltipReference(element);
       }, TOOLTIP_DELAY);
     },
-    [tooltipEnabled, popoverEvent?.id, clearHoverTimer],
+    [tooltipEnabled, popoverEvent, clearHoverTimer],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -89,7 +94,7 @@ export function useEventDetail<TData = unknown>(
       setPopoverEvent(event);
       setPopoverReference(element);
     },
-    [popoverEnabled, popoverEvent?.id, clearHoverTimer],
+    [popoverEnabled, popoverEvent, clearHoverTimer],
   );
 
   const closePopover = useCallback(() => {
