@@ -1,5 +1,9 @@
 # ChronoView
 
+[![npm](https://img.shields.io/npm/v/@chronoview/ui)](https://www.npmjs.com/package/@chronoview/ui)
+[![license](https://img.shields.io/npm/l/@chronoview/ui)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
+
 Headless schedule timeline library for React.
 
 One data model, multiple views — Schedule, Calendar, Grid across Day, Week, and Month.
@@ -26,22 +30,23 @@ One data model, multiple views — Schedule, Calendar, Grid across Day, Week, an
 ### Install
 
 ```bash
-# npm
 npm install @chronoview/ui
+```
 
-# pnpm
+<details>
+<summary>Other package managers</summary>
+
+```bash
 pnpm add @chronoview/ui
-
-# yarn
 yarn add @chronoview/ui
-
-# bun
 bun add @chronoview/ui
 ```
 
+</details>
+
 `@chronoview/ui` includes `@chronoview/core` and `@chronoview/react` as dependencies.
 
-**Peer dependencies:** `react >= 18`, `react-dom >= 18`, `date-fns >= 3`
+**Peer dependencies:** `react >= 18`, `react-dom >= 18`, `@floating-ui/react >= 0.27`
 
 ### Setup CSS
 
@@ -109,20 +114,70 @@ Switch between Day, Week, and Month views:
 />
 ```
 
-### Dark Mode
+## Dark Mode
 
-Add the `dark` class to any parent element. Works with popular theme libraries out of the box:
+Dark mode follows the system preference (`prefers-color-scheme`) automatically. No extra setup needed.
+
+To force a specific theme, use the `theme` prop:
 
 ```tsx
-// With next-themes, Tailwind dark mode, or any class-based toggle
-<div className="dark">
-  <Schedule events={events} resources={resources} />
-</div>
+<Schedule events={events} resources={resources} theme="dark" />
 ```
 
-The `[data-theme="dark"]` selector is also supported.
+Class-based (`dark`, `[data-theme="dark"]`) selectors are also supported for integration with theme libraries like next-themes.
 
-### Customizing Tokens
+## Event Detail (Tooltip & Popover)
+
+Hover an event to see a built-in tooltip. Click an event to show a custom popover:
+
+```tsx
+<Schedule
+  events={events}
+  resources={resources}
+  renderEventDetail={(event, { close }) => (
+    <div>
+      <h3>{event.title}</h3>
+      <p>{event.data?.description}</p>
+      <button onClick={close}>Close</button>
+    </div>
+  )}
+/>
+```
+
+To disable the hover tooltip while keeping the popover, add `disableTooltip`:
+
+```tsx
+<Schedule
+  events={events}
+  resources={resources}
+  disableTooltip
+  renderEventDetail={(event, { close }) => (
+    <div>
+      <h3>{event.title}</h3>
+      <button onClick={close}>Close</button>
+    </div>
+  )}
+/>
+```
+
+## Controlled Date
+
+By default, `Schedule` manages date state internally. To control it externally, pass `date` and `onDateChange`:
+
+```tsx
+import { useState } from "react";
+
+const [date, setDate] = useState(new Date());
+
+<Schedule
+  events={events}
+  resources={resources}
+  date={date}
+  onDateChange={setDate}
+/>
+```
+
+## Customizing Tokens
 
 Override CSS variables to match your design system:
 
@@ -186,15 +241,6 @@ function CustomSchedule({ events, resources }: {
 - Grid Day: planned (0.3.0)
 - Drag & Drop, Resize: planned (0.4.0)
 - Optimized for desktop (1024px+). Responsive support is planned for a future release.
-
-## Development
-
-```bash
-pnpm install
-pnpm build
-pnpm test
-pnpm lint
-```
 
 ## License
 
