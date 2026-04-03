@@ -38,3 +38,8 @@ export {
   CalendarNowIndicator,
   type CalendarNowIndicatorProps,
 } from "./calendar/calendar-now-indicator.js";
+export {
+  CalendarMonthGrid,
+  type CalendarMonthGridProps,
+  type MonthCellInfo,
+} from "./calendar/calendar-month-grid.js";
