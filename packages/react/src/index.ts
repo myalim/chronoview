@@ -22,6 +22,12 @@ export {
   type UseVirtualScrollReturn,
 } from "./hooks/use-virtual-scroll.js";
 export { useScheduleView, type UseScheduleViewReturn } from "./hooks/use-schedule-view.js";
+export { useCalendarView, type UseCalendarViewReturn } from "./hooks/use-calendar-view.js";
+export {
+  useScrollToNow,
+  type UseScrollToNowConfig,
+  type UseScrollToNowReturn,
+} from "./hooks/use-scroll-to-now.js";
 
 // ─── Context ───
 export {
