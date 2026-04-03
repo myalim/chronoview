@@ -225,7 +225,8 @@ function CalendarDayStory() {
       {/* 이벤트 카드 — Overlapping cascade (Google Calendar 스타일) */}
       {visibleEvents.map((event) => {
         const top = hourToY(event.startHour);
-        const MIN_HEIGHT = (15 / 60) * SLOT_HEIGHT;
+        // 스펙: 이벤트 최소 높이 20px (calendar-day.md §3)
+        const MIN_HEIGHT = 20;
         const height = Math.max(MIN_HEIGHT, hourToY(event.endHour) - top - 2);
 
         // 비율 기반 indent: 겹침 개수에 따라 자동 조절

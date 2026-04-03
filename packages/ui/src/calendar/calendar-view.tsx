@@ -6,6 +6,12 @@ export interface CalendarViewProps {
   sidebar: CalendarContainerProps["sidebar"];
   body: CalendarContainerProps["body"];
   totalMainSize: number;
+  /** Day header row (sticky top) — Week view */
+  header?: ReactNode;
+  /** Corner cell content at header×sidebar intersection */
+  corner?: ReactNode;
+  /** Header row height */
+  headerHeight?: number | string;
   toolbar?: ReactNode;
   filterPanel?: ReactNode;
   containerRef?: Ref<HTMLDivElement>;
@@ -21,6 +27,9 @@ export function CalendarView({
   sidebar,
   body,
   totalMainSize,
+  header,
+  corner,
+  headerHeight,
   toolbar,
   filterPanel,
   containerRef,
@@ -43,6 +52,9 @@ export function CalendarView({
         sidebar={sidebar}
         body={body}
         totalMainSize={totalMainSize}
+        header={header}
+        corner={corner}
+        headerHeight={headerHeight}
         className="flex-1 min-h-0"
       />
     </div>
