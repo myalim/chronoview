@@ -65,7 +65,8 @@ export function EventCard({
 
   const positionStyle: CSSProperties = {
     ...style,
-    height: `var(--cv-size-event-height-${resolvedSize})`,
+    // style.height가 있으면 유지 (Calendar에서 시간 비례 높이 전달 시)
+    height: style?.height ?? `var(--cv-size-event-height-${resolvedSize})`,
   };
 
   // Only assign button role + tabIndex when onClick is provided
