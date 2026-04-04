@@ -63,6 +63,7 @@ export { calculateEventPosition } from "./layout/calculate-event-position.js";
 export { detectOverlaps } from "./layout/detect-overlaps.js";
 export { calculateBarSpan } from "./layout/calculate-bar-span.js";
 export { truncateEvents } from "./layout/truncate-events.js";
+export { buildMonthCellLayouts } from "./layout/build-month-cell-layouts.js";
 
 // ─── Stacking ───
 export { calculateVerticalStacks } from "./stacking/calculate-vertical-stacks.js";
@@ -78,3 +79,6 @@ export { calculateVisibleRange } from "./utils/calculate-visible-range.js";
 // ─── Filter ───
 export { filterResources } from "./filter/filter-resources.js";
 export { filterEvents } from "./filter/filter-events.js";
+
+// ─── Date Utilities (re-exported from date-fns) ───
+export { isSameDay, startOfDay } from "date-fns";

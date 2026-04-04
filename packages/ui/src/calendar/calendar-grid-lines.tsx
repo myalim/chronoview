@@ -5,17 +5,19 @@ export interface CalendarGridLinesProps {
   slotHeight: number;
   /** Total width of the grid area */
   crossSize: number | string;
+  /** Vertical offset for lines (padding above content area) */
+  offsetTop?: number;
 }
 
 /**
  * Horizontal grid lines at time slot boundaries for Calendar layout.
  * Skips the first line (i=0) which overlaps with the container's top border.
  */
-export function CalendarGridLines({ slotCount, slotHeight, crossSize }: CalendarGridLinesProps) {
+export function CalendarGridLines({ slotCount, slotHeight, crossSize, offsetTop = 0 }: CalendarGridLinesProps) {
   return (
     <>
       {Array.from({ length: slotCount - 1 }, (_, i) => {
-        const top = (i + 1) * slotHeight;
+        const top = offsetTop + (i + 1) * slotHeight;
         return (
           <div
             key={`grid-line-${top}`}

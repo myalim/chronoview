@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { isSameDay } from "@chronoview/core";
 import { cn } from "../utils/cn.js";
 
 /**
@@ -32,15 +33,6 @@ export interface CalendarMonthGridProps {
 }
 
 const DEFAULT_WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
-/** 두 Date가 같은 날짜인지 비교 (시간 무시) */
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
 
 /**
  * Calendar Month 그리드 레이아웃.

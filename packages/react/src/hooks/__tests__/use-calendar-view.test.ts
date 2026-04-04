@@ -79,10 +79,12 @@ describe("useCalendarView", () => {
       expect(result.current.timeSlots).toHaveLength(24);
     });
 
-    it("totalMainSize = slots × cellWidthPx", () => {
+    it("totalMainSize = (slots + 2 padding) × slotHeight", () => {
       const { result } = renderHook(() => useCalendarView(createConfig()));
-      // 24 slots × 120px (DAY_TOTAL_WIDTH=2880 / 24) = 2880
-      expect(result.current.totalMainSize).toBe(2880);
+      // 24 slots × 60px + 2 padding slots × 60px = 1560
+      expect(result.current.totalMainSize).toBe(1560);
+      expect(result.current.slotHeight).toBe(60);
+      expect(result.current.contentOffset).toBe(60);
     });
 
     it("assigns events to the column with correct positions", () => {
@@ -120,12 +122,6 @@ describe("useCalendarView", () => {
       // e3 is alone in its overlap group → spanColumns=1 (single lane)
       const e3 = findEvent(col.events, "e3");
       expect(e3.spanColumns).toBe(1);
-    });
-
-    it("axisConfig has vertical main axis", () => {
-      const { result } = renderHook(() => useCalendarView(createConfig()));
-      expect(result.current.axisConfig.mainAxis).toBe("vertical");
-      expect(result.current.axisConfig.crossAxis).toBe("horizontal");
     });
 
     it("filters out events outside dateRange", () => {
@@ -235,6 +231,32 @@ describe("useCalendarView", () => {
       expect(targetCell?.isCurrentMonth).toBe(true);
     });
 
+    it("provides visibleEvents and weekIndex for each cell", () => {
+      const { result } = renderHook(() => useCalendarView(createConfig({ view: "month" })));
+      const weeks = result.current.monthGrid?.weeks ?? [];
+
+      // Every cell should have a weekIndex matching its position
+      for (let wi = 0; wi < weeks.length; wi++) {
+        for (const cell of weeks[wi]) {
+          expect(cell.weekIndex).toBe(wi);
+        }
+      }
+
+      // Find the cell with events
+      let targetCell: (typeof weeks)[0][0] | undefined;
+      for (const week of weeks) {
+        for (const cell of week) {
+          if (cell.date.getDate() === 28 && cell.date.getMonth() === 2) {
+            targetCell = cell;
+          }
+        }
+      }
+
+      // visibleEvents should be the truncated subset
+      expect(targetCell?.visibleEvents).toBeDefined();
+      expect(targetCell?.visibleEvents.length).toBe(targetCell?.visibleCount);
+    });
+
     it("truncates events in list mode", () => {
       const manyEvents: TimelineEvent[] = Array.from({ length: 5 }, (_, i) => ({
         id: `many-${i}`,
@@ -262,20 +284,23 @@ describe("useCalendarView", () => {
       expect(targetCell?.hiddenCount).toBe(2);
     });
 
-    it("calculates bar stacks in bar mode", () => {
+    it("calculates per-week bar stacks in bar mode", () => {
       const { result } = renderHook(() =>
         useCalendarView(createConfig({ view: "month", monthMode: "bar" })),
       );
-      const bars = result.current.monthGrid?.bars;
-      expect(bars).toBeDefined();
-      expect(bars?.length).toBeGreaterThan(0);
+      const weekBars = result.current.monthGrid?.weekBars;
+      expect(weekBars).toBeDefined();
+      expect(weekBars?.length).toBeGreaterThan(0);
+      // At least one week should have bars (events are on 2026-03-28)
+      const hasNonEmpty = weekBars?.some((bars) => bars.length > 0);
+      expect(hasNonEmpty).toBe(true);
     });
 
     it("does not calculate bars in list mode", () => {
       const { result } = renderHook(() =>
         useCalendarView(createConfig({ view: "month", monthMode: "list" })),
       );
-      expect(result.current.monthGrid?.bars).toBeUndefined();
+      expect(result.current.monthGrid?.weekBars).toBeUndefined();
     });
 
     it("totalMainSize is 0 for month view", () => {

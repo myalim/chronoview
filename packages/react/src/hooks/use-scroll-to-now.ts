@@ -8,8 +8,10 @@ export interface UseScrollToNowConfig {
   rangeStart: Date;
   /** Visible time range end */
   rangeEnd: Date;
-  /** Total scrollable size in px (main axis) */
+  /** Total scrollable size in px (main axis, content area only — excluding padding) */
   totalSize: number;
+  /** Padding offset above content area (added to scroll target position) */
+  contentOffset?: number;
   /** Scroll direction (default: "vertical") */
   direction?: "vertical" | "horizontal";
   /** Auto-scroll to current time on mount (default: true) */
@@ -33,13 +35,14 @@ export function useScrollToNow(config: UseScrollToNowConfig): UseScrollToNowRetu
     rangeStart,
     rangeEnd,
     totalSize,
+    contentOffset = 0,
     direction = "vertical",
     scrollOnMount = true,
   } = config;
 
   // Keep latest config in a ref for mount-only effect
-  const configRef = useRef({ containerRef, rangeStart, rangeEnd, totalSize, direction, scrollOnMount });
-  configRef.current = { containerRef, rangeStart, rangeEnd, totalSize, direction, scrollOnMount };
+  const configRef = useRef({ containerRef, rangeStart, rangeEnd, totalSize, contentOffset, direction, scrollOnMount });
+  configRef.current = { containerRef, rangeStart, rangeEnd, totalSize, contentOffset, direction, scrollOnMount };
 
   // Manual trigger — smooth scroll
   const scrollToNow = useCallback(() => {
@@ -47,7 +50,7 @@ export function useScrollToNow(config: UseScrollToNowConfig): UseScrollToNowRetu
     if (!el) return;
 
     const viewportSize = direction === "vertical" ? el.clientHeight : el.clientWidth;
-    const offset = calculateScrollToNow({
+    const rawOffset = calculateScrollToNow({
       now: new Date(),
       rangeStart,
       rangeEnd,
@@ -56,21 +59,21 @@ export function useScrollToNow(config: UseScrollToNowConfig): UseScrollToNowRetu
     });
 
     el.scrollTo({
-      [direction === "vertical" ? "top" : "left"]: offset,
+      [direction === "vertical" ? "top" : "left"]: rawOffset + contentOffset,
       behavior: "smooth",
     });
-  }, [containerRef, rangeStart, rangeEnd, totalSize, direction]);
+  }, [containerRef, rangeStart, rangeEnd, totalSize, contentOffset, direction]);
 
   // Auto-scroll on mount — instant (no animation), reads from ref to satisfy exhaustive deps
   useEffect(() => {
-    const { containerRef: ref, rangeStart: rs, rangeEnd: re, totalSize: ts, direction: dir, scrollOnMount: scroll } = configRef.current;
+    const { containerRef: ref, rangeStart: rs, rangeEnd: re, totalSize: ts, contentOffset: co, direction: dir, scrollOnMount: scroll } = configRef.current;
     if (!scroll) return;
 
     const el = ref.current;
     if (!el) return;
 
     const viewportSize = dir === "vertical" ? el.clientHeight : el.clientWidth;
-    const offset = calculateScrollToNow({
+    const rawOffset = calculateScrollToNow({
       now: new Date(),
       rangeStart: rs,
       rangeEnd: re,
@@ -78,10 +81,11 @@ export function useScrollToNow(config: UseScrollToNowConfig): UseScrollToNowRetu
       viewportSize,
     });
 
+    const scrollPos = rawOffset + co;
     if (dir === "vertical") {
-      el.scrollTop = offset;
+      el.scrollTop = scrollPos;
     } else {
-      el.scrollLeft = offset;
+      el.scrollLeft = scrollPos;
     }
   }, []);
 

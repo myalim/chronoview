@@ -16,6 +16,7 @@
 import {
   getCellConfig,
   generateTimeSlots,
+  isSameDay,
   type View,
   type DateRange,
   type CellDurationConfig,
@@ -33,15 +34,6 @@ export interface TimeHeaderProps {
   cellDuration?: CellDurationConfig;
   /** Week start day for Month grid (0=Sun, 1=Mon) */
   weekStartsOn?: 0 | 1;
-}
-
-/** Check if two dates are the same calendar day */
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
 }
 
 /** Generate an array of dates from start (inclusive) to end (exclusive) */

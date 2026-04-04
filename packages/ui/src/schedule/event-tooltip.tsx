@@ -15,6 +15,7 @@ import {
   FloatingPortal,
 } from "@floating-ui/react";
 import type { TimelineEvent } from "@chronoview/core";
+import { formatTime } from "../utils/format-time.js";
 
 export interface EventTooltipProps {
   event: TimelineEvent;
@@ -28,13 +29,6 @@ export interface EventTooltipProps {
   boundary?: HTMLElement;
   /** Inner padding to exclude sticky sidebar/header areas */
   boundaryPadding?: { top?: number; right?: number; bottom?: number; left?: number };
-}
-
-/** Format Date as HH:MM */
-function formatTime(d: Date): string {
-  const h = d.getHours();
-  const m = d.getMinutes();
-  return `${h}:${m.toString().padStart(2, "0")}`;
 }
 
 export function EventTooltip({

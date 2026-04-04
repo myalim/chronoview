@@ -218,10 +218,14 @@ export interface MonthCellLayout {
   isCurrentMonth: boolean;
   /** Events on this date */
   events: TimelineEvent[];
+  /** Truncated visible events (first N items from truncateEvents) */
+  visibleEvents: TimelineEvent[];
   /** Number of events visible in the cell */
   visibleCount: number;
   /** Number of hidden events ("N more") */
   hiddenCount: number;
+  /** Index into the parent weeks array (for efficient week lookup) */
+  weekIndex: number;
 }
 
 /** Calendar Month bar layout (bar mode) */
@@ -263,8 +267,8 @@ export interface CalendarLayoutResult {
 export interface CalendarMonthLayoutResult {
   /** Week × day 2D array */
   weeks: MonthCellLayout[][];
-  /** Bar layouts (bar mode only) */
-  bars?: MonthBarLayout[];
+  /** Per-week bar layouts (bar mode only). Index aligns with weeks. */
+  weekBars?: MonthBarLayout[][];
   todayDate: Date | null;
 }
 

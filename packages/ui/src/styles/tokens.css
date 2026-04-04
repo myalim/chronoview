@@ -78,10 +78,10 @@
   --cv-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --cv-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 
-  /* z-index Layers */
+  /* z-index Layers — now indicator는 이벤트 위에 표시 */
   --cv-z-base: 0;
-  --cv-z-now: 10;
-  --cv-z-event: 20;
+  --cv-z-event: 10;
+  --cv-z-now: 20;
   --cv-z-sticky-header: 30;
   --cv-z-sticky-sidebar: 30;
   --cv-z-sticky-corner: 40;

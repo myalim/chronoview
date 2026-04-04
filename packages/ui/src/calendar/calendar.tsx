@@ -40,9 +40,8 @@ import type {
 } from "@chronoview/core";
 import {
   getDefaultAvailableViews,
-  truncateEvents,
-  calculateBarStacks,
   calculateDayRange,
+  startOfDay,
 } from "@chronoview/core";
 
 import { CalendarView } from "./calendar-view.js";
@@ -61,6 +60,7 @@ import { FilterChips } from "../common/filter-chips.js";
 import { useEventDetail } from "../schedule/use-event-detail.js";
 import { EventTooltip } from "../schedule/event-tooltip.js";
 import { EventPopover } from "../schedule/event-popover.js";
+import { formatTime, formatTimeLabel } from "../utils/format-time.js";
 
 // ─── Constants ───
 
@@ -69,7 +69,6 @@ const BAR_HEIGHT = 24;
 const BAR_GAP = 4;
 const DATE_NUMBER_HEIGHT = 28;
 const COL_PCT = 100 / 7;
-const MAX_VISIBLE_LIST = 3;
 
 /** Boundary gap between sticky areas and floating elements */
 const BOUNDARY_GAP = 12;
@@ -219,6 +218,8 @@ export function Calendar<TData = unknown>({
     monthGrid,
     timeSlots,
     totalMainSize,
+    slotHeight,
+    contentOffset,
     getEventStyle,
   } = useCalendarView({
     events: filteredEvents as TimelineEvent[],
@@ -235,12 +236,15 @@ export function Calendar<TData = unknown>({
   // ─── Now Indicator (Day/Week only) ───
   // Calendar의 시간축은 하루 단위 — dateRange(주/월 범위)가 아니라 오늘의 dayRange 사용
   const todayDayRange = useMemo(() => calculateDayRange(new Date()), []);
-  const { position: nowPosition } = useNowIndicator({
+  // content 영역 기준으로 position 계산 후 padding offset 추가
+  const contentSize = totalMainSize - 2 * contentOffset;
+  const { position: rawNowPosition } = useNowIndicator({
     rangeStart: todayDayRange.start,
     rangeEnd: todayDayRange.end,
-    totalSize: totalMainSize,
+    totalSize: contentSize,
     enabled: showNowIndicator && currentView !== "month",
   });
+  const nowPosition = rawNowPosition != null ? rawNowPosition + contentOffset : null;
 
   // ─── Container Ref (popover boundary + scrollToNow target) ───
   const containerRef = useRef<HTMLDivElement>(null);
@@ -251,7 +255,8 @@ export function Calendar<TData = unknown>({
     containerRef,
     rangeStart: todayDayRange.start,
     rangeEnd: todayDayRange.end,
-    totalSize: totalMainSize,
+    totalSize: contentSize,
+    contentOffset,
     direction: "vertical",
     scrollOnMount: currentView !== "month",
   });
@@ -296,6 +301,14 @@ export function Calendar<TData = unknown>({
     () => new Map(resources.map((r) => [r.id, r.title])),
     [resources],
   );
+
+  /** 이벤트 색상 해소: event.color → resource.color → default */
+  const resourceColorMap = useMemo(
+    () => new Map(resources.map((r) => [r.id, r.color])),
+    [resources],
+  );
+  const resolveEventColor = (e: TimelineEvent) =>
+    e.color ?? resourceColorMap.get(e.resourceId) ?? "#3b82f6";
 
   const themeClass = theme ?? undefined;
 
@@ -358,23 +371,6 @@ export function Calendar<TData = unknown>({
       }
     }
 
-    // Bar mode: 주별로 직접 bar 계산 (flat bars 재그룹 시 멀티데이 중복 방지)
-    const weekBars: MonthBarLayout[][] | null =
-      monthMode === "bar"
-        ? gridDates.map((weekDates) => {
-            const weekStart = weekDates[0];
-            const weekEnd = new Date(
-              weekDates[6].getFullYear(),
-              weekDates[6].getMonth(),
-              weekDates[6].getDate() + 1,
-            );
-            const weekEvents = (filteredEvents as TimelineEvent[]).filter(
-              (e) => e.end > weekStart && e.start < weekEnd,
-            );
-            return calculateBarStacks(weekEvents, weekDates);
-          })
-        : null;
-
     // 하단 상세 리스트: 현재 그리드에 표시되는 모든 이벤트
     const gridStart = gridDates[0][0];
     const gridEnd = gridDates[gridDates.length - 1][6];
@@ -406,10 +402,10 @@ export function Calendar<TData = unknown>({
             }}
             renderWeekOverlay={
               // 커스텀 renderMonthCell이 제공되면 bar overlay 생략
-              renderMonthCell || monthMode !== "bar" || !weekBars
+              renderMonthCell || monthMode !== "bar" || !monthGrid.weekBars
                 ? undefined
                 : (_weekDates, weekIndex) => {
-                    const bars = weekBars[weekIndex];
+                    const bars = monthGrid.weekBars?.[weekIndex];
                     if (!bars || bars.length === 0) return null;
                     return renderBarOverlay(bars, weekIndex);
                   }
@@ -426,24 +422,19 @@ export function Calendar<TData = unknown>({
               if (!info.isCurrentMonth) return null;
 
               // Bar mode: bar가 들어갈 공간 확보
-              if (monthMode === "bar" && weekBars) {
-                const weekIndex = gridDates.findIndex((wk) =>
-                  wk.some((d) => isSameDay(d, cellDate)),
-                );
-                const bars = weekIndex >= 0 ? weekBars[weekIndex] : [];
-                const maxRows = getMaxBarRow(bars);
+              if (monthMode === "bar" && monthGrid.weekBars) {
+                const bars = monthGrid.weekBars[cell?.weekIndex ?? 0] ?? [];
+                const maxRows = bars.length > 0 ? Math.max(...bars.map((b) => b.row)) + 1 : 0;
                 const spacerHeight =
                   maxRows > 0 ? maxRows * (BAR_HEIGHT + BAR_GAP) : 0;
                 if (spacerHeight === 0) return null;
                 return <div style={{ height: spacerHeight }} />;
               }
 
-              // List mode: 이벤트 리스트 + "N개 더보기"
+              // List mode: hook이 계산한 visibleEvents/hiddenCount 사용
               if (cellEvents.length === 0) return null;
-              const { visible, hiddenCount } = truncateEvents({
-                events: cellEvents,
-                maxVisible: MAX_VISIBLE_LIST,
-              });
+              const visible = cell?.visibleEvents ?? [];
+              const { hiddenCount } = cell ?? { hiddenCount: 0 };
 
               return (
                 <div className="flex flex-col gap-0.5">
@@ -454,7 +445,7 @@ export function Calendar<TData = unknown>({
                     >
                       <span
                         className="shrink-0 w-2 h-2 rounded-full"
-                        style={{ background: e.color }}
+                        style={{ background: resolveEventColor(e) }}
                       />
                       <span className="truncate text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)]">
                         {formatTime(e.start)}
@@ -505,7 +496,7 @@ export function Calendar<TData = unknown>({
                 >
                   <span
                     className="shrink-0 w-2 h-2 rounded-full mt-1.5"
-                    style={{ background: e.color }}
+                    style={{ background: resolveEventColor(e) }}
                   />
                   <div className="min-w-0">
                     <div className="truncate text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-medium)]">
@@ -526,10 +517,6 @@ export function Calendar<TData = unknown>({
   }
 
   // ─── Day/Week View ───
-  const slotHeight =
-    totalMainSize > 0 && timeSlots.length > 0
-      ? totalMainSize / timeSlots.length
-      : 60;
 
   // Week: day header cells
   const dayHeaderCells: DayHeaderCell[] =
@@ -549,6 +536,7 @@ export function Calendar<TData = unknown>({
       timeSlots={timeSlots}
       slotHeight={slotHeight}
       totalHeight={totalMainSize}
+      offsetTop={contentOffset}
     />
   );
 
@@ -563,7 +551,22 @@ export function Calendar<TData = unknown>({
         slotCount={timeSlots.length}
         slotHeight={slotHeight}
         crossSize="100%"
+        offsetTop={contentOffset}
       />
+
+      {/* Padding 경계선 — 콘텐츠 영역 상단/하단 (Google Calendar 스타일) */}
+      {contentOffset > 0 && (
+        <>
+          <div
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{ top: contentOffset, height: 1, background: "var(--cv-color-border)" }}
+          />
+          <div
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{ top: contentOffset + timeSlots.length * slotHeight, height: 1, background: "var(--cv-color-border)" }}
+          />
+        </>
+      )}
 
       {/* Week: 오늘 열 하이라이트 배경 */}
       {currentView === "week" && todayColumnIndex >= 0 && (
@@ -578,8 +581,8 @@ export function Calendar<TData = unknown>({
 
       {/* Week: 열 구분선 (6개 고정, 순서 불변) */}
       {currentView === "week" &&
-        columns.slice(1).map((col) => {
-          const colIdx = columns.indexOf(col);
+        columns.slice(1).map((col, i) => {
+          const colIdx = i + 1;
           return (
             <div
               key={`col-divider-${col.date.getTime()}`}
@@ -759,35 +762,11 @@ export function Calendar<TData = unknown>({
 
 // ─── Helpers ───
 
-/** Format event start/end as "HH:MM - HH:MM" */
-function formatTimeLabel(start: Date, end: Date): string {
-  return `${formatTime(start)} - ${formatTime(end)}`;
-}
-
-/** Format time as "HH:MM" */
-function formatTime(d: Date): string {
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
 /** Format date label as "MM.DD(요일)" */
 function formatDateLabel(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${m}.${day}(${WEEKDAYS[d.getDay()]})`;
-}
-
-/** Normalize date to midnight */
-function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-/** Check if two dates are the same day */
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
 }
 
 /** Create a unique key for a date (for Map lookup) */
@@ -807,13 +786,6 @@ function eventsOnDate<TData>(
     return eStart <= dayTime && eEnd >= dayTime;
   });
 }
-
-/** Get maximum bar row count (for spacer height calculation) */
-function getMaxBarRow(bars: MonthBarLayout[]): number {
-  if (bars.length === 0) return 0;
-  return Math.max(...bars.map((b) => b.row)) + 1;
-}
-
 
 /** Render bar overlay for a week (bar mode) */
 function renderBarOverlay(
@@ -911,7 +883,7 @@ function DateDetailPopup<TData>({
           <div key={e.id} className="flex items-center gap-2 px-1 py-0.5">
             <span
               className="shrink-0 w-2 h-2 rounded-full"
-              style={{ background: e.color }}
+              style={{ background: e.color ?? "#3b82f6" }}
             />
             <span className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)] shrink-0">
               {formatTime(e.start)}
