@@ -4,7 +4,7 @@ import type { Layout, MonthMode, StackMode, View } from "../types/index.js";
  * Returns the default stacking strategy for a layout × view combination.
  *
  * - schedule (all views): vertical
- * - calendar day/week: horizontal
+ * - calendar day/week: auto (column packing)
  * - calendar month: bar or list (based on monthMode)
  * - grid day: horizontal
  */
@@ -21,7 +21,7 @@ export function getDefaultStackMode(
     if (view === "month") {
       return monthMode === "list" ? "list" : "bar";
     }
-    return "horizontal";
+    return "auto";
   }
 
   // grid

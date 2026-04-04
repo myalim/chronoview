@@ -68,6 +68,7 @@ export { truncateEvents } from "./layout/truncate-events.js";
 export { calculateVerticalStacks } from "./stacking/calculate-vertical-stacks.js";
 export { calculateHorizontalStacks } from "./stacking/calculate-horizontal-stacks.js";
 export { calculateBarStacks } from "./stacking/calculate-bar-stacks.js";
+export { calculateAutoStacks } from "./stacking/calculate-auto-stacks.js";
 
 // ─── Utils ───
 export { resolveColor } from "./utils/resolve-color.js";

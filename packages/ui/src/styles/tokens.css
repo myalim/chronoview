@@ -54,6 +54,7 @@
   --cv-size-now-dot: 10px;
   --cv-size-month-cell-min-height: 100px;
   --cv-size-date-picker-height: 48px;
+  --cv-size-calendar-sidebar-width: 60px;
 
   /* Typography */
   --cv-font-family: system-ui, sans-serif;

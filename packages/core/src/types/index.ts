@@ -7,7 +7,7 @@ export type View = "day" | "week" | "month";
 export type Layout = "schedule" | "grid" | "calendar";
 
 /** Stacking strategy for overlapping events */
-export type StackMode = "horizontal" | "vertical" | "none";
+export type StackMode = "horizontal" | "vertical" | "auto" | "none";
 
 /** Calendar Month display mode */
 export type MonthMode = "bar" | "list";
@@ -169,6 +169,8 @@ export interface StackedEvent {
   lane: number;
   /** Total number of lanes in this overlap group */
   totalLanes: number;
+  /** Number of columns this event spans (auto mode, default: 1) */
+  spanColumns?: number;
 }
 
 /** Fully computed event layout with abstract position */
@@ -182,6 +184,8 @@ export interface EventLayout {
   totalLanes: number;
   /** Resolved color (from resolveColor) */
   color: string;
+  /** Number of columns this event spans (auto mode, default: 1) */
+  spanColumns?: number;
 }
 
 // ─── Row / Column Layout ───

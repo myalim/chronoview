@@ -9,6 +9,8 @@ const preview: Preview = {
         order: [
           "Schedule",
           ["Day", "Week", "Month"],
+          "Calendar",
+          ["Day", "Week", "Month"],
           "Common",
           ["Button", "Toolbar", "DateNavigator", "ViewToggle", "FilterChips", "CategoryTabs"],
           "Wireframes",

@@ -14,12 +14,12 @@ describe("getDefaultStackMode", () => {
     expect(getDefaultStackMode("schedule", "month")).toBe("vertical");
   });
 
-  it("calendar day → horizontal", () => {
-    expect(getDefaultStackMode("calendar", "day")).toBe("horizontal");
+  it("calendar day → auto", () => {
+    expect(getDefaultStackMode("calendar", "day")).toBe("auto");
   });
 
-  it("calendar week → horizontal", () => {
-    expect(getDefaultStackMode("calendar", "week")).toBe("horizontal");
+  it("calendar week → auto", () => {
+    expect(getDefaultStackMode("calendar", "week")).toBe("auto");
   });
 
   it("calendar month (bar) → bar", () => {

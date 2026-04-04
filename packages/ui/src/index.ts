@@ -27,3 +27,22 @@ export { GridLines, type GridLinesProps } from "./schedule/grid-lines.js";
 
 // ─── Schedule Connected Component ───
 export { Schedule, type ScheduleProps } from "./schedule/schedule.js";
+
+// ─── Calendar Components ───
+export { CalendarDayHeader, type CalendarDayHeaderProps, type DayHeaderCell } from "./calendar/calendar-day-header.js";
+export { CalendarView, type CalendarViewProps } from "./calendar/calendar-view.js";
+export { CalendarContainer, type CalendarContainerProps } from "./calendar/calendar-container.js";
+export { TimeSidebar, type TimeSidebarProps } from "./calendar/time-sidebar.js";
+export { CalendarGridLines, type CalendarGridLinesProps } from "./calendar/calendar-grid-lines.js";
+export {
+  CalendarNowIndicator,
+  type CalendarNowIndicatorProps,
+} from "./calendar/calendar-now-indicator.js";
+export {
+  CalendarMonthGrid,
+  type CalendarMonthGridProps,
+  type MonthCellInfo,
+} from "./calendar/calendar-month-grid.js";
+
+// ─── Calendar Connected Component ───
+export { Calendar, type CalendarProps } from "./calendar/calendar.js";
