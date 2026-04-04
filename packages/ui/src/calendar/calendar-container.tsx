@@ -69,7 +69,7 @@ export const CalendarContainer = forwardRef<HTMLDivElement, CalendarContainerPro
             <div className="sticky left-0 z-[var(--cv-z-sticky-sidebar)] shrink-0">
               {sidebar}
             </div>
-            <div className="relative flex-1" style={{ height: totalMainSize }}>
+            <div className="relative flex-1 overflow-visible" style={{ height: totalMainSize }}>
               {body}
             </div>
           </div>

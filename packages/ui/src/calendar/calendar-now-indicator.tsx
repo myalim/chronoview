@@ -12,16 +12,18 @@ export interface CalendarNowIndicatorProps {
  * Dot at left edge + horizontal line spanning the column.
  */
 export function CalendarNowIndicator({ position, crossSize }: CalendarNowIndicatorProps) {
+  // z-index: event(20)보다 높게 설정하여 이벤트 카드 위에 표시
+  // left: -1 → sidebar 경계에 dot 우측 대부분이 노출 (body overflow 내 렌더링)
   const dotStyle: CSSProperties = {
     position: "absolute",
     top: position - 4,
-    left: -5,
+    left: -1,
     width: 10,
     height: 10,
     borderRadius: "50%",
     background: "var(--cv-color-now)",
     pointerEvents: "none",
-    zIndex: 11,
+    zIndex: 25,
   };
 
   const lineStyle: CSSProperties = {
@@ -32,7 +34,7 @@ export function CalendarNowIndicator({ position, crossSize }: CalendarNowIndicat
     height: 2,
     background: "var(--cv-color-now)",
     pointerEvents: "none",
-    zIndex: "var(--cv-z-now)" as string,
+    zIndex: 25,
   };
 
   return (
