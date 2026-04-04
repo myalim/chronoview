@@ -43,3 +43,6 @@ export {
   type CalendarMonthGridProps,
   type MonthCellInfo,
 } from "./calendar/calendar-month-grid.js";
+
+// ─── Calendar Connected Component ───
+export { Calendar, type CalendarProps } from "./calendar/calendar.js";
