@@ -12,7 +12,6 @@ import {
   calculateBarStacks,
   calculateDayRange,
   calculateEventPosition,
-  calculateHorizontalStacks,
   calculateMonthGrid,
   calculateMonthRange,
   calculateWeekRange,
@@ -147,8 +146,7 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
       const groups = detectOverlaps(dayEvents);
       const stackedEvents = groups.flatMap((group) => {
         if (resolvedStackMode === "auto") return calculateAutoStacks(group);
-        if (resolvedStackMode === "horizontal") return calculateHorizontalStacks(group);
-        // "none" or "vertical": no horizontal stacking
+        // "none" or "vertical": no stacking
         return group.events.map((event) => ({
           event,
           lane: 0,
@@ -245,13 +243,17 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
   }, [view, startDate, weekStartsOn, visibleEvents, monthMode]);
 
   // ─── Style factory ───
+  // indent 겹침 방식 (Google Calendar 스타일):
+  // lane = depth, totalLanes = maxDepth + 1
+  // depth가 높을수록 오른쪽으로 들여쓰기 + 높은 z-index (전면 노출)
   const getEventStyle = useMemo(() => {
     return (layout: EventLayout, columnIndex: number, totalColumns: number): CSSProperties => {
-      // mainAxis=vertical: mainOffset → top, mainSize → height
       const colWidthPct = 100 / totalColumns;
-      const laneWidthPct = colWidthPct / layout.totalLanes;
-      const leftPct = columnIndex * colWidthPct + layout.lane * laneWidthPct;
-      const widthPct = (layout.spanColumns ?? 1) * laneWidthPct;
+      const maxDepth = layout.totalLanes - 1;
+      // indent 비율: 겹침 없으면 0, 있으면 열 너비를 (maxDepth + 1.5)로 분할
+      const indentPct = maxDepth > 0 ? colWidthPct / (maxDepth + 1.5) : 0;
+      const leftPct = columnIndex * colWidthPct + layout.lane * indentPct;
+      const widthPct = colWidthPct - layout.lane * indentPct;
 
       return {
         position: "absolute" as const,
@@ -259,6 +261,7 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
         height: Math.max(20, layout.position.mainSize),
         left: `${leftPct}%`,
         width: `${widthPct}%`,
+        zIndex: 20 + layout.lane,
       };
     };
   }, []);

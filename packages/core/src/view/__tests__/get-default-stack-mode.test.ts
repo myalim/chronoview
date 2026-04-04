@@ -34,7 +34,7 @@ describe("getDefaultStackMode", () => {
     expect(getDefaultStackMode("calendar", "month")).toBe("bar");
   });
 
-  it("grid day → horizontal", () => {
-    expect(getDefaultStackMode("grid", "day")).toBe("horizontal");
+  it("grid day → auto", () => {
+    expect(getDefaultStackMode("grid", "day")).toBe("auto");
   });
 });

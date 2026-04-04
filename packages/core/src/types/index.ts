@@ -7,7 +7,7 @@ export type View = "day" | "week" | "month";
 export type Layout = "schedule" | "grid" | "calendar";
 
 /** Stacking strategy for overlapping events */
-export type StackMode = "horizontal" | "vertical" | "auto" | "none";
+export type StackMode = "vertical" | "auto" | "none";
 
 /** Calendar Month display mode */
 export type MonthMode = "bar" | "list";
