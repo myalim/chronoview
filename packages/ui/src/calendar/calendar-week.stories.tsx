@@ -15,7 +15,7 @@ import { TimeSidebar } from "./time-sidebar.js";
  * Calendar Week 정적 UI 스토리
  *
  * 레이아웃: 세로=시간, 가로=요일 7열
- * 핵심: 열별 독립 cascade + 오늘 열 하이라이트 + Now Indicator (오늘 열만)
+ * 핵심: 열별 독립 auto (컬럼 패킹) + 오늘 열 하이라이트 + Now Indicator (오늘 열만)
  * 참조: docs/design/calendar/calendar-week.md
  */
 
@@ -55,7 +55,9 @@ interface WeekMockEvent {
   endHour: number;
   title: string;
   color: string;
+  /** 겹침 깊이 — 0=가장 뒤, 높을수록 앞(위)에 렌더링 */
   depth: number;
+  /** overlap group 내 최대 depth (indent 비율 계산용) */
   maxDepth: number;
 }
 
@@ -67,11 +69,11 @@ const EVENTS: WeekMockEvent[] = [
   { id: "w2", dayIndex: 2, resourceId: "b", startHour: 8, endHour: 9.5, title: "Design Review", color: "#8b5cf6", depth: 0, maxDepth: 0 },
   { id: "w3", dayIndex: 2, resourceId: "c", startHour: 14, endHour: 15.5, title: "Tech Sync", color: "#06b6d4", depth: 0, maxDepth: 0 },
 
-  // ─── 수(3): 겹침 2개 (cascade, maxDepth=1) ───
+  // ─── 수(3): 겹침 2개 (auto, maxDepth=1) ───
   { id: "w4", dayIndex: 3, resourceId: "a", startHour: 10, endHour: 12, title: "Sprint Plan", color: "#3b82f6", depth: 0, maxDepth: 1 },
   { id: "w5", dayIndex: 3, resourceId: "b", startHour: 10.5, endHour: 11.5, title: "1:1 Meeting", color: "#8b5cf6", depth: 1, maxDepth: 1 },
 
-  // ─── 목(4): 겹침 3개 (cascade, maxDepth=2) ───
+  // ─── 목(4): 겹침 3개 (auto, maxDepth=2) ───
   { id: "w6", dayIndex: 4, resourceId: "c", startHour: 13, endHour: 15, title: "Code Review", color: "#06b6d4", depth: 0, maxDepth: 2 },
   { id: "w7", dayIndex: 4, resourceId: "a", startHour: 13.5, endHour: 14.5, title: "API Design", color: "#3b82f6", depth: 1, maxDepth: 2 },
   { id: "w8", dayIndex: 4, resourceId: "b", startHour: 14, endHour: 15, title: "Quick Call", color: "#8b5cf6", depth: 2, maxDepth: 2 },
@@ -289,12 +291,12 @@ function CalendarWeekStory() {
         );
       })}
 
-      {/* 4. Event cards — 열별 cascade 배치 */}
+      {/* 4. Event cards — 열별 auto 배치 */}
       {visibleEvents.map((event) => {
         const top = hourToY(event.startHour);
         const height = Math.max(MIN_HEIGHT, hourToY(event.endHour) - top - 2);
 
-        // 열 내 cascade: Day와 동일 수식 (colWidth 기준)
+        // 열 내 auto: indent 기반 겹침 배치 (Google Calendar 스타일)
         const colLeft = event.dayIndex * COL_WIDTH_PCT;
         const indentPct =
           event.maxDepth > 0 ? COL_WIDTH_PCT / (event.maxDepth + 1.5) : 0;

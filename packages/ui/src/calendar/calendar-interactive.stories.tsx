@@ -29,7 +29,7 @@ const meta: Meta<typeof Calendar> = {
     },
     stackMode: {
       control: "inline-radio",
-      options: ["auto", "horizontal", "none"],
+      options: ["auto", "none"],
     },
     showToolbar: { control: "boolean" },
     showFilter: { control: "boolean" },
