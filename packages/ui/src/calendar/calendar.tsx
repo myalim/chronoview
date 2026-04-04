@@ -389,7 +389,7 @@ export function Calendar<TData = unknown>({
         {toolbar}
         {filterPanel}
 
-        <div className="relative">
+        <div className="relative mt-3">
           <CalendarMonthGrid
             weeks={gridDates}
             currentMonth={currentDate.getMonth()}

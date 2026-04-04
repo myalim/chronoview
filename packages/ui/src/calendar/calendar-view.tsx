@@ -1,6 +1,9 @@
 import type { ReactNode, Ref } from "react";
 import { cn } from "../utils/cn.js";
-import { CalendarContainer, type CalendarContainerProps } from "./calendar-container.js";
+import {
+  CalendarContainer,
+  type CalendarContainerProps,
+} from "./calendar-container.js";
 
 export interface CalendarViewProps {
   sidebar: CalendarContainerProps["sidebar"];
@@ -41,7 +44,7 @@ export function CalendarView({
       className={cn(
         "flex flex-col text-left font-[var(--cv-font-family)] bg-[var(--cv-color-bg)] text-[var(--cv-color-text)]",
         theme,
-        className,
+        className
       )}
     >
       {toolbar}
@@ -55,7 +58,7 @@ export function CalendarView({
         header={header}
         corner={corner}
         headerHeight={headerHeight}
-        className="flex-1 min-h-0"
+        className="flex-1 min-h-0 mt-3"
       />
     </div>
   );
