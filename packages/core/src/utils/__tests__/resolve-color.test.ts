@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveColor } from "../resolve-color.js";
+import { resolveColor, DEFAULT_EVENT_COLOR } from "../resolve-color.js";
 
 describe("resolveColor", () => {
   it("returns eventColor when provided", () => {
@@ -7,7 +7,6 @@ describe("resolveColor", () => {
       resolveColor({
         eventColor: "#ff0000",
         resourceColor: "#00ff00",
-        defaultColor: "#0000ff",
       }),
     ).toBe("#ff0000");
   });
@@ -16,17 +15,12 @@ describe("resolveColor", () => {
     expect(
       resolveColor({
         resourceColor: "#00ff00",
-        defaultColor: "#0000ff",
       }),
     ).toBe("#00ff00");
   });
 
-  it("returns defaultColor when both are undefined", () => {
-    expect(
-      resolveColor({
-        defaultColor: "#0000ff",
-      }),
-    ).toBe("#0000ff");
+  it("returns DEFAULT_EVENT_COLOR when both are undefined", () => {
+    expect(resolveColor({})).toBe(DEFAULT_EVENT_COLOR);
   });
 
   it("treats empty string as falsy", () => {
@@ -34,7 +28,6 @@ describe("resolveColor", () => {
       resolveColor({
         eventColor: "",
         resourceColor: "#00ff00",
-        defaultColor: "#0000ff",
       }),
     ).toBe("#00ff00");
   });
@@ -44,8 +37,7 @@ describe("resolveColor", () => {
       resolveColor({
         eventColor: "",
         resourceColor: "",
-        defaultColor: "#0000ff",
       }),
-    ).toBe("#0000ff");
+    ).toBe(DEFAULT_EVENT_COLOR);
   });
 });

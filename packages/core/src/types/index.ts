@@ -7,7 +7,7 @@ export type View = "day" | "week" | "month";
 export type Layout = "schedule" | "grid" | "calendar";
 
 /** Stacking strategy for overlapping events */
-export type StackMode = "horizontal" | "vertical" | "auto" | "none";
+export type StackMode = "vertical" | "auto" | "none";
 
 /** Calendar Month display mode */
 export type MonthMode = "bar" | "list";
@@ -28,6 +28,17 @@ export interface CellDurationConfig {
   day?: DayCellDuration;
   /** Week view cell interval in hours */
   week?: WeekCellDuration;
+}
+
+/**
+ * Cell configuration returned by getCellConfig.
+ *
+ * @property cellWidthPx - Pixel width per cell (auto-calculated from cellDuration)
+ * @property intervalMinutes - Cell duration in minutes (for generateTimeSlots)
+ */
+export interface CellConfig {
+  cellWidthPx: number;
+  intervalMinutes: number;
 }
 
 /** Axis direction for position mapping */
@@ -218,10 +229,12 @@ export interface MonthCellLayout {
   isCurrentMonth: boolean;
   /** Events on this date */
   events: TimelineEvent[];
-  /** Number of events visible in the cell */
-  visibleCount: number;
+  /** Truncated visible events (first N items from truncateEvents) */
+  visibleEvents: TimelineEvent[];
   /** Number of hidden events ("N more") */
   hiddenCount: number;
+  /** Index into the parent weeks array (for efficient week lookup) */
+  weekIndex: number;
 }
 
 /** Calendar Month bar layout (bar mode) */
@@ -263,8 +276,8 @@ export interface CalendarLayoutResult {
 export interface CalendarMonthLayoutResult {
   /** Week × day 2D array */
   weeks: MonthCellLayout[][];
-  /** Bar layouts (bar mode only) */
-  bars?: MonthBarLayout[];
+  /** Per-week bar layouts (bar mode only). Index aligns with weeks. */
+  weekBars?: MonthBarLayout[][];
   todayDate: Date | null;
 }
 

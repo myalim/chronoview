@@ -6,7 +6,7 @@ import type { Layout, MonthMode, StackMode, View } from "../types/index.js";
  * - schedule (all views): vertical
  * - calendar day/week: auto (column packing)
  * - calendar month: bar or list (based on monthMode)
- * - grid day: horizontal
+ * - grid day: auto (column packing)
  */
 export function getDefaultStackMode(
   layout: Layout,
@@ -25,5 +25,5 @@ export function getDefaultStackMode(
   }
 
   // grid
-  return "horizontal";
+  return "auto";
 }

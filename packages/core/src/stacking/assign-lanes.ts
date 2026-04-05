@@ -1,7 +1,7 @@
 import type { OverlapGroup, StackedEvent } from "../types/index.js";
 
 /**
- * Greedy lane assignment algorithm shared by vertical and horizontal stacking.
+ * Greedy lane assignment algorithm shared by vertical and auto stacking.
  *
  * Sorts events by start time, then assigns the lowest available lane to each.
  * A lane becomes available when its last event's end time <= the current event's start time.
@@ -34,7 +34,7 @@ export function assignLanes(group: OverlapGroup): StackedEvent[] {
     }
 
     laneEnds[assignedLane] = event.end.getTime();
-    results.push({ event, lane: assignedLane, totalLanes: 0 });
+    results.push({ event, lane: assignedLane, totalLanes: 0, spanColumns: 1 });
   }
 
   // Set totalLanes on all results

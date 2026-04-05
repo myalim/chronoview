@@ -8,6 +8,7 @@
  */
 
 import { cn } from "../utils/cn.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 import { Button } from "./button.js";
 
 type View = "day" | "week" | "month";
@@ -27,8 +28,7 @@ function defaultFormatDate(date: Date, view: View): string {
   const y = date.getFullYear();
   const m = date.getMonth() + 1;
   const d = date.getDate();
-  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
-  const dayOfWeek = dayNames[date.getDay()];
+  const dayOfWeek = WEEKDAY_LABELS[date.getDay()];
 
   if (view === "day") {
     return `${y}년 ${String(m).padStart(2, "0")}월 ${String(d).padStart(

@@ -20,10 +20,9 @@ import {
   type DateRange,
   type CellDurationConfig,
 } from "@chronoview/core";
+import { isSameDay } from "date-fns";
 import { cn } from "../utils/cn.js";
-
-// i18n: Phase 7에서 locale 지원 추가 예정
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
 export interface TimeHeaderProps {
   view: View;
@@ -33,15 +32,6 @@ export interface TimeHeaderProps {
   cellDuration?: CellDurationConfig;
   /** Week start day for Month grid (0=Sun, 1=Mon) */
   weekStartsOn?: 0 | 1;
-}
-
-/** Check if two dates are the same calendar day */
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
 }
 
 /** Generate an array of dates from start (inclusive) to end (exclusive) */
@@ -59,7 +49,7 @@ function getDatesInRange(start: Date, end: Date): Date[] {
 function formatWeekDate(d: Date): string {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
-  const wd = WEEKDAYS[d.getDay()];
+  const wd = WEEKDAY_LABELS[d.getDay()];
   return `${mm}/${dd} (${wd})`;
 }
 
@@ -194,7 +184,7 @@ export function TimeHeader({ view, dateRange, cellDuration }: TimeHeaderProps) {
               )}
               style={{ left: i * cellWidthPx, width: cellWidthPx }}
             >
-              {WEEKDAYS[date.getDay()]}
+              {WEEKDAY_LABELS[date.getDay()]}
             </div>
           );
         })}

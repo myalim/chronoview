@@ -5,8 +5,10 @@ export interface TimeSidebarProps {
   timeSlots: Array<{ label: string }>;
   /** Height of each time slot in px */
   slotHeight: number;
-  /** Total height of the sidebar (timeSlots.length * slotHeight) */
+  /** Total height of the sidebar (includes padding) */
   totalHeight: number;
+  /** Vertical offset for labels (padding above content area) */
+  offsetTop?: number;
   className?: string;
 }
 
@@ -14,7 +16,7 @@ export interface TimeSidebarProps {
  * Vertical time sidebar for Calendar layout.
  * Each label is aligned with the corresponding horizontal grid line.
  */
-export function TimeSidebar({ timeSlots, slotHeight, totalHeight, className }: TimeSidebarProps) {
+export function TimeSidebar({ timeSlots, slotHeight, totalHeight, offsetTop = 0, className }: TimeSidebarProps) {
   return (
     <div
       className={cn(
@@ -31,8 +33,8 @@ export function TimeSidebar({ timeSlots, slotHeight, totalHeight, className }: T
           key={slot.label}
           className="absolute right-0 pr-2 text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)]"
           style={{
-            top: i * slotHeight,
-            // 첫 번째 라벨은 컨테이너 밖으로 올라가지 않도록 translateY 생략
+            top: offsetTop + i * slotHeight,
+            // Skip translateY for the first label so it doesn't overflow above the container
             transform: i === 0 ? undefined : "translateY(-7px)",
             lineHeight: "14px",
           }}

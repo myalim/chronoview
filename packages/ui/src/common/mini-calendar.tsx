@@ -10,7 +10,9 @@
 
 import { type CSSProperties, useEffect, useState } from "react";
 import { calculateMonthGrid } from "@chronoview/core";
+import { isSameDay } from "date-fns";
 import { cn } from "../utils/cn.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 import { Button } from "./button.js";
 
 type View = "day" | "week" | "month";
@@ -27,23 +29,11 @@ export interface MiniCalendarProps {
   className?: string;
 }
 
-/** Weekday labels starting from Sunday */
-const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
 /** Month labels */
 const MONTH_LABELS = [
   "1월", "2월", "3월", "4월", "5월", "6월",
   "7월", "8월", "9월", "10월", "11월", "12월",
 ];
-
-/** Check if two dates are the same calendar day */
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
 
 /** Check if a date falls within the same week as the reference date */
 function isSameWeek(day: Date, ref: Date, weekStartsOn: 0 | 1): boolean {

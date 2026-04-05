@@ -10,13 +10,14 @@ import { CalendarGridLines } from "./calendar-grid-lines.js";
 import { CalendarNowIndicator } from "./calendar-now-indicator.js";
 import { CalendarView } from "./calendar-view.js";
 import { TimeSidebar } from "./time-sidebar.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
 /**
- * Calendar Week 정적 UI 스토리
+ * Calendar Week static UI story
  *
- * 레이아웃: 세로=시간, 가로=요일 7열
- * 핵심: 열별 독립 cascade + 오늘 열 하이라이트 + Now Indicator (오늘 열만)
- * 참조: docs/design/calendar/calendar-week.md
+ * Layout: vertical=time, horizontal=7 day columns
+ * Key features: per-column auto (column packing) + today column highlight + Now Indicator (today only)
+ * Reference: docs/design/calendar/calendar-week.md
  */
 
 // ─── Constants ───
@@ -31,11 +32,9 @@ const DAY_COUNT = 7;
 const COL_WIDTH_PCT = 100 / DAY_COUNT;
 const HEADER_HEIGHT = 48;
 
-// Mock "now" — 금요일 12:30
+// Mock "now" — Friday 12:30
 const NOW_HOUR = 12.5;
 const NOW_POSITION = (NOW_HOUR - HOUR_START) * SLOT_HEIGHT;
-
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 // ─── Resources ───
 
@@ -55,32 +54,34 @@ interface WeekMockEvent {
   endHour: number;
   title: string;
   color: string;
+  /** Overlap depth — 0=furthest back, higher=rendered in front */
   depth: number;
+  /** Max depth within the overlap group (used for indent ratio calculation) */
   maxDepth: number;
 }
 
 const EVENTS: WeekMockEvent[] = [
-  // ─── 월(1): 단일 이벤트 ───
+  // ─── Mon(1): single event ───
   { id: "w1", dayIndex: 1, resourceId: "a", startHour: 9, endHour: 10, title: "Standup", color: "#3b82f6", depth: 0, maxDepth: 0 },
 
-  // ─── 화(2): 비겹침 2개 ───
+  // ─── Tue(2): 2 non-overlapping ───
   { id: "w2", dayIndex: 2, resourceId: "b", startHour: 8, endHour: 9.5, title: "Design Review", color: "#8b5cf6", depth: 0, maxDepth: 0 },
   { id: "w3", dayIndex: 2, resourceId: "c", startHour: 14, endHour: 15.5, title: "Tech Sync", color: "#06b6d4", depth: 0, maxDepth: 0 },
 
-  // ─── 수(3): 겹침 2개 (cascade, maxDepth=1) ───
+  // ─── Wed(3): 2 overlapping (auto, maxDepth=1) ───
   { id: "w4", dayIndex: 3, resourceId: "a", startHour: 10, endHour: 12, title: "Sprint Plan", color: "#3b82f6", depth: 0, maxDepth: 1 },
   { id: "w5", dayIndex: 3, resourceId: "b", startHour: 10.5, endHour: 11.5, title: "1:1 Meeting", color: "#8b5cf6", depth: 1, maxDepth: 1 },
 
-  // ─── 목(4): 겹침 3개 (cascade, maxDepth=2) ───
+  // ─── Thu(4): 3 overlapping (auto, maxDepth=2) ───
   { id: "w6", dayIndex: 4, resourceId: "c", startHour: 13, endHour: 15, title: "Code Review", color: "#06b6d4", depth: 0, maxDepth: 2 },
   { id: "w7", dayIndex: 4, resourceId: "a", startHour: 13.5, endHour: 14.5, title: "API Design", color: "#3b82f6", depth: 1, maxDepth: 2 },
   { id: "w8", dayIndex: 4, resourceId: "b", startHour: 14, endHour: 15, title: "Quick Call", color: "#8b5cf6", depth: 2, maxDepth: 2 },
 
-  // ─── 금(5, today): 2개 (Now 근처) ───
+  // ─── Fri(5, today): 2 events near Now ───
   { id: "w9", dayIndex: 5, resourceId: "a", startHour: 11, endHour: 12.5, title: "Deep Work", color: "#3b82f6", depth: 0, maxDepth: 0 },
   { id: "w10", dayIndex: 5, resourceId: "c", startHour: 14, endHour: 15.5, title: "Retro", color: "#06b6d4", depth: 0, maxDepth: 0 },
 
-  // ─── 토(6): 짧은 이벤트 1개 (compact 카드) ───
+  // ─── Sat(6): 1 short event (compact card) ───
   { id: "w11", dayIndex: 6, resourceId: "b", startHour: 10, endHour: 10.25, title: "Quick Ping", color: "#8b5cf6", depth: 0, maxDepth: 0 },
 ];
 
@@ -96,7 +97,7 @@ function formatTime(hour: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-/** 주 시작 날짜로부터 7일 생성 */
+/** Generate 7 dates starting from the week start date */
 function getWeekDates(weekStart: Date): Date[] {
   return Array.from({ length: DAY_COUNT }, (_, i) => {
     const d = new Date(weekStart);
@@ -105,15 +106,15 @@ function getWeekDates(weekStart: Date): Date[] {
   });
 }
 
-/** 요일 헤더 라벨 생성 (e.g., "월 3/23") */
+/** Format day header label (e.g., "Mon 3/23") */
 function formatDayLabel(date: Date): string {
   const dayOfWeek = date.getDay();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  return `${WEEKDAYS[dayOfWeek]} ${month}/${day}`;
+  return `${WEEKDAY_LABELS[dayOfWeek]} ${month}/${day}`;
 }
 
-/** 주 시작 날짜 계산 (일요일 시작, weekStartsOn=0) */
+/** Calculate week start date (Sunday start, weekStartsOn=0) */
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -128,7 +129,7 @@ const TIME_SLOTS = Array.from({ length: TOTAL_SLOTS }, (_, i) => ({
 // ─── Story Component ───
 
 function CalendarWeekStory() {
-  // 2026-03-22(일) ~ 03-28(토), Day 스토리와 같은 주
+  // 2026-03-22 (Sun) ~ 03-28 (Sat), same week as Day story
   const [date, setDate] = useState(new Date(2026, 2, 22));
   const [selectedIds, setSelectedIds] = useState(RESOURCES.map((r) => r.id));
   const containerRef = useRef<HTMLDivElement>(null);
@@ -136,7 +137,7 @@ function CalendarWeekStory() {
   const weekStart = getWeekStart(date);
   const weekDates = getWeekDates(weekStart);
 
-  // 오늘 인덱스 계산 (mock: 금요일 3/27)
+  // Today index (mock: Friday 3/27)
   const mockToday = new Date(2026, 2, 27);
   const todayIndex = weekDates.findIndex(
     (d) =>
@@ -145,7 +146,7 @@ function CalendarWeekStory() {
       d.getDate() === mockToday.getDate(),
   );
 
-  // scrollToNow: 마운트 시 자동 스크롤
+  // scrollToNow on mount
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -161,7 +162,7 @@ function CalendarWeekStory() {
     el.scrollTop = scrollOffset;
   }, []);
 
-  // scrollToNow: 수동 버튼
+  // scrollToNow via manual button
   const handleScrollToNow = () => {
     const el = containerRef.current;
     if (!el) return;
@@ -177,21 +178,18 @@ function CalendarWeekStory() {
     el.scrollTo({ top: scrollOffset, behavior: "smooth" });
   };
 
-  // Filter
   const handleToggle = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
-  // Navigation (±7일)
   const handlePrev = () =>
     setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7));
   const handleNext = () =>
     setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7));
   const handleToday = () => setDate(new Date());
 
-  // Filter events by resource
   const selectedSet = new Set(selectedIds);
   const visibleEvents = EVENTS.filter((e) => selectedSet.has(e.resourceId));
 
@@ -246,13 +244,13 @@ function CalendarWeekStory() {
     </div>
   );
 
-  // 스펙: 이벤트 최소 높이 20px (calendar-day.md §3)
-  // 15분 미만 이벤트도 텍스트(descender 포함) + padding이 들어갈 최소 크기 보장
+  // Spec: minimum event height 20px (calendar-day.md §3)
+  // Ensures text (including descenders) + padding fit even for sub-15min events
   const MIN_HEIGHT = 20;
 
   const body = (
     <>
-      {/* 1. Today highlight — 오늘 열 배경 */}
+      {/* 1. Today highlight — today column background */}
       {todayIndex >= 0 && (
         <div
           className="absolute top-0 pointer-events-none"
@@ -265,15 +263,15 @@ function CalendarWeekStory() {
         />
       )}
 
-      {/* 2. Grid lines — 가로선 전체 너비 */}
+      {/* 2. Grid lines — horizontal lines full width */}
       <CalendarGridLines
         slotCount={TOTAL_SLOTS}
         slotHeight={SLOT_HEIGHT}
         crossSize="100%"
       />
 
-      {/* 3. Column dividers — 요일 경계 세로선 */}
-      {WEEKDAYS.slice(1).map((day, i) => {
+      {/* 3. Column dividers — vertical lines between day columns */}
+      {WEEKDAY_LABELS.slice(1).map((day, i) => {
         const pct = (i + 1) * COL_WIDTH_PCT;
         return (
           <div
@@ -289,12 +287,12 @@ function CalendarWeekStory() {
         );
       })}
 
-      {/* 4. Event cards — 열별 cascade 배치 */}
+      {/* 4. Event cards — per-column auto layout */}
       {visibleEvents.map((event) => {
         const top = hourToY(event.startHour);
         const height = Math.max(MIN_HEIGHT, hourToY(event.endHour) - top - 2);
 
-        // 열 내 cascade: Day와 동일 수식 (colWidth 기준)
+        // Intra-column auto: indent-based overlap layout (Google Calendar style)
         const colLeft = event.dayIndex * COL_WIDTH_PCT;
         const indentPct =
           event.maxDepth > 0 ? COL_WIDTH_PCT / (event.maxDepth + 1.5) : 0;
@@ -311,7 +309,7 @@ function CalendarWeekStory() {
 
         const durationMin = (event.endHour - event.startHour) * 60;
         const timeLabel = `${formatTime(event.startHour)} – ${formatTime(event.endHour)}`;
-        // 좁은 열에서는 항상 compact 레이아웃 사용
+        // Always use compact layout in narrow week columns
         const isCompact = durationMin <= 45 || true;
 
         return (
@@ -345,7 +343,7 @@ function CalendarWeekStory() {
         );
       })}
 
-      {/* 5. Now Indicator — 오늘 열에만 표시 */}
+      {/* 5. Now Indicator — only shown in today's column */}
       {todayIndex >= 0 && (
         <div
           className="absolute top-0 pointer-events-none"

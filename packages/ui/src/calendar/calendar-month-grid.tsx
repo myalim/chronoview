@@ -1,59 +1,48 @@
 import type { ReactNode } from "react";
+import { isSameDay } from "date-fns";
 import { cn } from "../utils/cn.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
-/**
- * 셀 정보 (renderCellContent 콜백에 전달)
- */
+/** Cell info passed to the renderCellContent callback */
 export interface MonthCellInfo {
   isCurrentMonth: boolean;
   isToday: boolean;
 }
 
 export interface CalendarMonthGridProps {
-  /** 월 그리드 2D 배열 — calculateMonthGrid(date, weekStartsOn) 결과 */
+  /** 2D month grid — result of calculateMonthGrid(date, weekStartsOn) */
   weeks: Date[][];
-  /** 이번 달 판별용 (0-11) */
+  /** Current month index for distinguishing in/out-of-month cells (0-11) */
   currentMonth: number;
-  /** 오늘 날짜 하이라이트 */
+  /** Today's date for highlight */
   today?: Date;
-  /** 요일 라벨 (기본: ["일","월","화","수","목","금","토"]) */
+  /** Weekday labels (default: Korean Sun-Sat) */
   weekdayLabels?: string[];
-  /** 셀 내부 콘텐츠 — 날짜 숫자 아래 영역 (list 모드 이벤트 등) */
+  /** Cell content below the date number (e.g., list-mode events) */
   renderCellContent?: (date: Date, info: MonthCellInfo) => ReactNode;
-  /** 주 단위 오버레이 — position: absolute로 배치됨 (bar 모드 이벤트 바 등) */
+  /** Per-week overlay positioned absolutely (e.g., bar-mode event bars) */
   renderWeekOverlay?: (weekDates: Date[], weekIndex: number) => ReactNode;
-  /** 이벤트 없는 셀에 빈 상태 라벨 표시 (기본: false) */
+  /** Show empty-state label in cells without events (default: false) */
   showEmptyLabel?: boolean;
-  /** 빈 상태 라벨 텍스트 */
+  /** Empty-state label text */
   emptyLabel?: string;
-  /** 셀에 이벤트가 있는지 판별 — showEmptyLabel 사용 시 필요 */
+  /** Predicate for whether a cell has events — required when showEmptyLabel is used */
   hasEvents?: (date: Date) => boolean;
   className?: string;
 }
 
-const DEFAULT_WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
-/** 두 Date가 같은 날짜인지 비교 (시간 무시) */
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
 /**
- * Calendar Month 그리드 레이아웃.
+ * Calendar month grid layout.
  *
- * 7열 × 4~6행 날짜 그리드를 렌더링한다.
- * 요일 헤더는 sticky, 오늘 날짜/셀은 하이라이트.
- * 이벤트 렌더링은 renderCellContent (셀 내부) 또는 renderWeekOverlay (주 단위 오버레이)로 위임.
+ * Renders a 7-column x 4-6 row date grid with sticky weekday headers
+ * and today highlighting. Event rendering is delegated to
+ * renderCellContent (in-cell) or renderWeekOverlay (per-week absolute overlay).
  */
 export function CalendarMonthGrid({
   weeks,
   currentMonth,
   today,
-  weekdayLabels = DEFAULT_WEEKDAY_LABELS,
+  weekdayLabels = WEEKDAY_LABELS,
   renderCellContent,
   renderWeekOverlay,
   showEmptyLabel = false,
@@ -61,7 +50,7 @@ export function CalendarMonthGrid({
   hasEvents,
   className,
 }: CalendarMonthGridProps) {
-  // 오늘 요일의 열 인덱스 (weekStartsOn=0 기준)
+  // Column index of today's weekday (assuming weekStartsOn=0)
   const todayColIndex = today?.getDay();
 
   return (
@@ -71,7 +60,7 @@ export function CalendarMonthGrid({
         className,
       )}
     >
-      {/* ── 요일 헤더 (sticky top) ── */}
+      {/* ── Weekday header (sticky top) ── */}
       <div className="sticky top-0 z-[var(--cv-z-sticky-header)] grid grid-cols-7 border-b border-[var(--cv-color-border)] bg-[var(--cv-color-surface)]">
         {weekdayLabels.map((label, i) => (
           <div
@@ -89,9 +78,9 @@ export function CalendarMonthGrid({
         ))}
       </div>
 
-      {/* ── 주 행 ── */}
+      {/* ── Week rows ── */}
       {weeks.map((week, weekIndex) => {
-        // 주의 첫 날짜를 key로 사용 (안정적인 고유값)
+        // Use first date of the week as a stable unique key
         const weekKey = `${week[0].getFullYear()}-${week[0].getMonth()}-${week[0].getDate()}`;
         return (
         <div key={weekKey} className="relative">
@@ -116,7 +105,6 @@ export function CalendarMonthGrid({
                     isToday && "bg-[var(--cv-color-today-bg)]",
                   )}
                 >
-                  {/* 날짜 숫자 */}
                   <div className="flex items-center h-6 mb-[var(--cv-spacing-xs)]">
                     <span
                       className={cn(
@@ -132,11 +120,11 @@ export function CalendarMonthGrid({
                     </span>
                   </div>
 
-                  {/* 셀 콘텐츠 (list 모드 등) */}
+                  {/* Cell content (list-mode events, etc.) */}
                   {renderCellContent?.(date, { isCurrentMonth, isToday })}
 
-                  {/* 빈 셀 라벨 */}
-                  {showEmptyLabel && isCurrentMonth && hasEvents && !hasEvents(date) && (
+                  {/* Empty cell label — only rendered when emptyLabel is provided */}
+                  {showEmptyLabel && emptyLabel && isCurrentMonth && hasEvents && !hasEvents(date) && (
                     <span className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-empty)]">
                       {emptyLabel}
                     </span>
@@ -146,7 +134,7 @@ export function CalendarMonthGrid({
             })}
           </div>
 
-          {/* 주 단위 오버레이 (bar 모드 등) */}
+          {/* Per-week overlay (bar-mode events, etc.) */}
           {renderWeekOverlay?.(week, weekIndex)}
         </div>
         );

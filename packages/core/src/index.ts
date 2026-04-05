@@ -7,8 +7,9 @@ export type {
   BarSpanInfo,
   CalendarLayoutResult,
   CalendarMonthLayoutResult,
-  DateRange,
+  CellConfig,
   CellDurationConfig,
+  DateRange,
   DayCellDuration,
   DayColumnLayout,
   EventLayout,
@@ -48,33 +49,31 @@ export { generateTimeSlots } from "./time/generate-time-slots.js";
 export { navigatePrev, navigateNext, goToDate } from "./time/navigate.js";
 
 // ─── Position ───
-export { timeToOffset } from "./position/time-to-offset.js";
 export { calculateNowPosition } from "./position/calculate-now-position.js";
 export { calculateScrollToNow } from "./position/calculate-scroll-to-now.js";
 
 // ─── View ───
 export { getDefaultAvailableViews } from "./view/get-default-available-views.js";
-export { getDefaultStackMode } from "./view/get-default-stack-mode.js";
 export { getCellConfig } from "./view/get-cell-config.js";
-export type { CellConfig } from "./view/get-cell-config.js";
 
 // ─── Layout ───
 export { calculateEventPosition } from "./layout/calculate-event-position.js";
 export { detectOverlaps } from "./layout/detect-overlaps.js";
 export { calculateBarSpan } from "./layout/calculate-bar-span.js";
 export { truncateEvents } from "./layout/truncate-events.js";
+export { buildMonthCellLayouts } from "./layout/build-month-cell-layouts.js";
 
 // ─── Stacking ───
 export { calculateVerticalStacks } from "./stacking/calculate-vertical-stacks.js";
-export { calculateHorizontalStacks } from "./stacking/calculate-horizontal-stacks.js";
 export { calculateBarStacks } from "./stacking/calculate-bar-stacks.js";
 export { calculateAutoStacks } from "./stacking/calculate-auto-stacks.js";
 
 // ─── Utils ───
-export { resolveColor } from "./utils/resolve-color.js";
+export { resolveColor, DEFAULT_EVENT_COLOR } from "./utils/resolve-color.js";
 export { calculateRowHeight } from "./utils/calculate-row-height.js";
 export { calculateVisibleRange } from "./utils/calculate-visible-range.js";
 
 // ─── Filter ───
 export { filterResources } from "./filter/filter-resources.js";
 export { filterEvents } from "./filter/filter-events.js";
+

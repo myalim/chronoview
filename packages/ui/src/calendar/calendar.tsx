@@ -40,11 +40,12 @@ import type {
 } from "@chronoview/core";
 import {
   getDefaultAvailableViews,
-  truncateEvents,
-  calculateBarStacks,
   calculateDayRange,
+  resolveColor,
 } from "@chronoview/core";
+import { startOfDay } from "date-fns";
 
+import { CalendarShell } from "./calendar-shell.js";
 import { CalendarView } from "./calendar-view.js";
 import { CalendarDayHeader, type DayHeaderCell } from "./calendar-day-header.js";
 import { TimeSidebar } from "./time-sidebar.js";
@@ -61,20 +62,20 @@ import { FilterChips } from "../common/filter-chips.js";
 import { useEventDetail } from "../schedule/use-event-detail.js";
 import { EventTooltip } from "../schedule/event-tooltip.js";
 import { EventPopover } from "../schedule/event-popover.js";
+import { formatTime, formatTimeLabel } from "../utils/format-time.js";
+import { DateDetailPopup } from "./date-detail-popup.js";
+import { type CalendarLabels, resolveLabels } from "./calendar-labels.js";
 
 // ─── Constants ───
 
-/** Bar mode 상수 (calendar-month.stories.tsx 패턴과 동일) */
+/** Bar mode layout constants (shared with calendar-month.stories.tsx) */
 const BAR_HEIGHT = 24;
 const BAR_GAP = 4;
 const DATE_NUMBER_HEIGHT = 28;
 const COL_PCT = 100 / 7;
-const MAX_VISIBLE_LIST = 3;
 
 /** Boundary gap between sticky areas and floating elements */
 const BOUNDARY_GAP = 12;
-
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export interface CalendarProps<TData = unknown> {
   /** Event data */
@@ -111,8 +112,8 @@ export interface CalendarProps<TData = unknown> {
   showFilter?: boolean;
   /** Show empty label in Month cells with no events (default: false) */
   showEmptyLabel?: boolean;
-  /** Empty label text (default: "데이터 없음") */
-  emptyLabel?: string;
+  /** Customizable text labels for i18n support. Partial overrides merge with Korean defaults. */
+  labels?: Partial<CalendarLabels>;
 
   // ─── Custom Rendering ───
   /** Per-event EventCard props override (Day/Week views). Merges with computed defaults. */
@@ -167,7 +168,7 @@ export function Calendar<TData = unknown>({
   showToolbar = true,
   showFilter = false,
   showEmptyLabel = false,
-  emptyLabel = "데이터 없음",
+  labels: labelOverrides,
   eventProps,
   renderMonthCell,
   renderEventDetail,
@@ -179,6 +180,8 @@ export function Calendar<TData = unknown>({
   theme,
   className,
 }: CalendarProps<TData>) {
+  // ─── Labels (i18n) ───
+  const labels = useMemo(() => resolveLabels(labelOverrides), [labelOverrides]);
   // ─── View State ───
   const [currentView, setCurrentView] = useState<View>(initialView);
 
@@ -219,6 +222,9 @@ export function Calendar<TData = unknown>({
     monthGrid,
     timeSlots,
     totalMainSize,
+    contentSize,
+    slotHeight,
+    contentOffset,
     getEventStyle,
   } = useCalendarView({
     events: filteredEvents as TimelineEvent[],
@@ -233,25 +239,30 @@ export function Calendar<TData = unknown>({
   });
 
   // ─── Now Indicator (Day/Week only) ───
-  // Calendar의 시간축은 하루 단위 — dateRange(주/월 범위)가 아니라 오늘의 dayRange 사용
-  const todayDayRange = useMemo(() => calculateDayRange(new Date()), []);
-  const { position: nowPosition } = useNowIndicator({
+  // Calendar time axis is a single day — uses today's dayRange, not the full week/month dateRange.
+  // Recalculates when the date portion changes (render-time only; no automatic midnight refresh).
+  const today = new Date();
+  const todayDateKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: todayDateKey ensures recalculation when the date portion changes
+  const todayDayRange = useMemo(() => calculateDayRange(new Date()), [todayDateKey]);
+  const { position: rawNowPosition } = useNowIndicator({
     rangeStart: todayDayRange.start,
     rangeEnd: todayDayRange.end,
-    totalSize: totalMainSize,
+    totalSize: contentSize,
     enabled: showNowIndicator && currentView !== "month",
   });
+  const nowPosition = rawNowPosition != null ? rawNowPosition + contentOffset : null;
 
   // ─── Container Ref (popover boundary + scrollToNow target) ───
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ─── Scroll to Now (Day/Week only, auto on mount) ───
-  // Calendar 시간축은 하루 단위이므로 todayDayRange 사용
   useScrollToNow({
     containerRef,
     rangeStart: todayDayRange.start,
     rangeEnd: todayDayRange.end,
-    totalSize: totalMainSize,
+    totalSize: contentSize,
+    contentOffset,
     direction: "vertical",
     scrollOnMount: currentView !== "month",
   });
@@ -296,6 +307,14 @@ export function Calendar<TData = unknown>({
     () => new Map(resources.map((r) => [r.id, r.title])),
     [resources],
   );
+
+  /** Resolve event color: event.color → resource.color → DEFAULT_EVENT_COLOR */
+  const resourceColorMap = useMemo(
+    () => new Map(resources.map((r) => [r.id, r.color])),
+    [resources],
+  );
+  const resolveEventColor = (e: TimelineEvent) =>
+    resolveColor({ eventColor: e.color, resourceColor: resourceColorMap.get(e.resourceId) });
 
   const themeClass = theme ?? undefined;
 
@@ -358,24 +377,7 @@ export function Calendar<TData = unknown>({
       }
     }
 
-    // Bar mode: 주별로 직접 bar 계산 (flat bars 재그룹 시 멀티데이 중복 방지)
-    const weekBars: MonthBarLayout[][] | null =
-      monthMode === "bar"
-        ? gridDates.map((weekDates) => {
-            const weekStart = weekDates[0];
-            const weekEnd = new Date(
-              weekDates[6].getFullYear(),
-              weekDates[6].getMonth(),
-              weekDates[6].getDate() + 1,
-            );
-            const weekEvents = (filteredEvents as TimelineEvent[]).filter(
-              (e) => e.end > weekStart && e.start < weekEnd,
-            );
-            return calculateBarStacks(weekEvents, weekDates);
-          })
-        : null;
-
-    // 하단 상세 리스트: 현재 그리드에 표시되는 모든 이벤트
+    // All events visible in the current month grid (for the detail list below)
     const gridStart = gridDates[0][0];
     const gridEnd = gridDates[gridDates.length - 1][6];
     const gridEvents = (filteredEvents as TimelineEvent<TData>[]).filter(
@@ -387,29 +389,24 @@ export function Calendar<TData = unknown>({
     );
 
     return (
-      <div
-        className={`flex flex-col text-left font-[var(--cv-font-family)] bg-[var(--cv-color-bg)] text-[var(--cv-color-text)] ${theme ?? ""}`}
-      >
-        {toolbar}
-        {filterPanel}
-
-        <div className="relative">
+      <CalendarShell toolbar={toolbar} filterPanel={filterPanel} theme={theme} className={className}>
+        <div className="relative mt-3">
           <CalendarMonthGrid
             weeks={gridDates}
             currentMonth={currentDate.getMonth()}
             today={monthGrid.todayDate ?? undefined}
             showEmptyLabel={showEmptyLabel}
-            emptyLabel={emptyLabel}
+            emptyLabel={labels.empty}
+            weekdayLabels={labels.weekdays}
             hasEvents={(d) => {
               const cell = cellMap.get(dateKey(d));
               return cell ? cell.events.length > 0 : false;
             }}
             renderWeekOverlay={
-              // 커스텀 renderMonthCell이 제공되면 bar overlay 생략
-              renderMonthCell || monthMode !== "bar" || !weekBars
+              renderMonthCell || monthMode !== "bar" || !monthGrid.weekBars
                 ? undefined
                 : (_weekDates, weekIndex) => {
-                    const bars = weekBars[weekIndex];
+                    const bars = monthGrid.weekBars?.[weekIndex];
                     if (!bars || bars.length === 0) return null;
                     return renderBarOverlay(bars, weekIndex);
                   }
@@ -418,32 +415,26 @@ export function Calendar<TData = unknown>({
               const cell = cellMap.get(dateKey(cellDate));
               const cellEvents = (cell?.events ?? []) as TimelineEvent<TData>[];
 
-              // 커스텀 renderMonthCell
               if (renderMonthCell) {
                 return renderMonthCell(cellDate, cellEvents, info);
               }
 
               if (!info.isCurrentMonth) return null;
 
-              // Bar mode: bar가 들어갈 공간 확보
-              if (monthMode === "bar" && weekBars) {
-                const weekIndex = gridDates.findIndex((wk) =>
-                  wk.some((d) => isSameDay(d, cellDate)),
-                );
-                const bars = weekIndex >= 0 ? weekBars[weekIndex] : [];
-                const maxRows = getMaxBarRow(bars);
+              // Bar mode: reserve vertical space for the bar overlay
+              if (monthMode === "bar" && monthGrid.weekBars) {
+                const bars = monthGrid.weekBars[cell?.weekIndex ?? 0] ?? [];
+                const maxRows = bars.length > 0 ? Math.max(...bars.map((b) => b.row)) + 1 : 0;
                 const spacerHeight =
                   maxRows > 0 ? maxRows * (BAR_HEIGHT + BAR_GAP) : 0;
                 if (spacerHeight === 0) return null;
                 return <div style={{ height: spacerHeight }} />;
               }
 
-              // List mode: 이벤트 리스트 + "N개 더보기"
+              // List mode: use visibleEvents/hiddenCount computed by the hook
               if (cellEvents.length === 0) return null;
-              const { visible, hiddenCount } = truncateEvents({
-                events: cellEvents,
-                maxVisible: MAX_VISIBLE_LIST,
-              });
+              const visible = cell?.visibleEvents ?? [];
+              const { hiddenCount } = cell ?? { hiddenCount: 0 };
 
               return (
                 <div className="flex flex-col gap-0.5">
@@ -454,7 +445,7 @@ export function Calendar<TData = unknown>({
                     >
                       <span
                         className="shrink-0 w-2 h-2 rounded-full"
-                        style={{ background: e.color }}
+                        style={{ background: resolveEventColor(e) }}
                       />
                       <span className="truncate text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)]">
                         {formatTime(e.start)}
@@ -470,7 +461,7 @@ export function Calendar<TData = unknown>({
                       className="text-left text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-today-border)] hover:underline cursor-pointer"
                       onClick={() => setPopupDate(cellDate)}
                     >
-                      {hiddenCount}개 더보기
+                      {labels.moreEvents(hiddenCount)}
                     </button>
                   )}
                 </div>
@@ -478,7 +469,7 @@ export function Calendar<TData = unknown>({
             }}
           />
 
-          {/* List mode: 날짜 상세 팝업 */}
+          {/* List mode: date detail popup */}
           {monthMode === "list" && popupDate && (
             <DateDetailPopup
               date={popupDate}
@@ -487,15 +478,18 @@ export function Calendar<TData = unknown>({
                 popupDate,
               )}
               onClose={() => setPopupDate(null)}
+              resolveColor={resolveEventColor}
+              formatHeader={labels.formatPopupHeader}
+              closeLabel={labels.close}
             />
           )}
         </div>
 
-        {/* Bar mode: 하단 상세 리스트 */}
+        {/* Bar mode: detail event list below the grid */}
         {monthMode === "bar" && gridEvents.length > 0 && (
           <div className="mt-[var(--cv-spacing-lg)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-lg)] p-[var(--cv-spacing-lg)]">
             <h3 className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)] text-[var(--cv-color-text-secondary)] mb-[var(--cv-spacing-sm)]">
-              진행중인 이벤트
+              {labels.eventListTitle}
             </h3>
             <div className="flex flex-col gap-[var(--cv-spacing-sm)]">
               {gridEvents.map((e) => (
@@ -505,15 +499,15 @@ export function Calendar<TData = unknown>({
                 >
                   <span
                     className="shrink-0 w-2 h-2 rounded-full mt-1.5"
-                    style={{ background: e.color }}
+                    style={{ background: resolveEventColor(e) }}
                   />
                   <div className="min-w-0">
                     <div className="truncate text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-medium)]">
                       {e.title}
                     </div>
                     <div className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)]">
-                      {formatDateLabel(e.start)} {formatTime(e.start)} –{" "}
-                      {formatDateLabel(e.end)} {formatTime(e.end)}
+                      {labels.formatDate(e.start)} {formatTime(e.start)} –{" "}
+                      {labels.formatDate(e.end)} {formatTime(e.end)}
                     </div>
                   </div>
                 </div>
@@ -521,21 +515,17 @@ export function Calendar<TData = unknown>({
             </div>
           </div>
         )}
-      </div>
+      </CalendarShell>
     );
   }
 
   // ─── Day/Week View ───
-  const slotHeight =
-    totalMainSize > 0 && timeSlots.length > 0
-      ? totalMainSize / timeSlots.length
-      : 60;
 
   // Week: day header cells
   const dayHeaderCells: DayHeaderCell[] =
     currentView === "week"
       ? columns.map((col) => ({
-          label: `${WEEKDAYS[col.dayOfWeek]} ${col.date.getMonth() + 1}/${col.date.getDate()}`,
+          label: `${labels.weekdays[col.dayOfWeek]} ${col.date.getMonth() + 1}/${col.date.getDate()}`,
           isToday: col.isToday,
         }))
       : [];
@@ -549,6 +539,7 @@ export function Calendar<TData = unknown>({
       timeSlots={timeSlots}
       slotHeight={slotHeight}
       totalHeight={totalMainSize}
+      offsetTop={contentOffset}
     />
   );
 
@@ -563,9 +554,24 @@ export function Calendar<TData = unknown>({
         slotCount={timeSlots.length}
         slotHeight={slotHeight}
         crossSize="100%"
+        offsetTop={contentOffset}
       />
 
-      {/* Week: 오늘 열 하이라이트 배경 */}
+      {/* Content area top/bottom border lines (Google Calendar style) */}
+      {contentOffset > 0 && (
+        <>
+          <div
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{ top: contentOffset, height: 1, background: "var(--cv-color-border)" }}
+          />
+          <div
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{ top: contentOffset + timeSlots.length * slotHeight, height: 1, background: "var(--cv-color-border)" }}
+          />
+        </>
+      )}
+
+      {/* Week: today column highlight */}
       {currentView === "week" && todayColumnIndex >= 0 && (
         <div
           className="absolute top-0 bottom-0 bg-[var(--cv-color-today-bg)] pointer-events-none"
@@ -576,10 +582,10 @@ export function Calendar<TData = unknown>({
         />
       )}
 
-      {/* Week: 열 구분선 (6개 고정, 순서 불변) */}
+      {/* Week: column dividers */}
       {currentView === "week" &&
-        columns.slice(1).map((col) => {
-          const colIdx = columns.indexOf(col);
+        columns.slice(1).map((col, i) => {
+          const colIdx = i + 1;
           return (
             <div
               key={`col-divider-${col.date.getTime()}`}
@@ -589,7 +595,7 @@ export function Calendar<TData = unknown>({
           );
         })}
 
-      {/* Event cards — Calendar 스타일 (불투명 tint 배경 + compact 텍스트) */}
+      {/* Event cards */}
       {columns.flatMap((col, colIdx) =>
         col.events.map((eventLayout) => {
           const event = eventLayout.event as TimelineEvent<TData>;
@@ -619,7 +625,6 @@ export function Calendar<TData = unknown>({
                 detail.handleMouseLeave();
               };
 
-          // eventProps로 title/subtitle이 오버라이드되면 기본 EventCard 렌더링 사용
           if (overrides?.title || overrides?.subtitle || overrides?.children) {
             return (
               <EventCard
@@ -639,7 +644,6 @@ export function Calendar<TData = unknown>({
             );
           }
 
-          // Calendar 기본: 불투명 tint 배경 + compact 텍스트 (정적 스토리 패턴)
           const durationMs = event.end.getTime() - event.start.getTime();
           const durationMin = durationMs / 60000;
           const timeLabel = formatTimeLabel(event.start, event.end);
@@ -656,9 +660,8 @@ export function Calendar<TData = unknown>({
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              {/* 3px 좌측 컬러 바 */}
               <div className="shrink-0" style={{ width: 3, background: overrides?.color ?? color }} />
-              {/* 불투명 tint 배경 (다크모드에서도 텍스트 가독성 보장) */}
+              {/* Opaque tint background ensures text readability in both light and dark modes */}
               <div
                 className="flex flex-col justify-start flex-1 min-w-0 overflow-hidden px-2 py-0.5"
                 style={{
@@ -759,61 +762,21 @@ export function Calendar<TData = unknown>({
 
 // ─── Helpers ───
 
-/** Format event start/end as "HH:MM - HH:MM" */
-function formatTimeLabel(start: Date, end: Date): string {
-  return `${formatTime(start)} - ${formatTime(end)}`;
-}
-
-/** Format time as "HH:MM" */
-function formatTime(d: Date): string {
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-/** Format date label as "MM.DD(요일)" */
-function formatDateLabel(d: Date): string {
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${m}.${day}(${WEEKDAYS[d.getDay()]})`;
-}
-
-/** Normalize date to midnight */
-function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-/** Check if two dates are the same day */
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
 /** Create a unique key for a date (for Map lookup) */
 function dateKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-/** Filter events that overlap a specific date */
+/** Filter events that overlap a specific date (end-exclusive, consistent with buildMonthCellLayouts) */
 function eventsOnDate<TData>(
   events: TimelineEvent<TData>[],
   date: Date,
 ): TimelineEvent<TData>[] {
-  const dayTime = startOfDay(date).getTime();
-  return events.filter((e) => {
-    const eStart = startOfDay(e.start).getTime();
-    const eEnd = startOfDay(e.end).getTime();
-    return eStart <= dayTime && eEnd >= dayTime;
-  });
+  const dayStart = startOfDay(date);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+  return events.filter((e) => e.end > dayStart && e.start < dayEnd);
 }
-
-/** Get maximum bar row count (for spacer height calculation) */
-function getMaxBarRow(bars: MonthBarLayout[]): number {
-  if (bars.length === 0) return 0;
-  return Math.max(...bars.map((b) => b.row)) + 1;
-}
-
 
 /** Render bar overlay for a week (bar mode) */
 function renderBarOverlay(
@@ -852,76 +815,3 @@ function renderBarOverlay(
   );
 }
 
-/** 날짜 상세 팝업 — "N개 더보기" 클릭 시 전체 이벤트 표시 (list mode) */
-function DateDetailPopup<TData>({
-  date,
-  events,
-  onClose,
-}: {
-  date: Date;
-  events: TimelineEvent<TData>[];
-  onClose: () => void;
-}) {
-  const label = `${WEEKDAYS[date.getDay()]} ${date.getDate()}`;
-
-  return (
-    <div
-      className="absolute z-[var(--cv-z-popup)] bg-[var(--cv-color-bg)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-md)] shadow-[var(--cv-shadow-md)] overflow-hidden"
-      style={{
-        width: 240,
-        maxHeight: 320,
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-      }}
-    >
-      {/* 헤더 */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--cv-color-border)] bg-[var(--cv-color-surface)]">
-        <span className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)]">
-          {label}
-        </span>
-        <button
-          type="button"
-          className="text-[var(--cv-color-text-secondary)] hover:text-[var(--cv-color-text)] cursor-pointer"
-          onClick={onClose}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-
-      {/* 이벤트 리스트 */}
-      <div
-        className="overflow-y-auto p-2 flex flex-col gap-1"
-        style={{ maxHeight: 270 }}
-      >
-        {events.map((e) => (
-          <div key={e.id} className="flex items-center gap-2 px-1 py-0.5">
-            <span
-              className="shrink-0 w-2 h-2 rounded-full"
-              style={{ background: e.color }}
-            />
-            <span className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)] shrink-0">
-              {formatTime(e.start)}
-            </span>
-            <span className="truncate text-[length:var(--cv-font-size-sm)] text-[var(--cv-color-text)]">
-              {e.title}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}

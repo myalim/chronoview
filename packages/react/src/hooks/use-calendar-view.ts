@@ -1,36 +1,34 @@
 import { type CSSProperties, useMemo } from "react";
 import {
-  type AxisConfig,
   type CalendarMonthLayoutResult,
-  type DateRange,
   type DayColumnLayout,
   type EventLayout,
   type MonthBarLayout,
-  type MonthCellLayout,
   type Position,
   type TimeSlot,
   type TimelineConfig,
+  buildMonthCellLayouts,
   calculateAutoStacks,
   calculateBarStacks,
   calculateDayRange,
   calculateEventPosition,
-  calculateHorizontalStacks,
   calculateMonthGrid,
   calculateMonthRange,
   calculateWeekRange,
   detectOverlaps,
   generateTimeSlots,
-  getAxisConfig,
   getCellConfig,
   resolveColor,
-  truncateEvents,
 } from "@chronoview/core";
-
-// Calendar uses vertical main axis (time flows top → bottom)
-const CALENDAR_AXIS_CONFIG = getAxisConfig("calendar");
 
 /** Default max visible events per cell in month list mode */
 const DEFAULT_MAX_VISIBLE = 3;
+
+/** Calendar slot height in px — Google Calendar style (~60px/hour) */
+const CALENDAR_SLOT_HEIGHT = 60;
+
+/** Number of empty padding slots above/below the time grid (Google Calendar style) */
+const PADDING_SLOTS = 1;
 
 export interface UseCalendarViewReturn {
   /** Day/Week: date-keyed columns with positioned events. Empty for month. */
@@ -39,12 +37,14 @@ export interface UseCalendarViewReturn {
   monthGrid: CalendarMonthLayoutResult | null;
   /** Time slots for day/week (shared across columns). Empty for month. */
   timeSlots: TimeSlot[];
-  /** Axis config (calendar: mainAxis=vertical, crossAxis=horizontal) */
-  axisConfig: AxisConfig;
-  /** Computed date range */
-  dateRange: DateRange;
-  /** Total main axis size in px (height for day/week) */
+  /** Total main axis size in px (height for day/week, includes padding) */
   totalMainSize: number;
+  /** Content area size (event area only, excluding padding). Equals totalMainSize - 2 * contentOffset. */
+  contentSize: number;
+  /** Slot height in px (Calendar: 60px per hour) */
+  slotHeight: number;
+  /** Padding offset above content area (1 slot height) — grid lines/sidebar labels start here */
+  contentOffset: number;
   /** Generate CSS style for a calendar event (day/week only) */
   getEventStyle: (layout: EventLayout, columnIndex: number, totalColumns: number) => CSSProperties;
 }
@@ -53,7 +53,9 @@ export interface UseCalendarViewReturn {
  * Calendar layout hook — computes day columns (day/week) or month grid (month).
  *
  * Pure `useMemo` computation, no internal state.
- * Follows the same pattern as `useScheduleView`.
+ * Follows the same pattern as `useScheduleView`:
+ * - Hook owns ALL layout computation (positions, stacking, bars, truncation)
+ * - Component only manages state + renders UI
  */
 export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
   const {
@@ -66,8 +68,6 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
     startDate,
     weekStartsOn = 0,
   } = config;
-
-  const axisConfig = CALENDAR_AXIS_CONFIG;
 
   // Calendar day/week both use day-level time slots (each column = one day)
   const cellConfig = useMemo(() => getCellConfig("day", cellDuration), [cellDuration]);
@@ -92,11 +92,13 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
     });
   }, [view, startDate, cellConfig.intervalMinutes]);
 
-  // Total height of the time axis (day/week)
-  const totalMainSize = useMemo(() => {
-    if (view === "month") return 0;
-    return timeSlots.length * cellConfig.cellWidthPx;
-  }, [view, timeSlots, cellConfig.cellWidthPx]);
+  // Calendar slot height and padding (Google Calendar style)
+  const slotHeight = CALENDAR_SLOT_HEIGHT;
+  const contentOffset = view === "month" ? 0 : PADDING_SLOTS * slotHeight;
+
+  // Content area (event positions) + padding above/below
+  const contentSize = timeSlots.length * slotHeight;
+  const totalMainSize = view === "month" ? 0 : contentSize + 2 * contentOffset;
 
   // Filter events to dateRange to prevent overflow rendering
   const visibleEvents = useMemo(
@@ -146,8 +148,7 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
       const groups = detectOverlaps(dayEvents);
       const stackedEvents = groups.flatMap((group) => {
         if (resolvedStackMode === "auto") return calculateAutoStacks(group);
-        if (resolvedStackMode === "horizontal") return calculateHorizontalStacks(group);
-        // "none" or "vertical": no horizontal stacking
+        // "none" or "vertical": no stacking
         return group.events.map((event) => ({
           event,
           lane: 0,
@@ -158,15 +159,16 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
 
       // Build EventLayout for each stacked event
       const eventLayouts: EventLayout[] = stackedEvents.map((se) => {
+        // Event positions are relative to the content area, then offset by padding
         const { mainOffset, mainSize } = calculateEventPosition({
           event: se.event,
           rangeStart: dayRange.start,
           rangeEnd: dayRange.end,
-          totalMainSize,
+          totalMainSize: contentSize,
         });
 
         const position: Position = {
-          mainOffset,
+          mainOffset: mainOffset + contentOffset,
           mainSize,
           crossOffset: 0, // Determined by lane in getEventStyle
           crossSize: 0,
@@ -175,7 +177,6 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
         const color = resolveColor({
           eventColor: se.event.color,
           resourceColor: resourceColorMap.get(se.event.resourceId),
-          defaultColor: "#3b82f6",
         });
 
         return {
@@ -200,9 +201,9 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
         events: eventLayouts,
       };
     });
-  }, [view, dateRange, visibleEvents, totalMainSize, stackMode, resourceColorMap]);
+  }, [view, dateRange, visibleEvents, contentSize, contentOffset, stackMode, resourceColorMap]);
 
-  // ─── Month: grid layout ───
+  // ─── Month: grid layout (delegates to pure functions) ───
   const monthGrid = useMemo((): CalendarMonthLayoutResult | null => {
     if (view !== "month") return null;
 
@@ -210,64 +211,25 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
     const grid = calculateMonthGrid(date, weekStartsOn);
     const today = new Date();
     const currentMonth = date.getMonth();
-    const maxVisible = DEFAULT_MAX_VISIBLE;
 
-    // Build MonthCellLayout for each cell
-    const weeks: MonthCellLayout[][] = grid.map((weekDates) =>
-      weekDates.map((cellDate) => {
-        // Find events on this date
-        const dayStart = new Date(
-          cellDate.getFullYear(),
-          cellDate.getMonth(),
-          cellDate.getDate(),
-          0,
-          0,
-          0,
-          0,
-        );
-        const dayEnd = new Date(
-          cellDate.getFullYear(),
-          cellDate.getMonth(),
-          cellDate.getDate() + 1,
-          0,
-          0,
-          0,
-          0,
-        );
-
-        const cellEvents = visibleEvents.filter((e) => e.end > dayStart && e.start < dayEnd);
-
-        const truncated = truncateEvents({ events: cellEvents, maxVisible });
-
-        const isToday =
-          cellDate.getFullYear() === today.getFullYear() &&
-          cellDate.getMonth() === today.getMonth() &&
-          cellDate.getDate() === today.getDate();
-
-        return {
-          date: cellDate,
-          isToday,
-          isCurrentMonth: cellDate.getMonth() === currentMonth,
-          events: cellEvents,
-          visibleCount: truncated.visible.length,
-          hiddenCount: truncated.hiddenCount,
-        };
-      }),
+    // Cell layouts: per-date event filtering + truncation
+    const weeks = buildMonthCellLayouts(
+      grid, visibleEvents, currentMonth, DEFAULT_MAX_VISIBLE, today,
     );
 
-    // Bar mode: calculate bar stacks per week
-    let bars: MonthBarLayout[] | undefined;
+    // Bar layout: per-week bar stacking via calculateBarStacks
+    let weekBars: MonthBarLayout[][] | undefined;
     if (monthMode === "bar") {
-      bars = grid.flatMap((weekDates) => {
-        const weekEvents = visibleEvents.filter((e) => {
-          const weekStart = weekDates[0];
-          const weekEnd = new Date(
-            weekDates[6].getFullYear(),
-            weekDates[6].getMonth(),
-            weekDates[6].getDate() + 1,
-          );
-          return e.end > weekStart && e.start < weekEnd;
-        });
+      weekBars = grid.map((weekDates) => {
+        const weekStart = weekDates[0];
+        const weekEnd = new Date(
+          weekDates[6].getFullYear(),
+          weekDates[6].getMonth(),
+          weekDates[6].getDate() + 1,
+        );
+        const weekEvents = visibleEvents.filter(
+          (e) => e.end > weekStart && e.start < weekEnd,
+        );
         return calculateBarStacks(weekEvents, weekDates);
       });
     }
@@ -278,17 +240,21 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
         ? today
         : null;
 
-    return { weeks, bars, todayDate };
+    return { weeks, weekBars, todayDate };
   }, [view, startDate, weekStartsOn, visibleEvents, monthMode]);
 
   // ─── Style factory ───
+  // Indent-overlap style (Google Calendar):
+  // lane = depth, totalLanes = maxDepth + 1
+  // Higher depth → further right indent + higher z-index (front layer)
   const getEventStyle = useMemo(() => {
     return (layout: EventLayout, columnIndex: number, totalColumns: number): CSSProperties => {
-      // mainAxis=vertical: mainOffset → top, mainSize → height
       const colWidthPct = 100 / totalColumns;
-      const laneWidthPct = colWidthPct / layout.totalLanes;
-      const leftPct = columnIndex * colWidthPct + layout.lane * laneWidthPct;
-      const widthPct = (layout.spanColumns ?? 1) * laneWidthPct;
+      const maxDepth = layout.totalLanes - 1;
+      // Indent ratio: 0 when no overlap, otherwise divide column width by (maxDepth + 1.5)
+      const indentPct = maxDepth > 0 ? colWidthPct / (maxDepth + 1.5) : 0;
+      const leftPct = columnIndex * colWidthPct + layout.lane * indentPct;
+      const widthPct = colWidthPct - layout.lane * indentPct;
 
       return {
         position: "absolute" as const,
@@ -296,6 +262,7 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
         height: Math.max(20, layout.position.mainSize),
         left: `${leftPct}%`,
         width: `${widthPct}%`,
+        zIndex: 20 + layout.lane,
       };
     };
   }, []);
@@ -304,9 +271,10 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
     columns,
     monthGrid,
     timeSlots,
-    axisConfig,
-    dateRange,
     totalMainSize,
+    contentSize,
+    slotHeight,
+    contentOffset,
     getEventStyle,
   };
 }

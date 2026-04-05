@@ -29,7 +29,7 @@ const meta: Meta<typeof Calendar> = {
     },
     stackMode: {
       control: "inline-radio",
-      options: ["auto", "horizontal", "none"],
+      options: ["auto", "none"],
     },
     showToolbar: { control: "boolean" },
     showFilter: { control: "boolean" },
@@ -88,19 +88,19 @@ function generateEvents(baseDate: Date): TimelineEvent[] {
 
   return [
     // ─── Day 0 (base date) events ───
-    // 겹침 2개
+    // 2 overlapping
     { id: "e1", resourceId: "r1", start: d(0, 9), end: d(0, 11), title: "Sprint Planning", color: "#3b82f6" },
     { id: "e2", resourceId: "r2", start: d(0, 10), end: d(0, 12), title: "Code Review", color: "#8b5cf6" },
-    // 겹침 3개
+    // 3 overlapping
     { id: "e3", resourceId: "r3", start: d(0, 14), end: d(0, 16), title: "Design Session", color: "#06b6d4" },
     { id: "e4", resourceId: "r1", start: d(0, 14, 30), end: d(0, 15, 30), title: "API Design", color: "#3b82f6" },
     { id: "e5", resourceId: "r4", start: d(0, 15), end: d(0, 16, 30), title: "1:1 Meeting", color: "#10b981" },
-    // 짧은 이벤트 (5분, 15분)
+    // Short events (5min, 15min)
     { id: "e6", resourceId: "r2", start: d(0, 8), end: d(0, 8, 5), title: "Quick Ping", color: "#8b5cf6" },
     { id: "e7", resourceId: "r3", start: d(0, 8, 30), end: d(0, 8, 45), title: "Bio Break", color: "#06b6d4" },
-    // 단독 이벤트
+    // Standalone event
     { id: "e8", resourceId: "r1", start: d(0, 17), end: d(0, 18), title: "Wrap Up", color: "#3b82f6" },
-    // 인접 이벤트 (end===start, 겹치지 않아야 함)
+    // Adjacent events (end===start, should not overlap)
     { id: "e9", resourceId: "r4", start: d(0, 12), end: d(0, 13), title: "Lunch", color: "#10b981" },
     { id: "e10", resourceId: "r4", start: d(0, 13), end: d(0, 14), title: "Coffee Chat", color: "#10b981" },
 
@@ -118,7 +118,7 @@ function generateEvents(baseDate: Date): TimelineEvent[] {
     { id: "e19", resourceId: "r1", start: d(-14, 9), end: d(-10, 18), title: "Server Migration", color: "#10b981" },
     { id: "e20", resourceId: "r1", start: d(-7, 9), end: d(-2, 18), title: "Code Freeze", color: "#10b981" },
     { id: "e21", resourceId: "r3", start: d(-5, 9), end: d(-3, 18), title: "QA Sprint", color: "#06b6d4" },
-    // 주 경계 걸침 이벤트
+    // Event spanning across week boundary
     { id: "e22", resourceId: "r4", start: d(3, 9), end: d(8, 18), title: "Planning Week", color: "#10b981" },
   ];
 }

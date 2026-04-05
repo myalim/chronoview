@@ -28,7 +28,7 @@ export function CalendarDayHeader({ dates, className }: CalendarDayHeaderProps) 
           key={cell.label}
           className={cn(
             "flex-1 flex items-center justify-center text-[length:var(--cv-font-size-sm)]",
-            // 마지막 셀 제외 우측 border
+            // Right border on all cells except the last
             i < dates.length - 1 && "border-r border-[var(--cv-color-border)]",
             cell.isToday
               ? "font-[var(--cv-font-weight-bold)] text-[var(--cv-color-today-border)]"

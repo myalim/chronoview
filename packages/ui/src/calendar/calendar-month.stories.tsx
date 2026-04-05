@@ -10,20 +10,21 @@ import {
 import { type FilterChipResource, FilterChips } from "../common/filter-chips.js";
 import { Toolbar } from "../common/toolbar.js";
 import { CalendarMonthGrid } from "./calendar-month-grid.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
 /**
- * Calendar Month 정적 UI 스토리
+ * Calendar Month static UI stories.
  *
- * 레이아웃: 세로=주차, 가로=요일 7열 (시간축 없음)
- * 두 가지 모드: bar (가로 바 스택) / list (셀 내 리스트)
- * 참조: docs/design/calendar/calendar-month.md
+ * Layout: rows = weeks, columns = 7 weekdays (no time axis).
+ * Two modes: bar (horizontal stacked bars) / list (event list per cell).
+ * See: docs/design/calendar/calendar-month.md
  */
 
 // ─── Constants ───
 
 const BAR_HEIGHT = 24;
 const BAR_GAP = 4;
-/** 날짜 숫자 영역 높이 (24px 숫자 + 4px 여백) */
+/** Date number area height (24px digit + 4px gap) */
 const DATE_NUMBER_HEIGHT = 28;
 const COL_COUNT = 7;
 const COL_PCT = 100 / COL_COUNT;
@@ -32,7 +33,7 @@ const MAX_VISIBLE_LIST = 3;
 // ─── Mock Data ───
 
 const MOCK_TODAY = new Date(2026, 2, 27);
-const DISPLAY_MONTH = new Date(2026, 2, 1); // 2026년 3월
+const DISPLAY_MONTH = new Date(2026, 2, 1);
 
 const RESOURCES: FilterChipResource[] = [
   { id: "a", title: "Resource A", color: "#3b82f6" },
@@ -40,57 +41,55 @@ const RESOURCES: FilterChipResource[] = [
   { id: "c", title: "Resource C", color: "#06b6d4" },
 ];
 
-/** 다양한 패턴의 이벤트: 다중 일, 주 경계 걸침, 단일 일, 밀집 날짜 */
+/** Events covering various patterns: multi-day, cross-week, single-day, dense dates */
 const EVENTS: TimelineEvent[] = [
-  // ── 다중 일 이벤트 (bar 모드 핵심 테스트) ──
+  // ── Multi-day events (bar mode) ──
 
-  // Week 1: 6일 걸침
+  // Week 1: spans 6 days
   { id: "e1", resourceId: "a", start: new Date(2026, 2, 2, 9), end: new Date(2026, 2, 7, 18), title: "Project Alpha", color: "#3b82f6" },
-  // Week 1: 3일 걸침, e1과 겹침 → row 1
+  // Week 1: spans 3 days, overlaps e1 -> row 1
   { id: "e2", resourceId: "b", start: new Date(2026, 2, 4, 10), end: new Date(2026, 2, 6, 17), title: "Sprint Release", color: "#8b5cf6" },
 
-  // Week 2: 5일
+  // Week 2: spans 5 days
   { id: "e3", resourceId: "c", start: new Date(2026, 2, 10, 9), end: new Date(2026, 2, 14, 18), title: "Marketing Campaign", color: "#06b6d4" },
-  // Week 2→3: 주 경계 걸침
+  // Week 2->3: crosses week boundary
   { id: "e4", resourceId: "a", start: new Date(2026, 2, 13, 9), end: new Date(2026, 2, 17, 18), title: "Server Migration", color: "#10b981" },
 
-  // Week 3→4: 주 경계 걸침
+  // Week 3->4: crosses week boundary
   { id: "e5", resourceId: "a", start: new Date(2026, 2, 20, 9), end: new Date(2026, 2, 25, 18), title: "Code Freeze", color: "#10b981" },
-  // Week 4: e5와 겹침
+  // Week 4: overlaps e5
   { id: "e6", resourceId: "c", start: new Date(2026, 2, 22, 9), end: new Date(2026, 2, 24, 18), title: "QA Sprint", color: "#06b6d4" },
 
-  // Week 4: 오늘 포함
+  // Week 4: includes today
   { id: "e7", resourceId: "a", start: new Date(2026, 2, 27, 9), end: new Date(2026, 2, 28, 18), title: "Bug Bash", color: "#3b82f6" },
 
-  // Week 5: 월 경계 걸침
+  // Week 5: crosses month boundary
   { id: "e8", resourceId: "c", start: new Date(2026, 2, 30, 9), end: new Date(2026, 3, 3, 18), title: "Planning Week", color: "#06b6d4" },
 
-  // ── 단일 일 이벤트 (list 모드 핵심 테스트) ──
+  // ── Single-day events (list mode) ──
 
   { id: "e9", resourceId: "b", start: new Date(2026, 2, 5, 14), end: new Date(2026, 2, 5, 16), title: "Design Review", color: "#8b5cf6" },
   { id: "e10", resourceId: "b", start: new Date(2026, 2, 12, 10), end: new Date(2026, 2, 12, 11), title: "Team Sync", color: "#8b5cf6" },
   { id: "e11", resourceId: "c", start: new Date(2026, 2, 19, 14), end: new Date(2026, 2, 19, 16), title: "Workshop", color: "#06b6d4" },
   { id: "e12", resourceId: "b", start: new Date(2026, 2, 26, 10), end: new Date(2026, 2, 26, 11), title: "Product Demo", color: "#8b5cf6" },
 
-  // 3/25: 5개 이벤트 밀집 → truncation 테스트
+  // 3/25: 5 dense events -> truncation test
   { id: "e13", resourceId: "a", start: new Date(2026, 2, 25, 9), end: new Date(2026, 2, 25, 9, 30), title: "Standup", color: "#3b82f6" },
   { id: "e14", resourceId: "b", start: new Date(2026, 2, 25, 10), end: new Date(2026, 2, 25, 10, 30), title: "1:1 Meeting", color: "#8b5cf6" },
   { id: "e15", resourceId: "c", start: new Date(2026, 2, 25, 12), end: new Date(2026, 2, 25, 13), title: "Lunch Talk", color: "#06b6d4" },
   { id: "e16", resourceId: "a", start: new Date(2026, 2, 25, 14), end: new Date(2026, 2, 25, 15), title: "Code Review", color: "#3b82f6" },
   { id: "e17", resourceId: "b", start: new Date(2026, 2, 25, 16), end: new Date(2026, 2, 25, 17), title: "Retro", color: "#8b5cf6" },
 
-  // 오늘 단일 이벤트
+  // Single event on today
   { id: "e18", resourceId: "b", start: new Date(2026, 2, 27, 10), end: new Date(2026, 2, 27, 11), title: "Interview", color: "#8b5cf6" },
 ];
 
 // ─── Helpers ───
 
-/** 날짜를 자정(00:00)으로 정규화 */
 function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-/** 두 Date가 같은 날짜인지 비교 */
 function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -99,7 +98,7 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-/** 주(weekDates)와 겹치는 이벤트만 필터 */
+/** Filter events that overlap the given week */
 function eventsInWeek(events: TimelineEvent[], weekDates: Date[]): TimelineEvent[] {
   const wkStart = weekDates[0].getTime();
   const wkEnd = weekDates[6].getTime();
@@ -110,7 +109,7 @@ function eventsInWeek(events: TimelineEvent[], weekDates: Date[]): TimelineEvent
   });
 }
 
-/** 특정 날짜에 해당하는 이벤트 필터 (시작일 기준 + 걸침 포함) */
+/** Filter events overlapping a specific date (inclusive of multi-day spans) */
 function eventsOnDate(events: TimelineEvent[], date: Date): TimelineEvent[] {
   const dayTime = startOfDay(date).getTime();
   return events.filter((e) => {
@@ -120,20 +119,18 @@ function eventsOnDate(events: TimelineEvent[], date: Date): TimelineEvent[] {
   });
 }
 
-/** 시간을 HH:MM 형식으로 포맷 */
 function formatTime(d: Date): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-/** 날짜 포맷 (예: "03.25(수)") */
+/** Format date as "MM.DD(weekday)" (e.g. "03.25(수)") */
 function formatDateLabel(d: Date): string {
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  return `${m}.${day}(${weekdays[d.getDay()]})`;
+  return `${m}.${day}(${WEEKDAY_LABELS[d.getDay()]})`;
 }
 
-/** 주별 최대 bar row 수 계산 → 셀 최소 높이에 반영 */
+/** Max bar row count per week, used to set cell minimum height */
 function getMaxBarRow(bars: MonthBarLayout[]): number {
   if (bars.length === 0) return 0;
   return Math.max(...bars.map((b) => b.row)) + 1;
@@ -150,11 +147,10 @@ function CalendarMonthBarStory() {
   const month = date.getMonth();
   const weeks = calculateMonthGrid(date);
 
-  // 필터링
   const selectedSet = new Set(selectedIds);
   const visibleEvents = EVENTS.filter((e) => selectedSet.has(e.resourceId));
 
-  // 주별 bar 계산 (캐시)
+  // Calculate bar stacks per week
   const weekBars: MonthBarLayout[][] = weeks.map((weekDates) => {
     const weekEvents = eventsInWeek(visibleEvents, weekDates);
     return calculateBarStacks(weekEvents, weekDates);
@@ -173,7 +169,7 @@ function CalendarMonthBarStory() {
     );
   };
 
-  // ─── 하단 상세 리스트: 현재 월 그리드에 표시되는 모든 이벤트 ───
+  // ─── All events visible in the current month grid (for the detail list below) ───
   const gridStart = weeks[0][0];
   const gridEnd = weeks[weeks.length - 1][6];
   const gridEvents = visibleEvents.filter((e) => {
@@ -255,8 +251,7 @@ function CalendarMonthBarStory() {
           );
         }}
         renderCellContent={(_date, { isCurrentMonth }) => {
-          // bar 모드에서 셀 콘텐츠는 바가 들어갈 빈 공간 확보용
-          // 해당 주의 weekIndex를 찾아 max bar row로 min-height 설정
+          // Reserve vertical space in each cell for the bar overlay above
           const weekIndex = weeks.findIndex((wk) =>
             wk.some((d) => isSameDay(d, _date)),
           );
@@ -268,7 +263,7 @@ function CalendarMonthBarStory() {
         }}
       />
 
-      {/* ── 하단 상세 리스트 (bar 모드 전용) ── */}
+      {/* ── Detail event list below the grid (bar mode only) ── */}
       {gridEvents.length > 0 && (
         <div className="mt-[var(--cv-spacing-lg)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-lg)] p-[var(--cv-spacing-lg)]">
           <h3 className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)] text-[var(--cv-color-text-secondary)] mb-[var(--cv-spacing-sm)]">
@@ -305,7 +300,6 @@ function CalendarMonthBarStory() {
 function CalendarMonthListStory() {
   const [date, setDate] = useState(DISPLAY_MONTH);
   const [selectedIds, setSelectedIds] = useState(RESOURCES.map((r) => r.id));
-  // 팝업 상태: 클릭된 날짜
   const [popupDate, setPopupDate] = useState<Date | null>(null);
 
   const month = date.getMonth();
@@ -408,7 +402,7 @@ function CalendarMonthListStory() {
           }}
         />
 
-        {/* ── 날짜 상세 팝업 ── */}
+        {/* ── Date detail popup ── */}
         {popupDate && (
           <DateDetailPopup
             date={popupDate}
@@ -421,7 +415,7 @@ function CalendarMonthListStory() {
   );
 }
 
-/** 날짜 상세 팝업 — "N개 더보기" 클릭 시 전체 이벤트 표시 */
+/** Date detail popup -- shows all events when "N more" is clicked */
 function DateDetailPopup({
   date,
   events,
@@ -431,15 +425,13 @@ function DateDetailPopup({
   events: TimelineEvent[];
   onClose: () => void;
 }) {
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-  const label = `${weekdays[date.getDay()]} ${date.getDate()}`;
+  const label = `${WEEKDAY_LABELS[date.getDay()]} ${date.getDate()}`;
 
   return (
     <div
       className="absolute z-[var(--cv-z-popup)] bg-[var(--cv-color-bg)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-md)] shadow-[var(--cv-shadow-md)] overflow-hidden"
       style={{ width: 240, maxHeight: 320, top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
     >
-      {/* 헤더 */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--cv-color-border)] bg-[var(--cv-color-surface)]">
         <span className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)]">
           {label}
@@ -456,7 +448,6 @@ function DateDetailPopup({
         </button>
       </div>
 
-      {/* 이벤트 리스트 */}
       <div className="overflow-y-auto p-2 flex flex-col gap-1" style={{ maxHeight: 270 }}>
         {events.map((e) => (
           <div key={e.id} className="flex items-center gap-2 px-1 py-0.5">

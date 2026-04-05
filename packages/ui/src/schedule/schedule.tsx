@@ -39,6 +39,7 @@ import { FilterChips } from "../common/filter-chips.js";
 import { useEventDetail } from "./use-event-detail.js";
 import { EventTooltip } from "./event-tooltip.js";
 import { EventPopover } from "./event-popover.js";
+import { formatTimeLabel } from "../utils/format-time.js";
 
 /** Maps EventCardSize presets to pixel values (synced with tokens.css) */
 const SIZE_TO_PX: Record<EventCardSize, number> = {
@@ -444,12 +445,3 @@ export function Schedule<TData = unknown>({
   );
 }
 
-/** Format event start/end as "HH:MM - HH:MM" */
-function formatTimeLabel(start: Date, end: Date): string {
-  const fmt = (d: Date) => {
-    const h = d.getHours();
-    const m = d.getMinutes();
-    return `${h}:${m.toString().padStart(2, "0")}`;
-  };
-  return `${fmt(start)} - ${fmt(end)}`;
-}

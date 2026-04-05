@@ -3,11 +3,11 @@ import type { CSSProperties } from "react";
 import "./wireframe.css";
 
 /**
- * Schedule Day 와이어프레임
+ * Schedule Day wireframe
  *
- * 레이아웃: 세로=리소스, 가로=시간
- * 핵심: vertical stack + 가변 행 높이 + sticky header/sidebar
- * 참조: docs/design/schedule/schedule-day.md
+ * Layout: rows = resources, columns = time
+ * Key features: vertical stack, variable row height, sticky header/sidebar
+ * Ref: docs/design/schedule/schedule-day.md
  */
 
 const SLOT_WIDTH = 120;
@@ -25,23 +25,23 @@ const RESOURCES = [
   { name: "Resource D", color: "#10b981", icon: "#10b981" },
 ];
 
-// 이벤트: [리소스idx, 시작슬롯, 끝슬롯, 제목, lane]
+// Events: [resourceIdx, startSlot, endSlot, title, lane]
 const EVENTS: [number, number, number, string, number][] = [
   [0, 0, 1.5, "Meeting A", 0],
   [0, 2, 3.5, "Task B", 0],
   [0, 4, 5.5, "Review C", 0],
   [0, 5.5, 7, "Deploy D", 0],
-  // Resource B: 2줄 스택 (가변 행 높이)
+  // Resource B: two-lane stack (variable row height)
   [1, 0.5, 2.5, "Sprint Planning", 0],
   [1, 1.5, 4, "Design Review", 1],
   [1, 4.5, 6, "Code Review", 0],
   [1, 5, 7, "QA Session", 1],
-  // Resource C: 3줄 스택 (최대 가변 행 높이)
+  // Resource C: three-lane stack (max variable row height)
   [2, 1, 3, "Project Alpha", 0],
   [2, 1.5, 4, "Backend API", 1],
   [2, 2, 3.5, "Database Migration", 2],
   [2, 5, 7, "Deployment", 0],
-  // Resource D: 빈 리소스 (최소 높이)
+  // Resource D: empty resource (minimum height)
 ];
 
 function getRowHeight(maxStack: number): number {
@@ -53,11 +53,11 @@ const rowStacks = [1, 2, 3, 0];
 
 function ScheduleDayWireframe() {
   const totalWidth = SLOT_WIDTH * TIME_SLOTS.length;
-  const nowSlot = 4.3; // 9:18am 부근
+  const nowSlot = 4.3; // around 9:18am
 
   return (
     <div className="wf-container" style={{ maxWidth: 960 }}>
-      {/* 툴바 */}
+      {/* Toolbar */}
       <div className="wf-toolbar">
         <div className="wf-toolbar-left">
           <button className="wf-nav-btn">◀</button>
@@ -75,7 +75,7 @@ function ScheduleDayWireframe() {
         </div>
       </div>
 
-      {/* 필터 칩 */}
+      {/* Filter chips */}
       <div className="wf-filter-chips">
         {RESOURCES.map((r, i) => (
           <span key={i} className="wf-chip active" style={{ background: r.color }}>
@@ -84,13 +84,13 @@ function ScheduleDayWireframe() {
         ))}
       </div>
 
-      {/* 그리드 */}
+      {/* Grid */}
       <div className="wf-grid-wrapper" style={{ maxHeight: 420 }}>
         <div style={{ display: "grid", gridTemplateColumns: `${SIDEBAR_WIDTH}px ${totalWidth}px` }}>
-          {/* 코너셀 */}
+          {/* Corner cell */}
           <div className="wf-corner" style={{ height: HEADER_HEIGHT }} />
 
-          {/* 시간 헤더 */}
+          {/* Time header */}
           <div className="wf-header" style={{ height: HEADER_HEIGHT }}>
             {TIME_SLOTS.map((t, i) => (
               <div key={i} className="wf-header-cell" style={{ width: SLOT_WIDTH }}>
@@ -99,20 +99,20 @@ function ScheduleDayWireframe() {
             ))}
           </div>
 
-          {/* 리소스 행 */}
+          {/* Resource rows */}
           {RESOURCES.map((resource, ri) => {
             const maxStack = rowStacks[ri];
             const rowHeight = getRowHeight(maxStack);
 
             return (
               <div key={ri} style={{ display: "contents" }}>
-                {/* 사이드바 */}
+                {/* Sidebar */}
                 <div className="wf-sidebar-item" style={{ height: rowHeight }}>
                   <div className="wf-sidebar-icon" style={{ background: resource.icon }} />
                   <span className="wf-sidebar-name">{resource.name}</span>
                 </div>
 
-                {/* 행 내용 */}
+                {/* Row content */}
                 <div
                   style={{
                     position: "relative",
@@ -120,7 +120,7 @@ function ScheduleDayWireframe() {
                     borderBottom: "1px solid var(--wf-border)",
                   }}
                 >
-                  {/* 그리드 세로선 */}
+                  {/* Grid vertical lines */}
                   {TIME_SLOTS.map((_, si) => (
                     <div
                       key={si}
@@ -134,7 +134,7 @@ function ScheduleDayWireframe() {
                     />
                   ))}
 
-                  {/* 이벤트 카드 */}
+                  {/* Event cards */}
                   {EVENTS.filter(([eri]) => eri === ri).map(([, start, end, title, lane], ei) => {
                     const style: CSSProperties = {
                       left: start * SLOT_WIDTH,
@@ -154,7 +154,7 @@ function ScheduleDayWireframe() {
                     );
                   })}
 
-                  {/* Now Indicator — 도트(첫 행)+선, 이벤트 카드 뒤 (z:10 < event:20) */}
+                  {/* Now Indicator — dot (first row) + line, behind event cards (z:10 < event:20) */}
                   <div className="wf-now-line vertical" style={{ left: nowSlot * SLOT_WIDTH }} />
                   {ri === 0 && (
                     <div
@@ -183,10 +183,10 @@ export default meta;
 
 export const Default: StoryObj = {
   render: () => <ScheduleDayWireframe />,
-  name: "Schedule Day — 기본",
+  name: "Schedule Day — Default",
 };
 
-/** 가변 행 높이 강조: 스택 수에 따라 행 높이가 달라짐 */
+/** Demonstrates variable row heights based on stack count */
 export const VariableRowHeight: StoryObj = {
   render: () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -327,5 +327,5 @@ export const VariableRowHeight: StoryObj = {
       </div>
     </div>
   ),
-  name: "가변 행 높이",
+  name: "Variable Row Height",
 };

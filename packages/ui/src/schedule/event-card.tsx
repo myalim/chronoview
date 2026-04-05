@@ -65,7 +65,7 @@ export function EventCard({
 
   const positionStyle: CSSProperties = {
     ...style,
-    // style.height가 있으면 유지 (Calendar에서 시간 비례 높이 전달 시)
+    // Preserve style.height when provided (time-proportional height from Calendar)
     height: style?.height ?? `var(--cv-size-event-height-${resolvedSize})`,
   };
 
