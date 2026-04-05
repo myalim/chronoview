@@ -145,7 +145,6 @@ export function useScheduleView(config: TimelineConfig): UseScheduleViewReturn {
         const color = resolveColor({
           eventColor: se.event.color,
           resourceColor: resource.color,
-          defaultColor: "#3b82f6",
         });
 
         return {

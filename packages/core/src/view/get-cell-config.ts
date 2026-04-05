@@ -1,15 +1,4 @@
-import type { CellDurationConfig, View } from "../types/index.js";
-
-/**
- * Cell configuration returned by getCellConfig.
- *
- * @property cellWidthPx - Pixel width per cell (auto-calculated from cellDuration)
- * @property intervalMinutes - Cell duration in minutes (for generateTimeSlots)
- */
-export interface CellConfig {
-  cellWidthPx: number;
-  intervalMinutes: number;
-}
+import type { CellConfig, CellDurationConfig, View } from "../types/index.js";
 
 // Fixed totalMainSize per view.
 // Phase 7 "time axis zoom" will scale these via a zoomLevel parameter.

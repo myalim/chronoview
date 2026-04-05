@@ -30,6 +30,17 @@ export interface CellDurationConfig {
   week?: WeekCellDuration;
 }
 
+/**
+ * Cell configuration returned by getCellConfig.
+ *
+ * @property cellWidthPx - Pixel width per cell (auto-calculated from cellDuration)
+ * @property intervalMinutes - Cell duration in minutes (for generateTimeSlots)
+ */
+export interface CellConfig {
+  cellWidthPx: number;
+  intervalMinutes: number;
+}
+
 /** Axis direction for position mapping */
 export type AxisDirection = "horizontal" | "vertical";
 

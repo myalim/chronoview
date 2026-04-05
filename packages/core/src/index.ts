@@ -7,8 +7,9 @@ export type {
   BarSpanInfo,
   CalendarLayoutResult,
   CalendarMonthLayoutResult,
-  DateRange,
+  CellConfig,
   CellDurationConfig,
+  DateRange,
   DayCellDuration,
   DayColumnLayout,
   EventLayout,
@@ -54,7 +55,6 @@ export { calculateScrollToNow } from "./position/calculate-scroll-to-now.js";
 // ─── View ───
 export { getDefaultAvailableViews } from "./view/get-default-available-views.js";
 export { getCellConfig } from "./view/get-cell-config.js";
-export type { CellConfig } from "./view/get-cell-config.js";
 
 // ─── Layout ───
 export { calculateEventPosition } from "./layout/calculate-event-position.js";
@@ -69,7 +69,7 @@ export { calculateBarStacks } from "./stacking/calculate-bar-stacks.js";
 export { calculateAutoStacks } from "./stacking/calculate-auto-stacks.js";
 
 // ─── Utils ───
-export { resolveColor } from "./utils/resolve-color.js";
+export { resolveColor, DEFAULT_EVENT_COLOR } from "./utils/resolve-color.js";
 export { calculateRowHeight } from "./utils/calculate-row-height.js";
 export { calculateVisibleRange } from "./utils/calculate-visible-range.js";
 

@@ -39,6 +39,8 @@ export interface UseCalendarViewReturn {
   timeSlots: TimeSlot[];
   /** Total main axis size in px (height for day/week, includes padding) */
   totalMainSize: number;
+  /** Content area size (event area only, excluding padding). Equals totalMainSize - 2 * contentOffset. */
+  contentSize: number;
   /** Slot height in px (Calendar: 60px per hour) */
   slotHeight: number;
   /** Padding offset above content area (1 slot height) — grid lines/sidebar labels start here */
@@ -175,7 +177,6 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
         const color = resolveColor({
           eventColor: se.event.color,
           resourceColor: resourceColorMap.get(se.event.resourceId),
-          defaultColor: "#3b82f6",
         });
 
         return {
@@ -271,6 +272,7 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
     monthGrid,
     timeSlots,
     totalMainSize,
+    contentSize,
     slotHeight,
     contentOffset,
     getEventStyle,
