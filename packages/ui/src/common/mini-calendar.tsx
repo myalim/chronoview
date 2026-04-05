@@ -9,7 +9,8 @@
  */
 
 import { type CSSProperties, useEffect, useState } from "react";
-import { calculateMonthGrid, isSameDay } from "@chronoview/core";
+import { calculateMonthGrid } from "@chronoview/core";
+import { isSameDay } from "date-fns";
 import { cn } from "../utils/cn.js";
 import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 import { Button } from "./button.js";

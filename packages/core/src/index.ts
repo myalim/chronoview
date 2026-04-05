@@ -77,5 +77,3 @@ export { calculateVisibleRange } from "./utils/calculate-visible-range.js";
 export { filterResources } from "./filter/filter-resources.js";
 export { filterEvents } from "./filter/filter-events.js";
 
-// ─── Date Utilities (re-exported from date-fns) ───
-export { isSameDay, startOfDay } from "date-fns";

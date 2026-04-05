@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { isSameDay } from "@chronoview/core";
+import { isSameDay } from "date-fns";
 import { cn } from "../utils/cn.js";
 import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 

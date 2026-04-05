@@ -16,11 +16,11 @@
 import {
   getCellConfig,
   generateTimeSlots,
-  isSameDay,
   type View,
   type DateRange,
   type CellDurationConfig,
 } from "@chronoview/core";
+import { isSameDay } from "date-fns";
 import { cn } from "../utils/cn.js";
 import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 

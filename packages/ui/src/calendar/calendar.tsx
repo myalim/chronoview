@@ -41,10 +41,11 @@ import type {
 import {
   getDefaultAvailableViews,
   calculateDayRange,
-  startOfDay,
   resolveColor,
 } from "@chronoview/core";
+import { startOfDay } from "date-fns";
 
+import { CalendarShell } from "./calendar-shell.js";
 import { CalendarView } from "./calendar-view.js";
 import { CalendarDayHeader, type DayHeaderCell } from "./calendar-day-header.js";
 import { TimeSidebar } from "./time-sidebar.js";
@@ -389,12 +390,7 @@ export function Calendar<TData = unknown>({
     );
 
     return (
-      <div
-        className={`flex flex-col text-left font-[var(--cv-font-family)] bg-[var(--cv-color-bg)] text-[var(--cv-color-text)] ${theme ?? ""}`}
-      >
-        {toolbar}
-        {filterPanel}
-
+      <CalendarShell toolbar={toolbar} filterPanel={filterPanel} theme={theme} className={className}>
         <div className="relative mt-3">
           <CalendarMonthGrid
             weeks={gridDates}
@@ -522,7 +518,7 @@ export function Calendar<TData = unknown>({
             </div>
           </div>
         )}
-      </div>
+      </CalendarShell>
     );
   }
 
