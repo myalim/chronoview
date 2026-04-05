@@ -34,7 +34,7 @@ export function assignLanes(group: OverlapGroup): StackedEvent[] {
     }
 
     laneEnds[assignedLane] = event.end.getTime();
-    results.push({ event, lane: assignedLane, totalLanes: 0 });
+    results.push({ event, lane: assignedLane, totalLanes: 0, spanColumns: 1 });
   }
 
   // Set totalLanes on all results
