@@ -11,6 +11,7 @@
 import { type CSSProperties, useEffect, useState } from "react";
 import { calculateMonthGrid, isSameDay } from "@chronoview/core";
 import { cn } from "../utils/cn.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 import { Button } from "./button.js";
 
 type View = "day" | "week" | "month";
@@ -26,9 +27,6 @@ export interface MiniCalendarProps {
   weekStartsOn?: 0 | 1;
   className?: string;
 }
-
-/** Weekday labels starting from Sunday */
-const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 /** Month labels */
 const MONTH_LABELS = [

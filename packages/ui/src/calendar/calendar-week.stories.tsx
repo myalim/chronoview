@@ -10,6 +10,7 @@ import { CalendarGridLines } from "./calendar-grid-lines.js";
 import { CalendarNowIndicator } from "./calendar-now-indicator.js";
 import { CalendarView } from "./calendar-view.js";
 import { TimeSidebar } from "./time-sidebar.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
 /**
  * Calendar Week 정적 UI 스토리
@@ -34,8 +35,6 @@ const HEADER_HEIGHT = 48;
 // Mock "now" — 금요일 12:30
 const NOW_HOUR = 12.5;
 const NOW_POSITION = (NOW_HOUR - HOUR_START) * SLOT_HEIGHT;
-
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 // ─── Resources ───
 
@@ -112,7 +111,7 @@ function formatDayLabel(date: Date): string {
   const dayOfWeek = date.getDay();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  return `${WEEKDAYS[dayOfWeek]} ${month}/${day}`;
+  return `${WEEKDAY_LABELS[dayOfWeek]} ${month}/${day}`;
 }
 
 /** 주 시작 날짜 계산 (일요일 시작, weekStartsOn=0) */
@@ -275,7 +274,7 @@ function CalendarWeekStory() {
       />
 
       {/* 3. Column dividers — 요일 경계 세로선 */}
-      {WEEKDAYS.slice(1).map((day, i) => {
+      {WEEKDAY_LABELS.slice(1).map((day, i) => {
         const pct = (i + 1) * COL_WIDTH_PCT;
         return (
           <div

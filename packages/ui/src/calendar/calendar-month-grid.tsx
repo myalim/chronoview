@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { isSameDay } from "@chronoview/core";
 import { cn } from "../utils/cn.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
 /**
  * 셀 정보 (renderCellContent 콜백에 전달)
@@ -32,8 +33,6 @@ export interface CalendarMonthGridProps {
   className?: string;
 }
 
-const DEFAULT_WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
 /**
  * Calendar Month 그리드 레이아웃.
  *
@@ -45,7 +44,7 @@ export function CalendarMonthGrid({
   weeks,
   currentMonth,
   today,
-  weekdayLabels = DEFAULT_WEEKDAY_LABELS,
+  weekdayLabels = WEEKDAY_LABELS,
   renderCellContent,
   renderWeekOverlay,
   showEmptyLabel = false,

@@ -61,6 +61,7 @@ import { useEventDetail } from "../schedule/use-event-detail.js";
 import { EventTooltip } from "../schedule/event-tooltip.js";
 import { EventPopover } from "../schedule/event-popover.js";
 import { formatTime, formatTimeLabel } from "../utils/format-time.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
 // ─── Constants ───
 
@@ -72,8 +73,6 @@ const COL_PCT = 100 / 7;
 
 /** Boundary gap between sticky areas and floating elements */
 const BOUNDARY_GAP = 12;
-
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export interface CalendarProps<TData = unknown> {
   /** Event data */
@@ -478,6 +477,7 @@ export function Calendar<TData = unknown>({
                 popupDate,
               )}
               onClose={() => setPopupDate(null)}
+              resolveColor={resolveEventColor}
             />
           )}
         </div>
@@ -522,7 +522,7 @@ export function Calendar<TData = unknown>({
   const dayHeaderCells: DayHeaderCell[] =
     currentView === "week"
       ? columns.map((col) => ({
-          label: `${WEEKDAYS[col.dayOfWeek]} ${col.date.getMonth() + 1}/${col.date.getDate()}`,
+          label: `${WEEKDAY_LABELS[col.dayOfWeek]} ${col.date.getMonth() + 1}/${col.date.getDate()}`,
           isToday: col.isToday,
         }))
       : [];
@@ -766,7 +766,7 @@ export function Calendar<TData = unknown>({
 function formatDateLabel(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  return `${m}.${day}(${WEEKDAYS[d.getDay()]})`;
+  return `${m}.${day}(${WEEKDAY_LABELS[d.getDay()]})`;
 }
 
 /** Create a unique key for a date (for Map lookup) */
@@ -829,12 +829,14 @@ function DateDetailPopup<TData>({
   date,
   events,
   onClose,
+  resolveColor,
 }: {
   date: Date;
   events: TimelineEvent<TData>[];
   onClose: () => void;
+  resolveColor: (e: TimelineEvent<TData>) => string;
 }) {
-  const label = `${WEEKDAYS[date.getDay()]} ${date.getDate()}`;
+  const label = `${WEEKDAY_LABELS[date.getDay()]} ${date.getDate()}`;
 
   return (
     <div
@@ -883,7 +885,7 @@ function DateDetailPopup<TData>({
           <div key={e.id} className="flex items-center gap-2 px-1 py-0.5">
             <span
               className="shrink-0 w-2 h-2 rounded-full"
-              style={{ background: e.color ?? "#3b82f6" }}
+              style={{ background: resolveColor(e) }}
             />
             <span className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)] shrink-0">
               {formatTime(e.start)}

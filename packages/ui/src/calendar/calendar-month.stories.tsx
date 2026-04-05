@@ -10,6 +10,7 @@ import {
 import { type FilterChipResource, FilterChips } from "../common/filter-chips.js";
 import { Toolbar } from "../common/toolbar.js";
 import { CalendarMonthGrid } from "./calendar-month-grid.js";
+import { WEEKDAY_LABELS } from "../utils/weekdays.js";
 
 /**
  * Calendar Month 정적 UI 스토리
@@ -127,10 +128,9 @@ function formatTime(d: Date): string {
 
 /** 날짜 포맷 (예: "03.25(수)") */
 function formatDateLabel(d: Date): string {
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  return `${m}.${day}(${weekdays[d.getDay()]})`;
+  return `${m}.${day}(${WEEKDAY_LABELS[d.getDay()]})`;
 }
 
 /** 주별 최대 bar row 수 계산 → 셀 최소 높이에 반영 */
@@ -431,8 +431,7 @@ function DateDetailPopup({
   events: TimelineEvent[];
   onClose: () => void;
 }) {
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-  const label = `${weekdays[date.getDay()]} ${date.getDate()}`;
+  const label = `${WEEKDAY_LABELS[date.getDay()]} ${date.getDate()}`;
 
   return (
     <div
