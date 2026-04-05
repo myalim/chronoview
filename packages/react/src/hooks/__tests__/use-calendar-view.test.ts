@@ -254,7 +254,6 @@ describe("useCalendarView", () => {
 
       // visibleEvents should be the truncated subset
       expect(targetCell?.visibleEvents).toBeDefined();
-      expect(targetCell?.visibleEvents.length).toBe(targetCell?.visibleCount);
     });
 
     it("truncates events in list mode", () => {
@@ -280,7 +279,7 @@ describe("useCalendarView", () => {
         }
       }
 
-      expect(targetCell?.visibleCount).toBe(3);
+      expect(targetCell?.visibleEvents.length).toBe(3);
       expect(targetCell?.hiddenCount).toBe(2);
     });
 

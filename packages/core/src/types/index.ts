@@ -220,8 +220,6 @@ export interface MonthCellLayout {
   events: TimelineEvent[];
   /** Truncated visible events (first N items from truncateEvents) */
   visibleEvents: TimelineEvent[];
-  /** Number of events visible in the cell */
-  visibleCount: number;
   /** Number of hidden events ("N more") */
   hiddenCount: number;
   /** Index into the parent weeks array (for efficient week lookup) */

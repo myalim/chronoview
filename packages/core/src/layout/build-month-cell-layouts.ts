@@ -50,7 +50,6 @@ export function buildMonthCellLayouts(
         isCurrentMonth: cellDate.getMonth() === currentMonth,
         events: cellEvents,
         visibleEvents: truncated.visible,
-        visibleCount: truncated.visible.length,
         hiddenCount: truncated.hiddenCount,
         weekIndex,
       };

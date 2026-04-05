@@ -48,13 +48,11 @@ export { generateTimeSlots } from "./time/generate-time-slots.js";
 export { navigatePrev, navigateNext, goToDate } from "./time/navigate.js";
 
 // ─── Position ───
-export { timeToOffset } from "./position/time-to-offset.js";
 export { calculateNowPosition } from "./position/calculate-now-position.js";
 export { calculateScrollToNow } from "./position/calculate-scroll-to-now.js";
 
 // ─── View ───
 export { getDefaultAvailableViews } from "./view/get-default-available-views.js";
-export { getDefaultStackMode } from "./view/get-default-stack-mode.js";
 export { getCellConfig } from "./view/get-cell-config.js";
 export type { CellConfig } from "./view/get-cell-config.js";
 
