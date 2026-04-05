@@ -3,25 +3,25 @@ import type { CSSProperties } from "react";
 import "./wireframe.css";
 
 /**
- * Calendar Day 와이어프레임
+ * Calendar Day wireframe
  *
- * 레이아웃: 세로=시간, 가로=단일 열
- * 핵심: horizontal stack (겹침 가로 분할) + Now Indicator (가로선)
- * 참조: docs/design/calendar/calendar-day.md
+ * Layout: vertical=time, horizontal=single column
+ * Key elements: horizontal stack (overlap lane splitting) + Now indicator (horizontal line)
+ * Ref: docs/design/calendar/calendar-day.md
  */
 
 const SLOT_HEIGHT = 60;
 const SIDEBAR_WIDTH = 60;
 const TIME_SLOTS = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00"];
 
-// 리소스 (색상 구분용)
+// Resources (for color differentiation)
 const RESOURCES = [
   { name: "Resource A", color: "#3b82f6" },
   { name: "Resource B", color: "#8b5cf6" },
   { name: "Resource C", color: "#06b6d4" },
 ];
 
-// 이벤트: [시작슬롯, 끝슬롯, 제목, 색상, lane, totalLanes]
+// Events: [startSlot, endSlot, title, color, lane, totalLanes]
 const EVENTS: [number, number, string, string, number, number][] = [
   [1, 2.5, "Morning Standup", "#3b82f6", 0, 1],
   [3, 4.5, "Design Review", "#8b5cf6", 0, 2],
@@ -36,7 +36,7 @@ function CalendarDayWireframe() {
 
   return (
     <div className="wf-container" style={{ maxWidth: 640 }}>
-      {/* 툴바 */}
+      {/* Toolbar */}
       <div className="wf-toolbar">
         <div className="wf-toolbar-left">
           <button className="wf-nav-btn">◀</button>
@@ -53,7 +53,7 @@ function CalendarDayWireframe() {
         </div>
       </div>
 
-      {/* 필터 칩 (리소스 있을 때) */}
+      {/* Filter chips (shown when resources exist) */}
       <div className="wf-filter-chips">
         {RESOURCES.map((r, i) => (
           <span key={i} className="wf-chip active" style={{ background: r.color }}>
@@ -62,9 +62,9 @@ function CalendarDayWireframe() {
         ))}
       </div>
 
-      {/* 그리드 */}
+      {/* Grid */}
       <div style={{ display: "flex", overflow: "auto", maxHeight: 460 }}>
-        {/* 시간 사이드바 */}
+        {/* Time sidebar */}
         <div
           style={{
             width: SIDEBAR_WIDTH,
@@ -94,9 +94,9 @@ function CalendarDayWireframe() {
           ))}
         </div>
 
-        {/* 단일 열 */}
+        {/* Single column */}
         <div style={{ flex: 1, position: "relative", minWidth: 300 }}>
-          {/* 가로 그리드선 */}
+          {/* Horizontal grid lines */}
           {TIME_SLOTS.map((_, i) => (
             <div
               key={i}
@@ -107,7 +107,7 @@ function CalendarDayWireframe() {
             />
           ))}
 
-          {/* 이벤트 카드 */}
+          {/* Event cards */}
           {EVENTS.map(([start, end, title, color, lane, totalLanes], i) => {
             const laneWidth = 100 / totalLanes;
             const style: CSSProperties = {
@@ -129,7 +129,7 @@ function CalendarDayWireframe() {
             );
           })}
 
-          {/* Now Indicator (가로선) */}
+          {/* Now indicator (horizontal line) */}
           <div className="wf-now-line horizontal" style={{ top: nowSlot * SLOT_HEIGHT }} />
           {/* Now dot */}
           <div className="wf-now-dot left" style={{ top: nowSlot * SLOT_HEIGHT, left: 0 }} />
@@ -148,5 +148,5 @@ export default meta;
 
 export const Default: StoryObj = {
   render: () => <CalendarDayWireframe />,
-  name: "Calendar Day — 기본",
+  name: "Calendar Day — Default",
 };

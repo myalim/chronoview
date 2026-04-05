@@ -12,7 +12,7 @@ export interface CalendarNowIndicatorProps {
  * Dot at left edge + horizontal line spanning the column.
  */
 export function CalendarNowIndicator({ position, crossSize }: CalendarNowIndicatorProps) {
-  // left: -1 → sidebar 경계에 dot 우측 대부분이 노출 (body overflow 내 렌더링)
+  // left: -1 so most of the dot is visible at the sidebar boundary (rendered inside body overflow)
   const dotStyle: CSSProperties = {
     position: "absolute",
     top: position - 4,

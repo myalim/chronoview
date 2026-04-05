@@ -68,7 +68,7 @@ import { type CalendarLabels, resolveLabels } from "./calendar-labels.js";
 
 // ─── Constants ───
 
-/** Bar mode 상수 (calendar-month.stories.tsx 패턴과 동일) */
+/** Bar mode layout constants (shared with calendar-month.stories.tsx) */
 const BAR_HEIGHT = 24;
 const BAR_GAP = 4;
 const DATE_NUMBER_HEIGHT = 28;
@@ -239,8 +239,8 @@ export function Calendar<TData = unknown>({
   });
 
   // ─── Now Indicator (Day/Week only) ───
-  // Calendar의 시간축은 하루 단위 — dateRange(주/월 범위)가 아니라 오늘의 dayRange 사용
-  // 오늘 날짜가 바뀌면 dayRange도 갱신 (렌더 시점 기준 — 자정 자동 갱신은 미지원)
+  // Calendar time axis is a single day — uses today's dayRange, not the full week/month dateRange.
+  // Recalculates when the date portion changes (render-time only; no automatic midnight refresh).
   const today = new Date();
   const todayDateKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
   // biome-ignore lint/correctness/useExhaustiveDependencies: todayDateKey ensures recalculation when the date portion changes
@@ -257,7 +257,6 @@ export function Calendar<TData = unknown>({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ─── Scroll to Now (Day/Week only, auto on mount) ───
-  // Calendar 시간축은 하루 단위이므로 todayDayRange 사용
   useScrollToNow({
     containerRef,
     rangeStart: todayDayRange.start,
@@ -309,7 +308,7 @@ export function Calendar<TData = unknown>({
     [resources],
   );
 
-  /** 이벤트 색상 해소: event.color → resource.color → DEFAULT_EVENT_COLOR */
+  /** Resolve event color: event.color → resource.color → DEFAULT_EVENT_COLOR */
   const resourceColorMap = useMemo(
     () => new Map(resources.map((r) => [r.id, r.color])),
     [resources],
@@ -378,7 +377,7 @@ export function Calendar<TData = unknown>({
       }
     }
 
-    // 하단 상세 리스트: 현재 그리드에 표시되는 모든 이벤트
+    // All events visible in the current month grid (for the detail list below)
     const gridStart = gridDates[0][0];
     const gridEnd = gridDates[gridDates.length - 1][6];
     const gridEvents = (filteredEvents as TimelineEvent<TData>[]).filter(
@@ -404,7 +403,6 @@ export function Calendar<TData = unknown>({
               return cell ? cell.events.length > 0 : false;
             }}
             renderWeekOverlay={
-              // 커스텀 renderMonthCell이 제공되면 bar overlay 생략
               renderMonthCell || monthMode !== "bar" || !monthGrid.weekBars
                 ? undefined
                 : (_weekDates, weekIndex) => {
@@ -417,14 +415,13 @@ export function Calendar<TData = unknown>({
               const cell = cellMap.get(dateKey(cellDate));
               const cellEvents = (cell?.events ?? []) as TimelineEvent<TData>[];
 
-              // 커스텀 renderMonthCell
               if (renderMonthCell) {
                 return renderMonthCell(cellDate, cellEvents, info);
               }
 
               if (!info.isCurrentMonth) return null;
 
-              // Bar mode: bar가 들어갈 공간 확보
+              // Bar mode: reserve vertical space for the bar overlay
               if (monthMode === "bar" && monthGrid.weekBars) {
                 const bars = monthGrid.weekBars[cell?.weekIndex ?? 0] ?? [];
                 const maxRows = bars.length > 0 ? Math.max(...bars.map((b) => b.row)) + 1 : 0;
@@ -434,7 +431,7 @@ export function Calendar<TData = unknown>({
                 return <div style={{ height: spacerHeight }} />;
               }
 
-              // List mode: hook이 계산한 visibleEvents/hiddenCount 사용
+              // List mode: use visibleEvents/hiddenCount computed by the hook
               if (cellEvents.length === 0) return null;
               const visible = cell?.visibleEvents ?? [];
               const { hiddenCount } = cell ?? { hiddenCount: 0 };
@@ -472,7 +469,7 @@ export function Calendar<TData = unknown>({
             }}
           />
 
-          {/* List mode: 날짜 상세 팝업 */}
+          {/* List mode: date detail popup */}
           {monthMode === "list" && popupDate && (
             <DateDetailPopup
               date={popupDate}
@@ -488,7 +485,7 @@ export function Calendar<TData = unknown>({
           )}
         </div>
 
-        {/* Bar mode: 하단 상세 리스트 */}
+        {/* Bar mode: detail event list below the grid */}
         {monthMode === "bar" && gridEvents.length > 0 && (
           <div className="mt-[var(--cv-spacing-lg)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-lg)] p-[var(--cv-spacing-lg)]">
             <h3 className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)] text-[var(--cv-color-text-secondary)] mb-[var(--cv-spacing-sm)]">
@@ -560,7 +557,7 @@ export function Calendar<TData = unknown>({
         offsetTop={contentOffset}
       />
 
-      {/* Padding 경계선 — 콘텐츠 영역 상단/하단 (Google Calendar 스타일) */}
+      {/* Content area top/bottom border lines (Google Calendar style) */}
       {contentOffset > 0 && (
         <>
           <div
@@ -574,7 +571,7 @@ export function Calendar<TData = unknown>({
         </>
       )}
 
-      {/* Week: 오늘 열 하이라이트 배경 */}
+      {/* Week: today column highlight */}
       {currentView === "week" && todayColumnIndex >= 0 && (
         <div
           className="absolute top-0 bottom-0 bg-[var(--cv-color-today-bg)] pointer-events-none"
@@ -585,7 +582,7 @@ export function Calendar<TData = unknown>({
         />
       )}
 
-      {/* Week: 열 구분선 (6개 고정, 순서 불변) */}
+      {/* Week: column dividers */}
       {currentView === "week" &&
         columns.slice(1).map((col, i) => {
           const colIdx = i + 1;
@@ -598,7 +595,7 @@ export function Calendar<TData = unknown>({
           );
         })}
 
-      {/* Event cards — Calendar 스타일 (불투명 tint 배경 + compact 텍스트) */}
+      {/* Event cards */}
       {columns.flatMap((col, colIdx) =>
         col.events.map((eventLayout) => {
           const event = eventLayout.event as TimelineEvent<TData>;
@@ -628,7 +625,6 @@ export function Calendar<TData = unknown>({
                 detail.handleMouseLeave();
               };
 
-          // eventProps로 title/subtitle이 오버라이드되면 기본 EventCard 렌더링 사용
           if (overrides?.title || overrides?.subtitle || overrides?.children) {
             return (
               <EventCard
@@ -648,7 +644,6 @@ export function Calendar<TData = unknown>({
             );
           }
 
-          // Calendar 기본: 불투명 tint 배경 + compact 텍스트 (정적 스토리 패턴)
           const durationMs = event.end.getTime() - event.start.getTime();
           const durationMin = durationMs / 60000;
           const timeLabel = formatTimeLabel(event.start, event.end);
@@ -665,9 +660,8 @@ export function Calendar<TData = unknown>({
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              {/* 3px 좌측 컬러 바 */}
               <div className="shrink-0" style={{ width: 3, background: overrides?.color ?? color }} />
-              {/* 불투명 tint 배경 (다크모드에서도 텍스트 가독성 보장) */}
+              {/* Opaque tint background ensures text readability in both light and dark modes */}
               <div
                 className="flex flex-col justify-start flex-1 min-w-0 overflow-hidden px-2 py-0.5"
                 style={{

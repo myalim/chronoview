@@ -3,21 +3,21 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import "./wireframe.css";
 
 /**
- * Calendar Month 와이어프레임
+ * Calendar Month wireframe
  *
- * 두 가지 모드: bar (이벤트 바 가로 스택) / list (셀 내 리스트형)
- * 참조: docs/design/calendar/calendar-month.md
+ * Two modes: bar (horizontal event bar stack) / list (in-cell list)
+ * Ref: docs/design/calendar/calendar-month.md
  */
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 3월 달력 날짜 (주차x7)
+// March calendar dates (weeks x 7)
 const WEEKS = [
   [1, 2, 3, 4, 5, 6, 7],
   [8, 9, 10, 11, 12, 13, 14],
   [15, 16, 17, 18, 19, 20, 21],
   [22, 23, 24, 25, 26, 27, 28],
-  [29, 30, 31, 0, 0, 0, 0], // 0 = 다음 달
+  [29, 30, 31, 0, 0, 0, 0], // 0 = next month
 ];
 
 const TODAY = 27;
@@ -28,7 +28,7 @@ const RESOURCES = [
   { name: "Resource C", color: "#06b6d4" },
 ];
 
-// Bar 모드 이벤트 데이터: [weekIdx, startCol, endCol, title, color, row]
+// Bar mode event data: [weekIdx, startCol, endCol, title, color, row]
 const BARS: [number, number, number, string, string, number][] = [
   [0, 1, 5, "Event Alpha", "#3b82f6", 0], // Week 1: Mon-Fri
   [0, 2, 3, "Event Beta", "#8b5cf6", 1], // Week 1: Tue-Wed (row 1)
@@ -39,13 +39,13 @@ const BARS: [number, number, number, string, string, number][] = [
 
 const BAR_HEIGHT = 22;
 const BAR_GAP = 2;
-// 날짜 숫자 영역 아래부터 바 시작
+// Bars start below the date number area
 const BAR_TOP_OFFSET = 24;
 
 function CalendarMonthBarWireframe() {
   return (
     <div className="wf-container" style={{ maxWidth: 800 }}>
-      {/* 툴바 */}
+      {/* Toolbar */}
       <div className="wf-toolbar">
         <div className="wf-toolbar-left">
           <button className="wf-nav-btn">◀</button>
@@ -62,7 +62,7 @@ function CalendarMonthBarWireframe() {
         </div>
       </div>
 
-      {/* 필터 칩 */}
+      {/* Filter chips */}
       <div className="wf-filter-chips">
         {RESOURCES.map((r, i) => (
           <span key={i} className="wf-chip active" style={{ background: r.color }}>
@@ -71,16 +71,16 @@ function CalendarMonthBarWireframe() {
         ))}
       </div>
 
-      {/* 월간 그리드 */}
+      {/* Month grid */}
       <div className="wf-month-grid">
-        {/* 요일 헤더 */}
+        {/* Weekday headers */}
         {WEEKDAYS.map((d) => (
           <div key={d} className="wf-month-header-cell">
             {d}
           </div>
         ))}
 
-        {/* 주차별 행 — 각 주차를 감싸는 wrapper로 바를 절대 배치 */}
+        {/* Weekly rows — wrapper per week for absolute bar positioning */}
         {WEEKS.map((week, wi) => (
           <div
             key={wi}
@@ -91,7 +91,7 @@ function CalendarMonthBarWireframe() {
               position: "relative",
             }}
           >
-            {/* 날짜 셀 */}
+            {/* Date cells */}
             {week.map((day, di) => (
               <div
                 key={`${wi}-${di}`}
@@ -107,7 +107,7 @@ function CalendarMonthBarWireframe() {
               </div>
             ))}
 
-            {/* 바 이벤트 — 주차 행 레벨에서 절대 배치로 셀 경계를 넘어 연속 렌더링 */}
+            {/* Bar events — absolutely positioned at week-row level to span across cell boundaries */}
             {BARS.filter(([weekIdx]) => weekIdx === wi).map(
               ([, startCol, endCol, title, color, row], i) => (
                 <div
@@ -133,7 +133,7 @@ function CalendarMonthBarWireframe() {
         ))}
       </div>
 
-      {/* 하단 상세 리스트 (bar 모드 전용) */}
+      {/* Bottom detail list (bar mode only) */}
       <div className="wf-detail-list">
         <div className="wf-detail-title">진행중인 이벤트</div>
         <div className="wf-detail-item">
@@ -162,7 +162,7 @@ function CalendarMonthBarWireframe() {
 function CalendarMonthListWireframe() {
   const [popupDay, setPopupDay] = useState<number | null>(null);
 
-  // 셀별 이벤트 데이터 (간소화)
+  // Per-cell event data (simplified)
   const cellEvents: Record<number, { time: string; title: string; color: string }[]> = {
     2: [
       { time: "09:00", title: "Event A", color: "#3b82f6" },
@@ -186,7 +186,7 @@ function CalendarMonthListWireframe() {
 
   return (
     <div className="wf-container" style={{ maxWidth: 800 }}>
-      {/* 툴바 */}
+      {/* Toolbar */}
       <div className="wf-toolbar">
         <div className="wf-toolbar-left">
           <button className="wf-nav-btn">◀</button>
@@ -203,7 +203,7 @@ function CalendarMonthListWireframe() {
         </div>
       </div>
 
-      {/* 필터 칩 */}
+      {/* Filter chips */}
       <div className="wf-filter-chips">
         {RESOURCES.map((r, i) => (
           <span key={i} className="wf-chip active" style={{ background: r.color }}>
@@ -248,7 +248,7 @@ function CalendarMonthListWireframe() {
                       </div>
                     )}
 
-                    {/* 날짜 상세 팝업 — 클릭한 셀 위에 표시 */}
+                    {/* Date detail popup — shown adjacent to the clicked cell */}
                     {popupDay === day && events && (
                       <div className="wf-popup" style={{ top: 0, left: "100%", marginLeft: 4 }}>
                         <div className="wf-popup-header">
@@ -288,10 +288,10 @@ export default meta;
 
 export const BarMode: StoryObj = {
   render: () => <CalendarMonthBarWireframe />,
-  name: "Calendar Month -- bar 모드",
+  name: "Calendar Month -- Bar Mode",
 };
 
 export const ListMode: StoryObj = {
   render: () => <CalendarMonthListWireframe />,
-  name: "Calendar Month -- list 모드",
+  name: "Calendar Month -- List Mode",
 };

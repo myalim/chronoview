@@ -1,9 +1,9 @@
 /**
- * buildMonthCellLayouts — 월간 그리드의 각 셀에 대한 레이아웃 데이터를 생성한다.
+ * buildMonthCellLayouts — Generates layout data for each cell in the month grid.
  *
- * 각 셀에 해당 날짜의 이벤트를 필터링하고, truncateEvents로 표시/숨김 이벤트를
- * 분리한다. hook이 이 결과를 그대로 반환하므로 Calendar 컴포넌트는 추가 계산 없이
- * 렌더링에 사용할 수 있다.
+ * Filters events per date and splits them into visible/hidden via truncateEvents.
+ * The hook returns this result directly, so the Calendar component can render
+ * without additional computation.
  */
 
 import { isSameDay } from "date-fns";
@@ -11,20 +11,20 @@ import type { MonthCellLayout, TimelineEvent } from "../types/index.js";
 import { truncateEvents } from "./truncate-events.js";
 
 export function buildMonthCellLayouts(
-  /** calculateMonthGrid 결과 (Date[][] — 주별 날짜 배열) */
+  /** Month grid from calculateMonthGrid (Date[][] — weeks × days) */
   grid: Date[][],
-  /** dateRange로 필터된 이벤트 */
+  /** Events pre-filtered to the visible date range */
   visibleEvents: TimelineEvent[],
-  /** 현재 표시 중인 월 (0-11) */
+  /** Currently displayed month (0-11) */
   currentMonth: number,
-  /** 셀당 최대 표시 이벤트 수 */
+  /** Max visible events per cell */
   maxVisible: number,
-  /** 오늘 날짜 (isToday 판별용) */
+  /** Today's date (used for isToday check) */
   today: Date,
 ): MonthCellLayout[][] {
   return grid.map((weekDates, weekIndex) =>
     weekDates.map((cellDate) => {
-      // 해당 날짜의 자정~익일 자정 범위로 이벤트 필터
+      // Filter events within midnight-to-midnight range for this date
       const dayStart = new Date(
         cellDate.getFullYear(),
         cellDate.getMonth(),

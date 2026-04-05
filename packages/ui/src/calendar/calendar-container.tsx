@@ -9,7 +9,7 @@ export interface CalendarContainerProps {
   body: ReactNode;
   /** Total main axis size in px (height of all time slots) */
   totalMainSize: number;
-  /** Day header row (sticky top) — Week view에서 사용 */
+  /** Day header row (sticky top) — used in Week view */
   header?: ReactNode;
   /** Corner cell content at header×sidebar intersection */
   corner?: ReactNode;
@@ -21,10 +21,10 @@ export interface CalendarContainerProps {
 /**
  * Scroll container for Calendar layouts (Day/Week).
  *
- * - Day (header 없음): sidebar + body flex row
- * - Week (header 있음): sticky header row (corner + header) + sidebar + body flex row
+ * - Day (no header): sidebar + body flex row
+ * - Week (with header): sticky header row (corner + header) + sidebar + body flex row
  *
- * Calendar는 가로 스크롤 없음 — 열이 컨테이너 너비에 맞춰 fluid.
+ * No horizontal scroll — columns are fluid, fitting the container width.
  */
 export const CalendarContainer = forwardRef<HTMLDivElement, CalendarContainerProps>(
   function CalendarContainer(
@@ -35,8 +35,8 @@ export const CalendarContainer = forwardRef<HTMLDivElement, CalendarContainerPro
       typeof headerHeight === "number" ? `${headerHeight}px` : headerHeight;
 
     return (
-      // 외부 wrapper: border-radius + overflow:hidden으로 모서리 클리핑 담당
-      // 내부 scroll div와 분리해야 콘텐츠가 border-radius에 잘리지 않음
+      // Outer wrapper handles border-radius clipping via overflow:hidden.
+      // Separated from the inner scroll div so content isn't clipped by border-radius.
       <div
         className={cn(
           "overflow-hidden border border-[var(--cv-color-border)] rounded-[var(--cv-radius-lg)]",
@@ -47,10 +47,10 @@ export const CalendarContainer = forwardRef<HTMLDivElement, CalendarContainerPro
           ref={ref}
           className="overflow-y-auto overflow-x-hidden h-full"
         >
-          {/* Sticky header row — Week view에서만 렌더 */}
+          {/* Sticky header row — rendered only in Week view */}
           {header && (
             <div className="sticky top-0 z-[var(--cv-z-sticky-corner)] flex border-b border-[var(--cv-color-border)] bg-[var(--cv-color-bg)]">
-              {/* Corner cell: header × sidebar 교차 영역 */}
+              {/* Corner cell: header x sidebar intersection */}
               <div
                 className="shrink-0 bg-[var(--cv-color-bg)] border-r border-[var(--cv-color-border)]"
                 style={{

@@ -1,6 +1,6 @@
 /**
- * CalendarLabels — i18n 지원을 위한 커스터마이즈 가능한 텍스트 라벨.
- * 기본값은 한국어. Partial override로 개별 항목만 변경 가능.
+ * CalendarLabels — Customizable text labels for i18n support.
+ * Defaults to Korean. Individual fields can be overridden via partial object.
  */
 
 import { WEEKDAY_LABELS } from "../utils/weekdays.js";

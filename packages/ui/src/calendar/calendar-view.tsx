@@ -41,7 +41,7 @@ export function CalendarView({
 }: CalendarViewProps) {
   return (
     <CalendarShell toolbar={toolbar} filterPanel={filterPanel} theme={theme} className={className}>
-      {/* flex-1 + min-h-0: 컨테이너가 남은 공간을 차지하고 내부 스크롤 활성화 */}
+      {/* flex-1 + min-h-0: fill remaining space and enable inner scrolling */}
       <CalendarContainer
         ref={containerRef}
         sidebar={sidebar}

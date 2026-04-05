@@ -279,7 +279,7 @@ export const DarkMode: Story = {
   },
   argTypes: {
     darkMode: { control: "boolean", description: "Toggle dark mode" },
-    // DarkMode 스토리에서는 darkMode만 노출
+    // Only expose darkMode control in this story
     view: { table: { disable: true } },
     cellDuration: { table: { disable: true } },
     showToolbar: { table: { disable: true } },

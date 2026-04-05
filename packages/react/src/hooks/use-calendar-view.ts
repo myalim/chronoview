@@ -212,12 +212,12 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
     const today = new Date();
     const currentMonth = date.getMonth();
 
-    // 셀 레이아웃: 날짜별 이벤트 필터 + truncation
+    // Cell layouts: per-date event filtering + truncation
     const weeks = buildMonthCellLayouts(
       grid, visibleEvents, currentMonth, DEFAULT_MAX_VISIBLE, today,
     );
 
-    // Bar 레이아웃: 주별 bar stacking (calculateBarStacks 직접 호출)
+    // Bar layout: per-week bar stacking via calculateBarStacks
     let weekBars: MonthBarLayout[][] | undefined;
     if (monthMode === "bar") {
       weekBars = grid.map((weekDates) => {
@@ -244,14 +244,14 @@ export function useCalendarView(config: TimelineConfig): UseCalendarViewReturn {
   }, [view, startDate, weekStartsOn, visibleEvents, monthMode]);
 
   // ─── Style factory ───
-  // indent 겹침 방식 (Google Calendar 스타일):
+  // Indent-overlap style (Google Calendar):
   // lane = depth, totalLanes = maxDepth + 1
-  // depth가 높을수록 오른쪽으로 들여쓰기 + 높은 z-index (전면 노출)
+  // Higher depth → further right indent + higher z-index (front layer)
   const getEventStyle = useMemo(() => {
     return (layout: EventLayout, columnIndex: number, totalColumns: number): CSSProperties => {
       const colWidthPct = 100 / totalColumns;
       const maxDepth = layout.totalLanes - 1;
-      // indent 비율: 겹침 없으면 0, 있으면 열 너비를 (maxDepth + 1.5)로 분할
+      // Indent ratio: 0 when no overlap, otherwise divide column width by (maxDepth + 1.5)
       const indentPct = maxDepth > 0 ? colWidthPct / (maxDepth + 1.5) : 0;
       const leftPct = columnIndex * colWidthPct + layout.lane * indentPct;
       const widthPct = colWidthPct - layout.lane * indentPct;

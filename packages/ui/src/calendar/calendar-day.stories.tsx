@@ -11,17 +11,17 @@ import { CalendarView } from "./calendar-view.js";
 import { TimeSidebar } from "./time-sidebar.js";
 
 /**
- * Calendar Day 정적 UI 스토리
+ * Calendar Day static UI story
  *
- * 레이아웃: 세로=시간, 가로=단일 열
- * 핵심: auto stack (컬럼 패킹) + Now Indicator (가로선) + scrollToNow
- * 참조: docs/design/calendar/calendar-day.md
+ * Layout: vertical=time, horizontal=single column
+ * Key features: auto stack (column packing) + Now Indicator + scrollToNow
+ * Reference: docs/design/calendar/calendar-day.md
  */
 
 // ─── Constants ───
 
 const SLOT_HEIGHT = 60;
-// 이벤트 범위(7~18시) 앞뒤로 1칸씩 빈 슬롯 추가 (Google Calendar, Planby 레퍼런스)
+// Add 1 empty slot before/after the event range (7–18h), following Google Calendar / Planby conventions
 const HOUR_START = 6;
 const HOUR_END = 20;
 const TOTAL_SLOTS = HOUR_END - HOUR_START;
@@ -41,9 +41,9 @@ const RESOURCES: FilterChipResource[] = [
 ];
 
 // ─── Mock Events ───
-// Auto mode (컬럼 패킹, Google Calendar 스타일):
-// depth=0이 가장 뒤, depth가 높을수록 앞(위)에 렌더링
-// indent는 겹침 개수(maxDepth)에 따라 비율로 자동 계산 (정적 UI 임시 구현)
+// Auto mode (column packing, Google Calendar style):
+// depth=0 renders furthest back; higher depth renders in front
+// indent is auto-calculated proportionally based on maxDepth (static UI approximation)
 
 interface MockEvent {
   id: string;
@@ -52,14 +52,14 @@ interface MockEvent {
   endHour: number;
   title: string;
   color: string;
-  /** 겹침 깊이 — 0=가장 뒤, 높을수록 앞(위)에 렌더링 */
+  /** Overlap depth — 0=furthest back, higher=rendered in front */
   depth: number;
-  /** overlap group 내 최대 depth (indent 비율 계산용) */
+  /** Max depth within the overlap group (used for indent ratio calculation) */
   maxDepth: number;
 }
 
 const EVENTS: MockEvent[] = [
-  // ─── 시간별 높이 테스트 (단독) ───
+  // ─── Duration height tests (no overlap) ───
   { id: "e1", resourceId: "a", startHour: 7, endHour: 7 + 5 / 60, title: "Quick Ping", color: "#3b82f6", depth: 0, maxDepth: 0 },
   { id: "e2", resourceId: "b", startHour: 7.5, endHour: 7.5 + 10 / 60, title: "Standup Check", color: "#8b5cf6", depth: 0, maxDepth: 0 },
   { id: "e3", resourceId: "c", startHour: 8, endHour: 8.25, title: "Bio Break", color: "#06b6d4", depth: 0, maxDepth: 0 },
@@ -68,20 +68,20 @@ const EVENTS: MockEvent[] = [
   { id: "e6", resourceId: "c", startHour: 9.75, endHour: 10.5, title: "Design Review", color: "#06b6d4", depth: 0, maxDepth: 0 },
   { id: "e7", resourceId: "a", startHour: 11, endHour: 12, title: "Sprint Planning", color: "#3b82f6", depth: 0, maxDepth: 0 },
 
-  // ─── 2개 겹침 (auto, maxDepth=1) ───
+  // ─── 2 overlapping (auto, maxDepth=1) ───
   { id: "e8", resourceId: "c", startHour: 12.25, endHour: 13.25, title: "Lunch Meeting", color: "#06b6d4", depth: 0, maxDepth: 1 },
   { id: "e9", resourceId: "a", startHour: 12.5, endHour: 13, title: "Quick Call", color: "#3b82f6", depth: 1, maxDepth: 1 },
 
-  // ─── 3개 겹침 (auto, maxDepth=2) ───
+  // ─── 3 overlapping (auto, maxDepth=2) ───
   { id: "e10", resourceId: "b", startHour: 13.5, endHour: 15, title: "Code Review", color: "#8b5cf6", depth: 0, maxDepth: 2 },
   { id: "e11", resourceId: "c", startHour: 14, endHour: 15.5, title: "API Design", color: "#06b6d4", depth: 1, maxDepth: 2 },
   { id: "e12", resourceId: "a", startHour: 14.5, endHour: 15.5, title: "1:1 Meeting", color: "#3b82f6", depth: 2, maxDepth: 2 },
 
-  // ─── 동시 시작 2개 (auto, maxDepth=1) ───
+  // ─── 2 simultaneous start (auto, maxDepth=1) ───
   { id: "e13", resourceId: "b", startHour: 16, endHour: 17.5, title: "Deep Work", color: "#8b5cf6", depth: 0, maxDepth: 1 },
   { id: "e14", resourceId: "a", startHour: 16, endHour: 17, title: "Design Sync", color: "#3b82f6", depth: 1, maxDepth: 1 },
 
-  // ─── 동시 시작 짧은 3개 (auto, maxDepth=2) ───
+  // ─── 3 short simultaneous start (auto, maxDepth=2) ───
   { id: "e15", resourceId: "c", startHour: 17.75, endHour: 18, title: "Wrap Up A", color: "#06b6d4", depth: 0, maxDepth: 2 },
   { id: "e16", resourceId: "a", startHour: 17.75, endHour: 17.75 + 10 / 60, title: "Wrap Up B", color: "#3b82f6", depth: 1, maxDepth: 2 },
   { id: "e17", resourceId: "b", startHour: 17 + 50 / 60, endHour: 18.25, title: "Wrap Up C", color: "#8b5cf6", depth: 2, maxDepth: 2 },
@@ -110,7 +110,7 @@ function CalendarDayStory() {
   const [selectedIds, setSelectedIds] = useState(RESOURCES.map((r) => r.id));
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // scrollToNow: 마운트 시 자동 스크롤
+  // scrollToNow on mount
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -131,7 +131,7 @@ function CalendarDayStory() {
     el.scrollTop = scrollOffset;
   }, []);
 
-  // scrollToNow: 수동 버튼
+  // scrollToNow via manual button
   const handleScrollToNow = () => {
     const el = containerRef.current;
     if (!el) return;
@@ -152,21 +152,18 @@ function CalendarDayStory() {
     el.scrollTo({ top: scrollOffset, behavior: "smooth" });
   };
 
-  // Filter
   const handleToggle = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
-  // Navigation
   const handlePrev = () =>
     setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
   const handleNext = () =>
     setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
   const handleToday = () => setDate(new Date());
 
-  // Filter events by resource ID
   const selectedSet = new Set(selectedIds);
   const visibleEvents = EVENTS.filter((e) => selectedSet.has(e.resourceId));
 
@@ -222,15 +219,15 @@ function CalendarDayStory() {
         crossSize="100%"
       />
 
-      {/* 이벤트 카드 — Auto mode 컬럼 패킹 (Google Calendar 스타일) */}
+      {/* Event cards — Auto mode column packing (Google Calendar style) */}
       {visibleEvents.map((event) => {
         const top = hourToY(event.startHour);
-        // 스펙: 이벤트 최소 높이 20px (calendar-day.md §3)
+        // Spec: minimum event height 20px (calendar-day.md §3)
         const MIN_HEIGHT = 20;
         const height = Math.max(MIN_HEIGHT, hourToY(event.endHour) - top - 2);
 
-        // auto mode: indent 기반 겹침 배치 (Google Calendar 스타일)
-        // depth가 높을수록 오른쪽으로 들여쓰기, 뒤 이벤트 위에 렌더링
+        // Auto mode: indent-based overlap layout (Google Calendar style)
+        // Higher depth indents further right and renders on top of earlier events
         const indentPct = event.maxDepth > 0 ? 100 / (event.maxDepth + 1.5) : 0;
         const leftPct = event.depth * indentPct;
 
@@ -246,7 +243,7 @@ function CalendarDayStory() {
         const timeLabel = `${formatTime(event.startHour)} – ${formatTime(event.endHour)}`;
         const isCompact = durationMin <= 45;
 
-        // 불투명 배경: 겹침 시 뒤 이벤트 텍스트가 비치지 않도록
+        // Opaque background prevents text bleed-through from overlapped events behind
         return (
           <EventCard
             key={event.id}
@@ -257,12 +254,12 @@ function CalendarDayStory() {
             <div
               className="flex flex-col justify-start flex-1 min-w-0 overflow-hidden px-2 py-0.5"
               style={{
-                // 불투명 색상 tint: 흰 바탕 위에 이벤트 색상 12% 합성
+                // Opaque tint: event color at 12% composited over base background
                 background: `linear-gradient(${event.color}1f, ${event.color}1f), var(--cv-color-bg)`,
               }}
             >
               {isCompact ? (
-                // compact: "Title, 10:00 – 11:00" 한 줄
+                // Compact: "Title, 10:00 – 11:00" in a single line
                 <span className="truncate text-[length:var(--cv-font-size-xs)] font-[var(--cv-font-weight-medium)]">
                   {event.title}
                   <span className="font-normal text-[var(--cv-color-text-secondary)]">
@@ -270,7 +267,7 @@ function CalendarDayStory() {
                   </span>
                 </span>
               ) : (
-                // 긴 이벤트: title + subtitle 세로 배치
+                // Long event: title + subtitle stacked vertically
                 <>
                   <span className="truncate text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-medium)]">
                     {event.title}
@@ -330,9 +327,9 @@ export const DarkMode: Story = {
   ],
 };
 
-// ─── 스태킹 방식 비교 스토리 ───
-// 3가지 방식 비교: indent 겹침 / 균등 분배 / span 확장
-// 동일 이벤트 데이터로 차이를 시각적으로 비교
+// ─── Stacking style comparison story ───
+// Compares 3 styles: indent overlap / equal distribution / span expansion
+// Same event data rendered with each style for visual comparison
 
 type StackStyle = "indent" | "equal" | "span-expand" | "span-overlap";
 
@@ -351,15 +348,15 @@ interface CompareEvent {
   color: string;
   startHour: number;
   endHour: number;
-  /** indent 모드용: 겹침 깊이 */
+  /** For indent mode: overlap depth */
   depth: number;
-  /** indent 모드용: 그룹 내 최대 depth */
+  /** For indent mode: max depth within the group */
   maxDepth: number;
-  /** column-packing 모드용: 배정 레인 */
+  /** For column-packing mode: assigned lane */
   lane: number;
-  /** column-packing 모드용: 총 레인 수 */
+  /** For column-packing mode: total lane count */
   totalLanes: number;
-  /** span 확장 모드용: 오른쪽 빈 컬럼으로 확장 (기본 1) */
+  /** For span-expand mode: extend into empty columns to the right (default 1) */
   spanColumns: number;
 }
 
@@ -370,14 +367,14 @@ interface CompareScenario {
 
 const COMPARE_SCENARIOS: CompareScenario[] = [
   {
-    title: "2개 겹침",
+    title: "2 Overlapping",
     events: [
       { id: "a1", title: "Sprint Planning", color: "#3b82f6", startHour: 9, endHour: 10.5, depth: 0, maxDepth: 1, lane: 0, totalLanes: 2, spanColumns: 1 },
       { id: "a2", title: "Design Sync", color: "#8b5cf6", startHour: 9.5, endHour: 11, depth: 1, maxDepth: 1, lane: 1, totalLanes: 2, spanColumns: 1 },
     ],
   },
   {
-    title: "3개 시차 겹침",
+    title: "3 Staggered Overlap",
     events: [
       { id: "b1", title: "Code Review", color: "#3b82f6", startHour: 9, endHour: 11, depth: 0, maxDepth: 2, lane: 0, totalLanes: 3, spanColumns: 1 },
       { id: "b2", title: "API Design", color: "#8b5cf6", startHour: 9.5, endHour: 10.5, depth: 1, maxDepth: 2, lane: 1, totalLanes: 3, spanColumns: 1 },
@@ -385,18 +382,18 @@ const COMPARE_SCENARIOS: CompareScenario[] = [
     ],
   },
   {
-    // span 확장이 의미있는 시나리오: B,C가 끝난 뒤 E가 빈 컬럼으로 확장
-    title: "5개 (span 확장)",
+    // Scenario where span expansion matters: E expands into empty columns after B,C end
+    title: "5 Events (Span Expand)",
     events: [
-      // A: lane 0, 옆에 B 겹침 → span=1
+      // A: lane 0, overlaps with B → span=1
       { id: "c1", title: "Deep Work", color: "#3b82f6", startHour: 9, endHour: 10.5, depth: 0, maxDepth: 2, lane: 0, totalLanes: 3, spanColumns: 1 },
-      // B: lane 1, 옆에 C 겹침 → span=1
+      // B: lane 1, overlaps with C → span=1
       { id: "c2", title: "Team Sync", color: "#8b5cf6", startHour: 9, endHour: 10, depth: 1, maxDepth: 2, lane: 1, totalLanes: 3, spanColumns: 1 },
       // C: lane 2 → span=1
       { id: "c3", title: "Quick Call", color: "#06b6d4", startHour: 9, endHour: 9.5, depth: 2, maxDepth: 2, lane: 2, totalLanes: 3, spanColumns: 1 },
-      // D: C 끝난 뒤 lane 2 재사용 → span=1
+      // D: reuses lane 2 after C ends → span=1
       { id: "c4", title: "Check-in", color: "#10b981", startHour: 9.5, endHour: 10, depth: 2, maxDepth: 2, lane: 2, totalLanes: 3, spanColumns: 1 },
-      // E: B,C,D 끝난 뒤 lane 1 재사용, lane 2도 비어서 → span=2
+      // E: reuses lane 1 after B,C,D end, lane 2 also empty → span=2
       { id: "c5", title: "Retro", color: "#f59e0b", startHour: 10, endHour: 11, depth: 1, maxDepth: 2, lane: 1, totalLanes: 3, spanColumns: 2 },
     ],
   },
@@ -441,26 +438,26 @@ function ComparePanel({ scenario, style, columnWidth }: { scenario: CompareScena
             let zIndex: number;
 
             if (style === "indent") {
-              // indent 겹침: depth가 높을수록 오른쪽으로 들여쓰기, 넓은 너비 유지
+              // Indent overlap: higher depth indents further right, maintaining wide width
               const indentPct = event.maxDepth > 0 ? 100 / (event.maxDepth + 1.5) : 0;
               leftPct = event.depth * indentPct;
               widthPct = 100 - leftPct;
               zIndex = 20 + event.depth;
             } else if (style === "equal") {
-              // 균등 분배: 겹침 없음, 모든 이벤트 동일 너비
+              // Equal distribution: no overlap, all events have identical width
               const lanePct = 100 / event.totalLanes;
               leftPct = event.lane * lanePct;
               widthPct = lanePct;
               zIndex = 20;
             } else if (style === "span-expand") {
-              // span 확장: 균등 배치 + 빈 컬럼으로 너비 확장 (Apple Calendar 스타일)
+              // Span expansion: equal placement + expand into empty columns (Apple Calendar style)
               const lanePct = 100 / event.totalLanes;
               leftPct = event.lane * lanePct;
               widthPct = event.spanColumns * lanePct;
               zIndex = 20;
             } else {
-              // span + overlap: 컬럼 패킹 기반이지만 인접 이벤트와 30% 겹침
-              // indent의 가독성 + span 확장의 공간 활용을 결합
+              // Span + overlap: column-packing based but with 30% overlap on adjacent events
+              // Combines readability of indent with space efficiency of span expansion
               const lanePct = 100 / event.totalLanes;
               const overlap = 0.3;
               leftPct = event.lane * lanePct * (1 - overlap);
@@ -503,10 +500,10 @@ function ComparePanel({ scenario, style, columnWidth }: { scenario: CompareScena
 
 function StackStyleComparison() {
   const styles: { key: StackStyle; label: string; description: string }[] = [
-    { key: "indent", label: "Indent 겹침", description: "Google Calendar — 넓지만 뒤 이벤트 가림" },
-    { key: "equal", label: "균등 분배", description: "겹침 없음, 모두 동일 너비" },
-    { key: "span-expand", label: "Span 확장", description: "Apple Calendar — 빈 컬럼으로 확장" },
-    { key: "span-overlap", label: "Span + Overlap", description: "span 확장 + 30% 겹침 (하이브리드)" },
+    { key: "indent", label: "Indent Overlap", description: "Google Calendar — wide but hides events behind" },
+    { key: "equal", label: "Equal Distribution", description: "No overlap, all events same width" },
+    { key: "span-expand", label: "Span Expand", description: "Apple Calendar — expand into empty columns" },
+    { key: "span-overlap", label: "Span + Overlap", description: "Span expand + 30% overlap (hybrid)" },
   ];
 
   return (
@@ -514,10 +511,10 @@ function StackStyleComparison() {
       className="font-[var(--cv-font-family)] bg-[var(--cv-color-bg)] text-[var(--cv-color-text)]"
       style={{ maxWidth: 1400, margin: "0 auto" }}
     >
-      {/* Day 너비 비교 (넓은 열) */}
+      {/* Day width comparison (wide columns) */}
       <div className="mb-8">
         <div className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)] mb-3 px-1">
-          Day 뷰 (넓은 열)
+          Day View (Wide Column)
         </div>
         <div className="flex gap-4">
           {styles.map((s) => (
@@ -536,10 +533,10 @@ function StackStyleComparison() {
         </div>
       </div>
 
-      {/* Week 너비 비교 (좁은 열) */}
+      {/* Week width comparison (narrow columns) */}
       <div>
         <div className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)] mb-3 px-1">
-          Week 뷰 (좁은 열 — 실제 week 뷰 1열 너비)
+          Week View (Narrow Column — actual week view column width)
         </div>
         <div className="flex gap-4">
           {styles.map((s) => (

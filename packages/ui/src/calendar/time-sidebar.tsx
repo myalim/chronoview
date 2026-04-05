@@ -34,7 +34,7 @@ export function TimeSidebar({ timeSlots, slotHeight, totalHeight, offsetTop = 0,
           className="absolute right-0 pr-2 text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)]"
           style={{
             top: offsetTop + i * slotHeight,
-            // 첫 번째 라벨은 컨테이너 밖으로 올라가지 않도록 translateY 생략
+            // Skip translateY for the first label so it doesn't overflow above the container
             transform: i === 0 ? undefined : "translateY(-7px)",
             lineHeight: "14px",
           }}

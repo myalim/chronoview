@@ -3,11 +3,11 @@ import type { CSSProperties } from "react";
 import "./wireframe.css";
 
 /**
- * Grid Day 와이어프레임
+ * Grid Day wireframe
  *
- * 레이아웃: 세로=시간, 가로=리소스 (Schedule의 축 반전)
- * 핵심: 리소스 헤더(아이콘+뱃지) + 리치 카드 + 날짜 스크롤 피커
- * 참조: docs/design/grid/grid-day.md
+ * Layout: vertical=time, horizontal=resource (inverted axes from Schedule)
+ * Key elements: resource header (icon+badge) + rich card + date scroll picker
+ * Ref: docs/design/grid/grid-day.md
  */
 
 const SLOT_HEIGHT = 60;
@@ -22,7 +22,7 @@ const RESOURCES = [
   { name: "Resource D", badge: 23, color: "#10b981" },
 ];
 
-// 이벤트: [리소스idx, 시작슬롯, 끝슬롯, 제목, 부제, lane, totalLanes]
+// Events: [resourceIdx, startSlot, endSlot, title, subtitle, lane, totalLanes]
 const EVENTS: [number, number, number, string, string, number, number][] = [
   [0, 0, 2, "Project Meeting", "Room 301", 0, 1],
   [0, 4, 6, "Code Review", "Frontend", 0, 1],
@@ -40,7 +40,7 @@ function GridDayWireframe() {
 
   return (
     <div className="wf-container" style={{ maxWidth: 860 }}>
-      {/* 툴바 */}
+      {/* Toolbar */}
       <div className="wf-toolbar">
         <div className="wf-toolbar-left">
           <button className="wf-nav-btn">◀</button>
@@ -55,7 +55,7 @@ function GridDayWireframe() {
         </div>
       </div>
 
-      {/* 날짜 스크롤 피커 */}
+      {/* Date scroll picker */}
       <div className="wf-date-picker">
         <button className="wf-nav-btn" style={{ width: 28, height: 28 }}>
           ◀
@@ -78,7 +78,7 @@ function GridDayWireframe() {
         </button>
       </div>
 
-      {/* 필터 칩 (리소스 필수이므로 항상 표시) */}
+      {/* Filter chips (always shown since resources are required) */}
       <div className="wf-filter-chips">
         {RESOURCES.map((r, i) => (
           <span key={i} className="wf-chip active" style={{ background: r.color }}>
@@ -87,13 +87,13 @@ function GridDayWireframe() {
         ))}
       </div>
 
-      {/* 그리드 */}
+      {/* Grid */}
       <div style={{ overflow: "auto", maxHeight: 420 }}>
         <div style={{ display: "grid", gridTemplateColumns: `${SIDEBAR_WIDTH}px ${totalWidth}px` }}>
-          {/* 코너셀 */}
+          {/* Corner cell */}
           <div className="wf-corner" style={{ height: 64 }} />
 
-          {/* 리소스 헤더 */}
+          {/* Resource headers */}
           <div
             style={{
               display: "flex",
@@ -129,7 +129,7 @@ function GridDayWireframe() {
             ))}
           </div>
 
-          {/* 시간 사이드바 */}
+          {/* Time sidebar */}
           <div
             style={{
               background: "var(--wf-sidebar-bg)",
@@ -159,9 +159,9 @@ function GridDayWireframe() {
             ))}
           </div>
 
-          {/* 그리드 본체 */}
+          {/* Grid body */}
           <div style={{ position: "relative" }}>
-            {/* 가로 + 세로선 */}
+            {/* Horizontal + vertical grid lines */}
             {TIME_SLOTS.map((_, ti) => (
               <div
                 key={ti}
@@ -180,7 +180,7 @@ function GridDayWireframe() {
               </div>
             ))}
 
-            {/* 이벤트 카드 (리치 카드) */}
+            {/* Event cards (rich card) */}
             {EVENTS.map(([resIdx, start, end, title, subtitle, lane, totalLanes], i) => {
               const laneWidth = COLUMN_WIDTH / totalLanes;
               const style: CSSProperties = {
@@ -209,7 +209,7 @@ function GridDayWireframe() {
               );
             })}
 
-            {/* Now Indicator — 도트+선, 이벤트 카드 뒤 (z:10 < event:20) */}
+            {/* Now indicator — dot+line, behind event cards (z:10 < event:20) */}
             <div className="wf-now-line horizontal" style={{ top: nowSlot * SLOT_HEIGHT }} />
             <div className="wf-now-dot left" style={{ top: nowSlot * SLOT_HEIGHT, left: 0 }} />
           </div>
@@ -228,5 +228,5 @@ export default meta;
 
 export const Default: StoryObj = {
   render: () => <GridDayWireframe />,
-  name: "Grid Day — 리치 카드 + 날짜 피커",
+  name: "Grid Day — Rich Card + Date Picker",
 };

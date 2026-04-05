@@ -20,7 +20,7 @@ function findById(results: ReturnType<typeof calculateAutoStacks>, id: string) {
 }
 
 describe("calculateAutoStacks", () => {
-  // indent 겹침: lane = depth (시작 시간 순), totalLanes = maxDepth + 1
+  // indent overlap: lane = depth (ordered by start time), totalLanes = maxDepth + 1
 
   it("single event → lane=0, totalLanes=1", () => {
     const group: OverlapGroup = { events: [makeEvent("a", 9, 10)] };
@@ -50,7 +50,7 @@ describe("calculateAutoStacks", () => {
   });
 
   it("staggered overlap A→B→C — increasing depth", () => {
-    // A,B,C 모두 동시 겹침: 3개 lane 필요
+    // A, B, C all overlap simultaneously: 3 lanes needed
     const group: OverlapGroup = {
       events: [makeEvent("a", 9, 12), makeEvent("b", 10, 11), makeEvent("c", 10, 11)],
     };
@@ -60,7 +60,7 @@ describe("calculateAutoStacks", () => {
     const b = findById(result, "b");
     const c = findById(result, "c");
 
-    // A → lane 0, B → lane 1 (A 점유), C → lane 2 (A,B 점유)
+    // A → lane 0, B → lane 1 (A occupied), C → lane 2 (A,B occupied)
     expect(a.lane).toBe(0);
     expect(b.lane).toBe(1);
     expect(c.lane).toBe(2);

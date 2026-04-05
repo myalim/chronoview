@@ -3,18 +3,18 @@ import type { CSSProperties } from "react";
 import "./wireframe.css";
 
 /**
- * Calendar Week 와이어프레임
+ * Calendar Week wireframe
  *
- * 레이아웃: 세로=시간, 가로=요일 7열
- * 핵심: horizontal stack + 오늘 열 하이라이트 + Now Indicator (오늘 열에만)
- * 참조: docs/design/calendar/calendar-week.md
+ * Layout: rows = time, columns = 7 weekday columns
+ * Key features: horizontal stack, today column highlight, Now Indicator (today column only)
+ * Ref: docs/design/calendar/calendar-week.md
  */
 
 const SLOT_HEIGHT = 60;
 const SIDEBAR_WIDTH = 60;
 const TIME_SLOTS = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00"];
 
-/* 리소스 (색상 구분용) */
+/* Resources (for color distinction) */
 const RESOURCES = [
   { name: "Resource A", color: "#3b82f6" },
   { name: "Resource B", color: "#8b5cf6" },
@@ -22,19 +22,19 @@ const RESOURCES = [
 ];
 
 function CalendarWeekWireframe() {
-  /* 일요일 시작 (weekStartsOn=0 기본값) */
+  /* Sunday start (weekStartsOn=0 default) */
   const DAYS = ["일 3/22", "월 3/23", "화 3/24", "수 3/25", "목 3/26", "금 3/27", "토 3/28"];
   const todayIndex = 5;
   const columnWidth = 100 / 7;
 
-  // 이벤트: [요일idx, 시작슬롯, 끝슬롯, 제목, 색상, lane, totalLanes]
+  // Events: [dayIdx, startSlot, endSlot, title, color, lane, totalLanes]
   const weekEvents: [number, number, number, string, string, number, number][] = [
-    [1, 1, 2.5, "Standup", "#3b82f6", 0, 1], // 월
-    [2, 2, 4, "Design Review", "#8b5cf6", 0, 1], // 화
-    [4, 1, 2, "Event A", "#06b6d4", 0, 2], // 목
-    [4, 1.5, 2.5, "Event B", "#10b981", 1, 2], // 목
-    [5, 2, 4, "Sprint Plan", "#f59e0b", 0, 1], // 금 (today)
-    [6, 3, 5, "Workshop", "#ef4444", 0, 1], // 토
+    [1, 1, 2.5, "Standup", "#3b82f6", 0, 1], // Mon
+    [2, 2, 4, "Design Review", "#8b5cf6", 0, 1], // Tue
+    [4, 1, 2, "Event A", "#06b6d4", 0, 2], // Thu
+    [4, 1.5, 2.5, "Event B", "#10b981", 1, 2], // Thu
+    [5, 2, 4, "Sprint Plan", "#f59e0b", 0, 1], // Fri (today)
+    [6, 3, 5, "Workshop", "#ef4444", 0, 1], // Sat
   ];
 
   return (
@@ -55,7 +55,7 @@ function CalendarWeekWireframe() {
         </div>
       </div>
 
-      {/* 필터 칩 (리소스 있을 때) */}
+      {/* Filter chips (when resources exist) */}
       <div className="wf-filter-chips">
         {RESOURCES.map((r, i) => (
           <span key={i} className="wf-chip active" style={{ background: r.color }}>
@@ -65,7 +65,7 @@ function CalendarWeekWireframe() {
       </div>
 
       <div style={{ display: "flex", overflow: "auto", maxHeight: 420 }}>
-        {/* 시간 사이드바 */}
+        {/* Time sidebar */}
         <div
           style={{
             width: SIDEBAR_WIDTH,
@@ -95,9 +95,9 @@ function CalendarWeekWireframe() {
           ))}
         </div>
 
-        {/* 7열 */}
+        {/* 7 day columns */}
         <div style={{ flex: 1, position: "relative" }}>
-          {/* 요일 헤더 */}
+          {/* Weekday header */}
           <div
             style={{
               display: "flex",
@@ -128,7 +128,7 @@ function CalendarWeekWireframe() {
             ))}
           </div>
 
-          {/* 시간 그리드 */}
+          {/* Time grid */}
           <div style={{ position: "relative" }}>
             {TIME_SLOTS.map((_, i) => (
               <div
@@ -152,7 +152,7 @@ function CalendarWeekWireframe() {
               </div>
             ))}
 
-            {/* 이벤트 */}
+            {/* Events */}
             {weekEvents.map(([dayIdx, start, end, title, color, lane, totalLanes], i) => {
               const laneWidth = columnWidth / totalLanes;
               const style: CSSProperties = {
@@ -176,7 +176,7 @@ function CalendarWeekWireframe() {
               );
             })}
 
-            {/* Now Indicator — 오늘 열에만 표시 (도트+선) */}
+            {/* Now Indicator — shown only in today's column (dot + line) */}
             <div
               className="wf-now-line horizontal"
               style={{
@@ -209,5 +209,5 @@ export default meta;
 
 export const Default: StoryObj = {
   render: () => <CalendarWeekWireframe />,
-  name: "Calendar Week — 7열 + 오늘 하이라이트",
+  name: "Calendar Week — 7 columns + Today highlight",
 };

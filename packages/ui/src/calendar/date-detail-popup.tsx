@@ -1,6 +1,6 @@
 /**
- * DateDetailPopup — "더보기" 클릭 시 해당 날짜의 전체 이벤트 목록을 보여주는 팝업.
- * Calendar month list mode에서 사용.
+ * DateDetailPopup — Popup showing all events for a date when "more" is clicked.
+ * Used in Calendar month list mode.
  */
 
 import { useCallback, useEffect, useRef } from "react";
@@ -29,7 +29,7 @@ export function DateDetailPopup<TData>({
   const label = formatHeader ? formatHeader(date) : String(date.getDate());
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // ESC 키로 닫기
+  // Close on ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -38,12 +38,12 @@ export function DateDetailPopup<TData>({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // 팝업 열릴 때 포커스 이동
+  // Focus the popup on open
   useEffect(() => {
     popupRef.current?.focus();
   }, []);
 
-  // 팝업 외부 클릭 시 닫기
+  // Close on backdrop click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) onClose();
@@ -52,7 +52,7 @@ export function DateDetailPopup<TData>({
   );
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: backdrop — 키보드는 document-level ESC로 처리
+    // biome-ignore lint/a11y/noStaticElementInteractions: backdrop — keyboard handled via document-level ESC listener
     <div
       className="absolute inset-0 z-[var(--cv-z-popup)]"
       onClick={handleBackdropClick}
@@ -72,7 +72,7 @@ export function DateDetailPopup<TData>({
           transform: "translate(-50%, -50%)",
         }}
       >
-        {/* 헤더 */}
+        {/* Header */}
         <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--cv-color-border)] bg-[var(--cv-color-surface)]">
           <span className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)]">
             {label}
@@ -100,7 +100,7 @@ export function DateDetailPopup<TData>({
           </button>
         </div>
 
-        {/* 이벤트 리스트 */}
+        {/* Event list */}
         <div
           className="overflow-y-auto p-2 flex flex-col gap-1"
           style={{ maxHeight: 270 }}

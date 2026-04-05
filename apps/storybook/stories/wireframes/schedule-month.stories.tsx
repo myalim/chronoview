@@ -3,11 +3,12 @@ import type { CSSProperties } from "react";
 import "./wireframe.css";
 
 /**
- * Schedule Month 와이어프레임
+ * Schedule Month wireframe
  *
- * 레이아웃: 세로=리소스, 가로=날짜 열
- * 핵심: 2단 헤더(날짜+요일), 여러 날 걸침 바, vertical stack + 가변 행 높이, 오늘 열 하이라이트
- * 참조: docs/design/schedule/schedule-month.md
+ * Layout: rows = resources, columns = date columns
+ * Key features: two-tier header (date + weekday), multi-day spanning bars,
+ *   vertical stack with variable row height, today column highlight
+ * Ref: docs/design/schedule/schedule-month.md
  */
 
 const COLUMN_WIDTH = 60;
@@ -19,7 +20,7 @@ const EVENT_HEIGHT = 24;
 const EVENT_GAP = 4;
 const ROW_PADDING = 4;
 
-// 03/15(일) ~ 03/28(토), 14일간
+// 03/15 (Sun) - 03/28 (Sat), 14 days
 const DATES = [
   { date: "03/15", weekday: "일" },
   { date: "03/16", weekday: "월" },
@@ -37,7 +38,7 @@ const DATES = [
   { date: "03/28", weekday: "토" },
 ];
 
-// 오늘 = 03/27 → 인덱스 12
+// Today = 03/27, index 12
 const TODAY_COL = 12;
 
 const RESOURCES = [
@@ -46,10 +47,10 @@ const RESOURCES = [
   { name: "Resource C", color: "#06b6d4", icon: "#06b6d4" },
 ];
 
-// 이벤트: [리소스idx, 시작열, 끝열(exclusive), 제목, lane]
-// 끝열은 exclusive — 실제 바 너비 = (endCol - startCol) * COLUMN_WIDTH
+// Events: [resourceIdx, startCol, endCol (exclusive), title, lane]
+// endCol is exclusive — actual bar width = (endCol - startCol) * COLUMN_WIDTH
 const EVENTS: [number, number, number, string, number][] = [
-  // Resource A: 3 lanes (높은 밀도)
+  // Resource A: 3 lanes (high density)
   [0, 0, 1, "Event 1", 0],
   [0, 2, 5, "Event 2", 0],
   [0, 6, 8, "Event 3", 0],
@@ -58,24 +59,24 @@ const EVENTS: [number, number, number, string, number][] = [
   [0, 5, 7, "Event 6", 1],
   [0, 12, 14, "Event 7", 1],
   [0, 3, 6, "Event 8", 2],
-  // Resource B: 2 lanes (중간 밀도)
+  // Resource B: 2 lanes (medium density)
   [1, 1, 6, "Event 9", 0],
   [1, 7, 11, "Event 10", 0],
   [1, 3, 8, "Event 11", 1],
   [1, 11, 14, "Event 12", 0],
-  // Resource C: 1 lane (낮은 밀도)
+  // Resource C: 1 lane (low density)
   [2, 0, 3, "Event 13", 0],
   [2, 5, 9, "Event 14", 0],
   [2, 10, 12, "Event 15", 0],
 ];
 
-/** 리소스별 최대 스택 수에 따른 행 높이 계산 */
+/** Calculate row height based on max stack count per resource */
 function getRowHeight(maxStack: number): number {
   if (maxStack === 0) return 48;
   return Math.max(48, maxStack * EVENT_HEIGHT + (maxStack - 1) * EVENT_GAP + ROW_PADDING * 2);
 }
 
-// 리소스별 최대 lane 수: Resource A=3, Resource B=2, Resource C=1
+// Max lane count per resource: A=3, B=2, C=1
 const rowStacks = [3, 2, 1];
 
 function ScheduleMonthWireframe() {
@@ -83,7 +84,7 @@ function ScheduleMonthWireframe() {
 
   return (
     <div className="wf-container" style={{ maxWidth: 1100 }}>
-      {/* 툴바 */}
+      {/* Toolbar */}
       <div className="wf-toolbar">
         <div className="wf-toolbar-left">
           <button className="wf-nav-btn">◀</button>
@@ -101,7 +102,7 @@ function ScheduleMonthWireframe() {
         </div>
       </div>
 
-      {/* 필터 칩 */}
+      {/* Filter chips */}
       <div className="wf-filter-chips">
         {RESOURCES.map((r, i) => (
           <span key={i} className="wf-chip active" style={{ background: r.color }}>
@@ -110,10 +111,10 @@ function ScheduleMonthWireframe() {
         ))}
       </div>
 
-      {/* 그리드 */}
+      {/* Grid */}
       <div className="wf-grid-wrapper" style={{ maxHeight: 480 }}>
         <div style={{ display: "grid", gridTemplateColumns: `${SIDEBAR_WIDTH}px ${totalWidth}px` }}>
-          {/* 코너셀 — 2단 헤더 높이만큼 */}
+          {/* Corner cell — matches two-tier header height */}
           <div className="wf-corner" style={{ height: TOTAL_HEADER_HEIGHT }}>
             <div
               style={{
@@ -129,9 +130,9 @@ function ScheduleMonthWireframe() {
             </div>
           </div>
 
-          {/* 2단 헤더: 날짜(상단) + 요일(하단) */}
+          {/* Two-tier header: date (top) + weekday (bottom) */}
           <div style={{ position: "sticky", top: 0, zIndex: 30 }}>
-            {/* 날짜 헤더 (상단 32px) */}
+            {/* Date header (top, 32px) */}
             <div className="wf-header" style={{ height: DATE_HEADER_HEIGHT }}>
               {DATES.map((d, i) => (
                 <div
@@ -144,7 +145,7 @@ function ScheduleMonthWireframe() {
               ))}
             </div>
 
-            {/* 요일 헤더 (하단 32px) */}
+            {/* Weekday header (bottom, 32px) */}
             <div className="wf-header" style={{ height: WEEKDAY_HEADER_HEIGHT }}>
               {DATES.map((d, i) => (
                 <div
@@ -158,20 +159,20 @@ function ScheduleMonthWireframe() {
             </div>
           </div>
 
-          {/* 리소스 행 */}
+          {/* Resource rows */}
           {RESOURCES.map((resource, ri) => {
             const maxStack = rowStacks[ri];
             const rowHeight = getRowHeight(maxStack);
 
             return (
               <div key={ri} style={{ display: "contents" }}>
-                {/* 사이드바 */}
+                {/* Sidebar */}
                 <div className="wf-sidebar-item" style={{ height: rowHeight }}>
                   <div className="wf-sidebar-icon" style={{ background: resource.icon }} />
                   <span className="wf-sidebar-name">{resource.name}</span>
                 </div>
 
-                {/* 행 내용 */}
+                {/* Row content */}
                 <div
                   style={{
                     position: "relative",
@@ -179,7 +180,7 @@ function ScheduleMonthWireframe() {
                     borderBottom: "1px solid var(--wf-border)",
                   }}
                 >
-                  {/* 오늘 열 하이라이트 배경 */}
+                  {/* Today column highlight background */}
                   <div
                     style={{
                       position: "absolute",
@@ -193,7 +194,7 @@ function ScheduleMonthWireframe() {
                     }}
                   />
 
-                  {/* 그리드 세로선 */}
+                  {/* Grid vertical lines */}
                   {DATES.map((_, ci) => (
                     <div
                       key={ci}
@@ -208,7 +209,7 @@ function ScheduleMonthWireframe() {
                     />
                   ))}
 
-                  {/* 이벤트 바 — 여러 날 걸침 */}
+                  {/* Event bars — multi-day spanning */}
                   {EVENTS.filter(([eri]) => eri === ri).map(
                     ([, startCol, endCol, title, lane], ei) => {
                       const style: CSSProperties = {
@@ -257,5 +258,5 @@ export default meta;
 
 export const Default: StoryObj = {
   render: () => <ScheduleMonthWireframe />,
-  name: "Schedule Month — 날짜 열 + 걸침 바",
+  name: "Schedule Month — Date columns + Spanning bars",
 };

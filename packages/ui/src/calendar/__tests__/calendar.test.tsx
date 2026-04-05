@@ -67,7 +67,7 @@ const DAY_EVENTS: TimelineEvent[] = [
   makeEvent("e1", "r1", 9, 11, "Sprint Planning"),
   makeEvent("e2", "r2", 10, 12, "Code Review"),
   makeEvent("e3", "r3", 14, 16, "Team Retro"),
-  makeEvent("e4", "r1", 8, 8, "Quick Ping"), // 0분 — 비표시
+  makeEvent("e4", "r1", 8, 8, "Quick Ping"), // 0-duration — not displayed
 ];
 
 const OVERLAP_EVENTS: TimelineEvent[] = [
@@ -126,7 +126,7 @@ describe("Calendar", () => {
     );
 
     // 7 day header labels should exist (week view renders day labels)
-    // Each header contains weekday + date like "월 3/23"
+    // Each header contains weekday + date like "Mon 3/23"
     const headers = screen.getAllByText(/\d+\/\d+/);
     expect(headers.length).toBeGreaterThanOrEqual(7);
   });
@@ -172,7 +172,7 @@ describe("Calendar", () => {
       />,
     );
 
-    // "N개 더보기" link should appear for dense days
+    // "N more" link should appear for dense days
     const moreLinks = screen.queryAllByText(/더보기/);
     expect(moreLinks.length).toBeGreaterThanOrEqual(1);
   });
@@ -376,9 +376,9 @@ describe("Calendar", () => {
     });
   });
 
-  // ─── Month: "N개 더보기" Popup ───
+  // ─── Month: "N more" Popup ───
 
-  it("shows date detail popup when 더보기 is clicked (list mode)", () => {
+  it("shows date detail popup when 'more' is clicked (list mode)", () => {
     const denseEvents: TimelineEvent[] = [
       makeEvent("d1", "r1", 9, 10, "Morning Sync"),
       makeEvent("d2", "r2", 10, 11, "Standup"),
