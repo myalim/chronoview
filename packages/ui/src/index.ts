@@ -46,3 +46,4 @@ export {
 
 // ─── Calendar Connected Component ───
 export { Calendar, type CalendarProps } from "./calendar/calendar.js";
+export type { CalendarLabels } from "./calendar/calendar-labels.js";

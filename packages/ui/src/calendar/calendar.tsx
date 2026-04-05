@@ -42,6 +42,7 @@ import {
   getDefaultAvailableViews,
   calculateDayRange,
   startOfDay,
+  resolveColor,
 } from "@chronoview/core";
 
 import { CalendarView } from "./calendar-view.js";
@@ -61,7 +62,8 @@ import { useEventDetail } from "../schedule/use-event-detail.js";
 import { EventTooltip } from "../schedule/event-tooltip.js";
 import { EventPopover } from "../schedule/event-popover.js";
 import { formatTime, formatTimeLabel } from "../utils/format-time.js";
-import { WEEKDAY_LABELS } from "../utils/weekdays.js";
+import { DateDetailPopup } from "./date-detail-popup.js";
+import { type CalendarLabels, resolveLabels } from "./calendar-labels.js";
 
 // ─── Constants ───
 
@@ -109,8 +111,8 @@ export interface CalendarProps<TData = unknown> {
   showFilter?: boolean;
   /** Show empty label in Month cells with no events (default: false) */
   showEmptyLabel?: boolean;
-  /** Empty label text (default: "데이터 없음") */
-  emptyLabel?: string;
+  /** Customizable text labels for i18n support. Partial overrides merge with Korean defaults. */
+  labels?: Partial<CalendarLabels>;
 
   // ─── Custom Rendering ───
   /** Per-event EventCard props override (Day/Week views). Merges with computed defaults. */
@@ -165,7 +167,7 @@ export function Calendar<TData = unknown>({
   showToolbar = true,
   showFilter = false,
   showEmptyLabel = false,
-  emptyLabel = "데이터 없음",
+  labels: labelOverrides,
   eventProps,
   renderMonthCell,
   renderEventDetail,
@@ -177,6 +179,8 @@ export function Calendar<TData = unknown>({
   theme,
   className,
 }: CalendarProps<TData>) {
+  // ─── Labels (i18n) ───
+  const labels = useMemo(() => resolveLabels(labelOverrides), [labelOverrides]);
   // ─── View State ───
   const [currentView, setCurrentView] = useState<View>(initialView);
 
@@ -217,6 +221,7 @@ export function Calendar<TData = unknown>({
     monthGrid,
     timeSlots,
     totalMainSize,
+    contentSize,
     slotHeight,
     contentOffset,
     getEventStyle,
@@ -234,9 +239,11 @@ export function Calendar<TData = unknown>({
 
   // ─── Now Indicator (Day/Week only) ───
   // Calendar의 시간축은 하루 단위 — dateRange(주/월 범위)가 아니라 오늘의 dayRange 사용
-  const todayDayRange = useMemo(() => calculateDayRange(new Date()), []);
-  // content 영역 기준으로 position 계산 후 padding offset 추가
-  const contentSize = totalMainSize - 2 * contentOffset;
+  // 오늘 날짜가 바뀌면 dayRange도 갱신 (렌더 시점 기준 — 자정 자동 갱신은 미지원)
+  const today = new Date();
+  const todayDateKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: todayDateKey ensures recalculation when the date portion changes
+  const todayDayRange = useMemo(() => calculateDayRange(new Date()), [todayDateKey]);
   const { position: rawNowPosition } = useNowIndicator({
     rangeStart: todayDayRange.start,
     rangeEnd: todayDayRange.end,
@@ -301,13 +308,13 @@ export function Calendar<TData = unknown>({
     [resources],
   );
 
-  /** 이벤트 색상 해소: event.color → resource.color → default */
+  /** 이벤트 색상 해소: event.color → resource.color → DEFAULT_EVENT_COLOR */
   const resourceColorMap = useMemo(
     () => new Map(resources.map((r) => [r.id, r.color])),
     [resources],
   );
   const resolveEventColor = (e: TimelineEvent) =>
-    e.color ?? resourceColorMap.get(e.resourceId) ?? "#3b82f6";
+    resolveColor({ eventColor: e.color, resourceColor: resourceColorMap.get(e.resourceId) });
 
   const themeClass = theme ?? undefined;
 
@@ -394,7 +401,8 @@ export function Calendar<TData = unknown>({
             currentMonth={currentDate.getMonth()}
             today={monthGrid.todayDate ?? undefined}
             showEmptyLabel={showEmptyLabel}
-            emptyLabel={emptyLabel}
+            emptyLabel={labels.empty}
+            weekdayLabels={labels.weekdays}
             hasEvents={(d) => {
               const cell = cellMap.get(dateKey(d));
               return cell ? cell.events.length > 0 : false;
@@ -460,7 +468,7 @@ export function Calendar<TData = unknown>({
                       className="text-left text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-today-border)] hover:underline cursor-pointer"
                       onClick={() => setPopupDate(cellDate)}
                     >
-                      {hiddenCount}개 더보기
+                      {labels.moreEvents(hiddenCount)}
                     </button>
                   )}
                 </div>
@@ -478,6 +486,8 @@ export function Calendar<TData = unknown>({
               )}
               onClose={() => setPopupDate(null)}
               resolveColor={resolveEventColor}
+              formatHeader={labels.formatPopupHeader}
+              closeLabel={labels.close}
             />
           )}
         </div>
@@ -486,7 +496,7 @@ export function Calendar<TData = unknown>({
         {monthMode === "bar" && gridEvents.length > 0 && (
           <div className="mt-[var(--cv-spacing-lg)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-lg)] p-[var(--cv-spacing-lg)]">
             <h3 className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)] text-[var(--cv-color-text-secondary)] mb-[var(--cv-spacing-sm)]">
-              진행중인 이벤트
+              {labels.eventListTitle}
             </h3>
             <div className="flex flex-col gap-[var(--cv-spacing-sm)]">
               {gridEvents.map((e) => (
@@ -503,8 +513,8 @@ export function Calendar<TData = unknown>({
                       {e.title}
                     </div>
                     <div className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)]">
-                      {formatDateLabel(e.start)} {formatTime(e.start)} –{" "}
-                      {formatDateLabel(e.end)} {formatTime(e.end)}
+                      {labels.formatDate(e.start)} {formatTime(e.start)} –{" "}
+                      {labels.formatDate(e.end)} {formatTime(e.end)}
                     </div>
                   </div>
                 </div>
@@ -522,7 +532,7 @@ export function Calendar<TData = unknown>({
   const dayHeaderCells: DayHeaderCell[] =
     currentView === "week"
       ? columns.map((col) => ({
-          label: `${WEEKDAY_LABELS[col.dayOfWeek]} ${col.date.getMonth() + 1}/${col.date.getDate()}`,
+          label: `${labels.weekdays[col.dayOfWeek]} ${col.date.getMonth() + 1}/${col.date.getDate()}`,
           isToday: col.isToday,
         }))
       : [];
@@ -762,29 +772,20 @@ export function Calendar<TData = unknown>({
 
 // ─── Helpers ───
 
-/** Format date label as "MM.DD(요일)" */
-function formatDateLabel(d: Date): string {
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${m}.${day}(${WEEKDAY_LABELS[d.getDay()]})`;
-}
-
 /** Create a unique key for a date (for Map lookup) */
 function dateKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-/** Filter events that overlap a specific date */
+/** Filter events that overlap a specific date (end-exclusive, consistent with buildMonthCellLayouts) */
 function eventsOnDate<TData>(
   events: TimelineEvent<TData>[],
   date: Date,
 ): TimelineEvent<TData>[] {
-  const dayTime = startOfDay(date).getTime();
-  return events.filter((e) => {
-    const eStart = startOfDay(e.start).getTime();
-    const eEnd = startOfDay(e.end).getTime();
-    return eStart <= dayTime && eEnd >= dayTime;
-  });
+  const dayStart = startOfDay(date);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+  return events.filter((e) => e.end > dayStart && e.start < dayEnd);
 }
 
 /** Render bar overlay for a week (bar mode) */
@@ -824,78 +825,3 @@ function renderBarOverlay(
   );
 }
 
-/** 날짜 상세 팝업 — "N개 더보기" 클릭 시 전체 이벤트 표시 (list mode) */
-function DateDetailPopup<TData>({
-  date,
-  events,
-  onClose,
-  resolveColor,
-}: {
-  date: Date;
-  events: TimelineEvent<TData>[];
-  onClose: () => void;
-  resolveColor: (e: TimelineEvent<TData>) => string;
-}) {
-  const label = `${WEEKDAY_LABELS[date.getDay()]} ${date.getDate()}`;
-
-  return (
-    <div
-      className="absolute z-[var(--cv-z-popup)] bg-[var(--cv-color-bg)] border border-[var(--cv-color-border)] rounded-[var(--cv-radius-md)] shadow-[var(--cv-shadow-md)] overflow-hidden"
-      style={{
-        width: 240,
-        maxHeight: 320,
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-      }}
-    >
-      {/* 헤더 */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--cv-color-border)] bg-[var(--cv-color-surface)]">
-        <span className="text-[length:var(--cv-font-size-sm)] font-[var(--cv-font-weight-bold)]">
-          {label}
-        </span>
-        <button
-          type="button"
-          className="text-[var(--cv-color-text-secondary)] hover:text-[var(--cv-color-text)] cursor-pointer"
-          onClick={onClose}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-
-      {/* 이벤트 리스트 */}
-      <div
-        className="overflow-y-auto p-2 flex flex-col gap-1"
-        style={{ maxHeight: 270 }}
-      >
-        {events.map((e) => (
-          <div key={e.id} className="flex items-center gap-2 px-1 py-0.5">
-            <span
-              className="shrink-0 w-2 h-2 rounded-full"
-              style={{ background: resolveColor(e) }}
-            />
-            <span className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-text-secondary)] shrink-0">
-              {formatTime(e.start)}
-            </span>
-            <span className="truncate text-[length:var(--cv-font-size-sm)] text-[var(--cv-color-text)]">
-              {e.title}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}

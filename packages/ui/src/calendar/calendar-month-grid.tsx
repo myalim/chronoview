@@ -126,8 +126,8 @@ export function CalendarMonthGrid({
                   {/* 셀 콘텐츠 (list 모드 등) */}
                   {renderCellContent?.(date, { isCurrentMonth, isToday })}
 
-                  {/* 빈 셀 라벨 */}
-                  {showEmptyLabel && isCurrentMonth && hasEvents && !hasEvents(date) && (
+                  {/* 빈 셀 라벨 — emptyLabel이 없으면 렌더하지 않음 */}
+                  {showEmptyLabel && emptyLabel && isCurrentMonth && hasEvents && !hasEvents(date) && (
                     <span className="text-[length:var(--cv-font-size-xs)] text-[var(--cv-color-empty)]">
                       {emptyLabel}
                     </span>

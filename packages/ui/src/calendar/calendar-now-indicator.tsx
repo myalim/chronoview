@@ -22,7 +22,6 @@ export function CalendarNowIndicator({ position, crossSize }: CalendarNowIndicat
     borderRadius: "50%",
     background: "var(--cv-color-now)",
     pointerEvents: "none",
-    zIndex: "var(--cv-z-now)" as unknown as number,
   };
 
   const lineStyle: CSSProperties = {
@@ -33,13 +32,12 @@ export function CalendarNowIndicator({ position, crossSize }: CalendarNowIndicat
     height: 2,
     background: "var(--cv-color-now)",
     pointerEvents: "none",
-    zIndex: "var(--cv-z-now)" as unknown as number,
   };
 
   return (
     <>
-      <div style={dotStyle} />
-      <div style={lineStyle} />
+      <div className="z-[var(--cv-z-now)]" style={dotStyle} />
+      <div className="z-[var(--cv-z-now)]" style={lineStyle} />
     </>
   );
 }
